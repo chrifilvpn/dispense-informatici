@@ -1,0 +1,72 @@
+// DISPENSE — domande di TPSIT per esercitazioni e verifiche (formato in esercizi-sistemi.js).
+(() => {
+  const { S, VF, C, A, O } = window.BossAiuti.domande;
+  window.BossEsercizi = window.BossEsercizi || {};
+  window.BossEsercizi.tpsit = {
+    clientserver: [
+      S('Nel modello client-server chi inizia la comunicazione?', ['Il server', 'Il client', 'Il router', 'Nessuno dei due'], 1, 'Il server aspetta, il client invia la richiesta.'),
+      S('Quali sono i tre livelli dell\'architettura three-tier?', ['Fisico, rete, trasporto', 'Presentazione, logica applicativa, dati', 'Client, switch, router', 'HTML, CSS, JavaScript'], 1, 'Browser, server applicativo e DBMS.'),
+      VF('Un server concorrente può servire più client nello stesso momento.', true, 'Crea un thread (o processo) per ogni client.'),
+      VF('Nel modello peer-to-peer c\'è sempre un server centrale.', false, 'Nel P2P ogni nodo è sia client sia server.'),
+      C('Un server che serve un client alla volta si dice ___.', ['iterativo'], 'Server iterativo, contrario di concorrente.'),
+      A('Abbina il programma al ruolo.', [['Browser', 'client'], ['Apache', 'server web'], ['MySQL', 'server di database'], ['Thunderbird', 'client di posta']], 'Esempi tipici di client e server.'),
+      S('Quale di questi è un esempio di peer-to-peer?', ['Un sito web', 'BitTorrent', 'Il DNS', 'Un database'], 1, 'BitTorrent: ogni nodo scarica e condivide.'),
+      O('Indica un vantaggio e uno svantaggio del modello client-server.', 'Vantaggio: dati e controllo centralizzati, più facili da gestire e proteggere. Svantaggio: il server è un punto unico di guasto e può diventare un collo di bottiglia.', ['centralizz', 'guast', 'server']),
+    ],
+    thread: [
+      S('In Java, quale metodo avvia davvero un nuovo thread?', ['run()', 'start()', 'begin()', 'execute()'], 1, 'start() crea il thread e chiama run() al suo interno; chiamare run() direttamente non crea un thread.'),
+      S('Quale parola chiave rende un metodo accessibile a un thread alla volta?', ['static', 'final', 'synchronized', 'volatile'], 2, 'synchronized acquisisce il lock dell\'oggetto.'),
+      S('Che cosa fa join()?', ['Unisce due thread', 'Attende che il thread termini', 'Blocca tutti i thread', 'Riavvia il thread'], 1, 't.join() fa aspettare il thread chiamante fino alla fine di t.'),
+      VF('Due thread dello stesso processo condividono la memoria.', true, 'Condividono lo heap: per questo servono i meccanismi di sincronizzazione.'),
+      VF('La race condition si verifica quando due thread accedono a dati condivisi senza sincronizzazione.', true, 'Il risultato dipende dall\'ordine casuale di esecuzione.'),
+      C('Per creare un thread si può estendere Thread oppure implementare l\'interfaccia ___.', ['runnable'], 'Runnable, con il metodo run().'),
+      A('Abbina il metodo alla funzione.', [['wait()', 'mette in attesa sul lock'], ['notify()', 'risveglia un thread in attesa'], ['sleep()', 'pausa per un tempo'], ['start()', 'avvia il thread']], 'Metodi principali per i thread in Java.'),
+      S('Che cos\'è un deadlock?', ['Un thread molto veloce', 'Due o più thread bloccati che si aspettano a vicenda', 'Un errore di sintassi', 'La fine del programma'], 1, 'Ognuno tiene una risorsa e aspetta quella dell\'altro.'),
+      O('Spiega il problema produttore-consumatore.', 'Un produttore inserisce dati in un buffer limitato e un consumatore li preleva; bisogna sincronizzarli perché il produttore aspetti quando il buffer è pieno e il consumatore quando è vuoto (wait/notify).', ['buffer', 'pien', 'vuot']),
+    ],
+    socket: [
+      S('Quale classe Java si usa lato server per aspettare le connessioni TCP?', ['Socket', 'ServerSocket', 'DatagramSocket', 'URL'], 1, 'ServerSocket.accept() attende un client.'),
+      S('Che cosa restituisce accept()?', ['Un intero', 'Un Socket collegato al client', 'Una stringa', 'Niente'], 1, 'Un Socket per comunicare con quel client.'),
+      S('Quali classi servono per UDP in Java?', ['Socket e ServerSocket', 'DatagramSocket e DatagramPacket', 'URLConnection', 'Thread e Runnable'], 1, 'UDP usa datagrammi.'),
+      VF('accept() è un metodo bloccante.', true, 'Si ferma finché non arriva un client.'),
+      VF('Per un server concorrente si crea un thread per ogni client.', true, 'Così il ciclo di accept() può ripartire subito.'),
+      C('Il flusso per inviare dati su un socket si ottiene con getOutput___().', ['stream'], 'getOutputStream(); per leggere getInputStream().'),
+      A('Abbina.', [['ServerSocket', 'lato server'], ['Socket', 'connessione TCP'], ['DatagramPacket', 'pacchetto UDP'], ['readLine()', 'legge una riga']], 'Classi e metodi dei socket Java.'),
+      S('Che cosa identifica un socket?', ['Solo l\'IP', 'Solo la porta', 'IP e porta', 'Il MAC'], 2, 'Indirizzo IP + porta.'),
+      O('Perché si usa il costrutto try-with-resources con i socket?', 'Perché chiude automaticamente socket e flussi anche in caso di eccezione, evitando di lasciare connessioni e risorse aperte.', ['chiud', 'eccezion', 'risors']),
+    ],
+    rest: [
+      S('Con quale metodo HTTP si crea una nuova risorsa in un\'API REST?', ['GET', 'POST', 'DELETE', 'HEAD'], 1, 'POST crea; di solito risponde 201 Created.'),
+      S('Quale codice di stato indica che una risorsa è stata creata?', ['200', '201', '204', '404'], 1, '201 Created.'),
+      S('Che cosa significa che REST è stateless?', ['Non usa HTTP', 'Ogni richiesta contiene tutte le informazioni necessarie', 'Non ha database', 'Usa solo XML'], 1, 'Il server non conserva lo stato della sessione tra le richieste.'),
+      VF('DELETE è un metodo idempotente.', true, 'Cancellare due volte la stessa risorsa lascia lo stesso stato.'),
+      VF('POST è idempotente.', false, 'Ogni POST può creare una risorsa nuova.'),
+      C('In REST ogni risorsa è identificata da un ___.', ['uri', 'url'], 'URI, per esempio /api/studenti/42.'),
+      A('Abbina l\'operazione al metodo.', [['Leggere', 'GET'], ['Creare', 'POST'], ['Sostituire', 'PUT'], ['Cancellare', 'DELETE']], 'Corrispondenza CRUD – HTTP.'),
+      S('Quale formato è il più usato oggi nelle API REST?', ['CSV', 'JSON', 'YAML', 'PDF'], 1, 'JSON, leggero e nativo in JavaScript.'),
+      O('Scrivi l\'URI e il metodo per modificare solo la classe dello studente 42.', 'PATCH /api/studenti/42 con un corpo JSON come {"classe": "5B"}: PATCH modifica solo i campi indicati.', ['patch', '/studenti/42']),
+    ],
+    xmljson: [
+      S('Quale di questi JSON è corretto?', ['{nome: "Anna"}', '{"nome": "Anna",}', '{"nome": "Anna"}', "{'nome': 'Anna'}"], 2, 'In JSON le chiavi vanno tra virgolette doppie e non sono ammesse virgole finali.'),
+      S('Con che cosa si valida un documento XML?', ['CSS', 'DTD o XML Schema', 'JSON Schema', 'HTML'], 1, 'DTD o XSD definiscono la struttura permessa.'),
+      S('Quali tipi di dato ha JSON?', ['Solo stringhe', 'Stringa, numero, booleano, null, oggetto, array', 'Solo numeri', 'Tag e attributi'], 1, 'Sono i sei tipi di JSON.'),
+      VF('Un documento XML ben formato ha un solo elemento radice.', true, 'È una delle regole di buona formazione.'),
+      VF('In JSON si possono scrivere commenti.', false, 'Lo standard JSON non ammette commenti.'),
+      C('Un XML che rispetta anche il suo schema si dice ___.', ['valido'], 'Ben formato = sintassi corretta; valido = rispetta anche lo schema.'),
+      A('Abbina.', [['{ }', 'oggetto JSON'], ['[ ]', 'array JSON'], ['<tag>', 'elemento XML'], ['attributo', 'nome="valore" in un tag']], 'Elementi base di JSON e XML.'),
+      S('Quale metodo JavaScript trasforma un oggetto in testo JSON?', ['JSON.parse', 'JSON.stringify', 'toString', 'eval'], 1, 'JSON.stringify; il contrario è JSON.parse.'),
+      O('Perché JSON ha sostituito XML in molte API web?', 'È più compatto e leggibile, ha i tipi di dato di base e si converte direttamente in oggetti JavaScript.', ['compatt', 'javascript', 'legg']),
+    ],
+    cloud: [
+      S('Quale modello cloud offre un\'applicazione pronta all\'uso?', ['IaaS', 'PaaS', 'SaaS', 'DaaS'], 2, 'Software as a Service, per esempio Gmail.'),
+      S('Una piattaforma dove caricare il proprio codice senza gestire i server è un esempio di…', ['IaaS', 'PaaS', 'SaaS', 'LAN'], 1, 'Platform as a Service, come Render o Heroku.'),
+      S('Che cos\'è la scalabilità?', ['La velocità della rete', 'La possibilità di aumentare o ridurre le risorse secondo il bisogno', 'Un tipo di backup', 'La cifratura dei dati'], 1, 'Si aggiungono risorse quando il carico cresce.'),
+      VF('Un cloud ibrido unisce cloud pubblico e privato.', true, 'Parte dei servizi è interna, parte presso un fornitore.'),
+      VF('I container sono più pesanti delle macchine virtuali.', false, 'I container condividono il kernel dell\'host e sono più leggeri.'),
+      C('Il software che crea e gestisce le macchine virtuali si chiama ___.', ['hypervisor'], 'Hypervisor (per esempio VMware, Hyper-V, KVM).'),
+      A('Abbina il modello all\'esempio.', [['IaaS', 'macchina virtuale in affitto'], ['PaaS', 'hosting di un\'app Node.js'], ['SaaS', 'suite per ufficio online'], ['Cloud privato', 'data center aziendale']], 'Modelli di servizio e di distribuzione.'),
+      S('Che cos\'è il lock-in?', ['Un tipo di password', 'La dipendenza da un solo fornitore', 'Un attacco', 'Una VLAN'], 1, 'Cambiare fornitore diventa difficile e costoso.'),
+      O('Indica due rischi del cloud per una scuola che vi salva i dati degli studenti.', 'Privacy e rispetto del GDPR (dove sono i dati e chi vi accede) e dipendenza dalla connessione e dal fornitore.', ['privacy', 'gdpr', 'connession']),
+    ],
+  };
+})();

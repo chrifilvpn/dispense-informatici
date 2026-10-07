@@ -1,0 +1,73 @@
+// DISPENSE — domande di Informatica per esercitazioni e verifiche (formato in esercizi-sistemi.js).
+(() => {
+  const { S, VF, C, A, O } = window.BossAiuti.domande;
+  window.BossEsercizi = window.BossEsercizi || {};
+  window.BossEsercizi.informatica = {
+    htmlcss: [
+      S('Quale elemento HTML5 contiene il contenuto principale della pagina?', ['<div>', '<main>', '<section>', '<body>'], 1, '<main> è unico e contiene il contenuto principale.'),
+      S('Nel box model, che cosa c\'è tra il contenuto e il bordo?', ['margin', 'padding', 'outline', 'gap'], 1, 'Dall\'interno: contenuto, padding, border, margin.'),
+      S('Con box-sizing: border-box la width comprende…', ['solo il contenuto', 'contenuto, padding e bordo', 'anche il margin', 'solo il bordo'], 1, 'border-box include padding e border nella larghezza.'),
+      VF('Un selettore di id (#menu) è più specifico di un selettore di classe (.menu).', true, 'La specificità di un id è maggiore di quella di una classe.'),
+      VF('Il margin ha lo sfondo dell\'elemento.', false, 'Il margin è sempre trasparente; il padding ha lo sfondo dell\'elemento.'),
+      C('La proprietà CSS per il colore del testo è ___.', ['color'], 'color (background-color per lo sfondo).'),
+      A('Abbina l\'elemento al suo uso.', [['<nav>', 'menu di navigazione'], ['<header>', 'intestazione'], ['<footer>', 'piè di pagina'], ['<article>', 'contenuto autonomo']], 'Elementi semantici HTML5.'),
+      S('Quale regola CSS vale solo per schermi fino a 600 px?', ['@import', '@media (max-width: 600px)', '@font-face', '@keyframes'], 1, 'Le media query rendono la pagina responsive.'),
+      O('Perché si usano gli elementi semantici di HTML5?', 'Descrivono il significato delle parti della pagina: aiutano l\'accessibilità (lettori di schermo), i motori di ricerca e la leggibilità del codice.', ['significat', 'accessibil', 'motori']),
+    ],
+    database: [
+      S('Che cos\'è una chiave primaria?', ['Un campo qualsiasi', 'Un attributo che identifica in modo univoco ogni riga', 'La password del database', 'Il primo campo della tabella'], 1, 'Univoca e non NULL.'),
+      S('Che cosa garantisce l\'integrità referenziale?', ['Che la password sia sicura', 'Che ogni chiave esterna corrisponda a una riga esistente', 'Che non ci siano duplicati nei nomi', 'Che le tabelle siano ordinate'], 1, 'Una chiave esterna non può puntare a una riga inesistente.'),
+      S('Che cosa significa la A di ACID?', ['Accesso', 'Atomicità', 'Affidabilità', 'Aggiornamento'], 1, 'Atomicità: tutto o niente.'),
+      VF('Una chiave primaria può contenere valori NULL.', false, 'Integrità di entità: mai NULL né ripetuta.'),
+      VF('Un DBMS gestisce l\'accesso concorrente di più utenti.', true, 'È uno dei suoi compiti principali.'),
+      C('Il comando che annulla una transazione si chiama ___.', ['rollback'], 'ROLLBACK annulla, COMMIT conferma.'),
+      A('Abbina il termine.', [['Tupla', 'riga'], ['Attributo', 'colonna'], ['Relazione', 'tabella'], ['Dominio', 'insieme dei valori ammessi']], 'Terminologia del modello relazionale.'),
+      S('Quale di questi è un DBMS relazionale?', ['MongoDB', 'PostgreSQL', 'Redis', 'Excel'], 1, 'PostgreSQL (come MySQL, SQLite, Oracle).'),
+      O('Spiega con un esempio perché serve l\'atomicità di una transazione.', 'In un bonifico si toglie denaro da un conto e lo si aggiunge a un altro: se il sistema si interrompe a metà, senza atomicità il denaro sparirebbe; con la transazione si annulla tutto.', ['bonific', 'annull', 'metà']),
+    ],
+    sql: [
+      S('Quale clausola filtra i gruppi dopo GROUP BY?', ['WHERE', 'HAVING', 'ORDER BY', 'LIMIT'], 1, 'HAVING lavora sui gruppi; WHERE sulle righe.'),
+      S('Quale istruzione appartiene al DDL?', ['SELECT', 'INSERT', 'CREATE TABLE', 'UPDATE'], 2, 'Il DDL definisce le strutture: CREATE, ALTER, DROP.'),
+      S('Che cosa restituisce COUNT(*)?', ['La somma', 'Il numero di righe', 'La media', 'Il massimo'], 1, 'Conta le righe del gruppo.'),
+      VF('UPDATE senza WHERE modifica tutte le righe della tabella.', true, 'Per questo va usato con attenzione.'),
+      VF('ORDER BY ... DESC ordina dal più piccolo al più grande.', false, 'DESC è decrescente; ASC crescente.'),
+      C('Per unire due tabelle in una SELECT si usa la clausola ___.', ['join', 'inner join'], 'JOIN ... ON condizione.'),
+      A('Abbina la funzione al risultato.', [['SUM', 'somma'], ['AVG', 'media'], ['MAX', 'valore massimo'], ['COUNT', 'numero di righe']], 'Funzioni di aggregazione.'),
+      S('Quale query trova gli studenti il cui cognome inizia per R?', ["WHERE cognome = 'R'", "WHERE cognome LIKE 'R%'", "WHERE cognome IN 'R'", "WHERE cognome > 'R'"], 1, 'LIKE con % (qualsiasi sequenza di caratteri).'),
+      O('Scrivi la query che conta gli studenti di ogni classe.', "SELECT id_classe, COUNT(*) FROM studenti GROUP BY id_classe;", ['count', 'group by']),
+    ],
+    normalizzazione: [
+      S('Una tabella con un campo «telefoni» che contiene più numeri separati da virgola non è in…', ['1NF', '2NF solo', '3NF solo', 'BCNF solo'], 0, 'La 1NF richiede valori atomici.'),
+      S('La 2NF elimina le dipendenze…', ['transitive', 'parziali dalla chiave', 'multivalore', 'circolari'], 1, 'Ogni attributo non chiave deve dipendere da tutta la chiave.'),
+      S('La 3NF elimina le dipendenze…', ['parziali', 'transitive', 'dalla chiave', 'funzionali tutte'], 1, 'Un attributo non chiave non deve dipendere da un altro attributo non chiave.'),
+      VF('La normalizzazione riduce la ridondanza dei dati.', true, 'È il suo scopo principale.'),
+      VF('Una tabella con chiave primaria formata da un solo attributo, se è in 1NF, è anche in 2NF.', true, 'Senza chiave composta non possono esistere dipendenze parziali.'),
+      C('Il problema per cui cambiare un dato ripetuto richiede molte modifiche si chiama anomalia di ___.', ['aggiornamento', 'modifica'], 'Anomalia di aggiornamento.'),
+      A('Abbina la forma normale alla condizione.', [['1NF', 'valori atomici'], ['2NF', 'niente dipendenze parziali'], ['3NF', 'niente dipendenze transitive'], ['Anomalia', 'effetto della ridondanza']], 'Le forme normali in sintesi.'),
+      S('In Studenti(matricola, cap, citta), perché la tabella non è in 3NF?', ['Manca la chiave', 'La città dipende dal CAP', 'Il CAP non è atomico', 'È già in 3NF'], 1, 'matricola → cap → citta: dipendenza transitiva.'),
+      O('Normalizza Esami(matricola, codCorso, nomeStudente, nomeCorso, voto).', 'Studenti(matricola, nomeStudente), Corsi(codCorso, nomeCorso), Esami(matricola, codCorso, voto) con chiave (matricola, codCorso).', ['studenti', 'corsi', 'esami']),
+    ],
+    er: [
+      S('Nel modello E/R, come si rappresenta un\'associazione?', ['Rettangolo', 'Rombo', 'Ovale', 'Freccia'], 1, 'Entità = rettangolo, associazione = rombo.'),
+      S('Come si traduce un\'associazione N:M in tabelle?', ['Una chiave esterna in una delle due tabelle', 'Una nuova tabella con le due chiavi', 'Unendo le due tabelle', 'Non si traduce'], 1, 'Serve una tabella ponte.'),
+      S('In un\'associazione 1:N, dove va la chiave esterna?', ['Nella tabella del lato 1', 'Nella tabella del lato N', 'In entrambe', 'In una tabella nuova'], 1, 'Il lato N riceve la chiave del lato 1.'),
+      VF('Un identificatore identifica in modo univoco ogni istanza di un\'entità.', true, 'Diventa la chiave primaria.'),
+      VF('Il modello E/R è uno schema logico.', false, 'È uno schema concettuale; le tabelle sono lo schema logico.'),
+      C('La cardinalità tra «Classe» e «Studente» (una classe, molti studenti) è 1:___.', ['n', 'molti'], 'Uno a molti.'),
+      A('Abbina la cardinalità all\'esempio.', [['1:1', 'persona – carta d\'identità'], ['1:N', 'classe – studenti'], ['N:M', 'studenti – corsi'], ['Attributo', 'data di nascita']], 'Esempi di cardinalità.'),
+      S('Quale fase viene prima?', ['Schema fisico', 'Schema logico', 'Schema concettuale', 'Query SQL'], 2, 'Concettuale → logico → fisico.'),
+      O('Traduci «Studente N:M Corso con attributo anno» in tabelle.', 'Studenti(matricola, ...), Corsi(codCorso, ...), Iscrizioni(matricola, codCorso, anno) con chiave primaria (matricola, codCorso) e le due chiavi esterne.', ['iscrizion', 'matricola', 'codcorso']),
+    ],
+    php: [
+      S('In PHP, dove si trovano i dati di un modulo inviato con method="post"?', ['$_GET', '$_POST', '$_SESSION', '$_COOKIE'], 1, '$_POST contiene i campi del modulo.'),
+      S('Quale funzione protegge l\'output HTML da codice inserito dall\'utente?', ['strlen', 'htmlspecialchars', 'md5', 'trim'], 1, 'Converte < > & " in entità: difende dall\'XSS.'),
+      S('Qual è il modo corretto per usare dati dell\'utente in una query?', ['Concatenarli alla stringa', 'Usare una query preparata con parametri', 'Metterli in un cookie', 'Convertirli in maiuscolo'], 1, 'prepare/execute evita la SQL injection.'),
+      VF('Il codice PHP viene eseguito nel browser dell\'utente.', false, 'PHP è eseguito sul server; il browser riceve il risultato.'),
+      VF('session_start() permette di usare $_SESSION.', true, 'Associa al browser un id di sessione.'),
+      C('L\'attacco che sfrutta una query costruita concatenando i dati dell\'utente si chiama SQL ___.', ['injection'], 'SQL injection.'),
+      A('Abbina.', [['$_GET', 'parametri nell\'URL'], ['$_POST', 'dati del modulo'], ['$_SESSION', 'dati dell\'utente tra le pagine'], ['PDO', 'accesso al database']], 'Superglobali e PDO.'),
+      S('Quale codice HTTP conviene inviare se manca un campo obbligatorio?', ['200', '301', '400', '500'], 2, '400 Bad Request.'),
+      O('Descrivi come si gestisce un login con le sessioni.', 'Il server controlla utente e password (con password_verify su un hash salvato), poi con session_start salva l\'id dell\'utente in $_SESSION; le pagine protette controllano che la sessione contenga l\'utente.', ['session', 'password', 'hash']),
+    ],
+  };
+})();
