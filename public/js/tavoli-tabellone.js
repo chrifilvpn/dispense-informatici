@@ -1334,6 +1334,8 @@
     if (el) el.textContent = fmtTempo(tempoCampo(p));
   }, 250);
   const fmtTempo = (ms) => { const s = Math.floor(ms / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+  // aggiorna il pulsante del modo senza aspettare il prossimo messaggio del server
+  function modoCampo(el, ctx) { el.setAttribute('aria-pressed', String(!!ctx.ui.msBandiera)); el.textContent = ctx.ui.msBandiera ? '🚩 Bandierine' : '⛏ Scava'; }
   const campo = {
     libero: true,
     reset(ctx) { ctxCampo = ctx; if (!ricevutoCampo.has(ctx.partita)) ricevutoCampo.set(ctx.partita, Date.now()); },
@@ -1362,10 +1364,11 @@
       const fine = p.finita ? `<p class="ms-esito ${p.vinta ? 'si' : 'no'}">${p.modo === 'coop' ? (p.vinta ? `🎉 Campo sminato in ${fmtTempo(p.tempo)}!` : '💥 Boom! Una mina…') : '🏁 Campo pulito!'}</p>` : '';
       return `<div class="ms">
         <div class="ms-barra"><span title="Mine ancora da trovare">🚩 <b>${residue}</b></span><span title="Tempo">⏱ <b class="ms-tempo">${fmtTempo(tempoCampo(p))}</b></span>
-          <span class="piccolo">${esc(p.nomeLivello)} · ${p.colonne}×${p.righe} · ${p.modo === 'coop' ? (p.n > 1 ? 'collaborazione' : 'da solo') : 'sfida'}</span></div>
+          <span class="piccolo">${esc(p.nomeLivello)} · ${p.colonne}×${p.righe} · ${p.modo === 'coop' ? (p.n > 1 ? 'collaborazione' : 'da solo') : 'sfida'}</span>
+          ${p.finita ? '' : `<button type="button" class="bottone mini-bt ms-modo" data-az="modo-bandiera" aria-pressed="${!!ctx.ui.msBandiera}" title="Sul telefono: tocca qui, poi tocca le caselle per mettere o togliere la bandierina">${ctx.ui.msBandiera ? '🚩 Bandierine' : '⛏ Scava'}</button>`}</div>
         ${punti}${fine}
         <div class="ms-scorri"><div class="ms-griglia ${p.finita ? 'finita' : ''}" style="--C:${C};--R:${p.righe}">${celle}</div></div>
-        ${!p.mine || p.aperte === 0 ? '<p class="piccolo">Clic sinistro scopre, clic destro mette la bandierina. Il primo clic è sempre sicuro.</p>' : ''}${p.finita ? rec : ''}</div>`;
+        ${!p.mine || p.aperte === 0 ? '<p class="piccolo">Clic sinistro scopre, clic destro mette la bandierina (sul telefono: il pulsante ⛏/🚩 in alto cambia cosa fa il tocco). Il primo clic è sempre sicuro.</p>' : ''}${p.finita ? rec : ''}</div>`;
     },
     stato(ctx) {
       const p = ctx.partita;
@@ -1374,7 +1377,10 @@
     },
     infoPosto(ctx, posto) { return ctx.partita.modo === 'sfida' ? `${ctx.partita.punti[posto]} punti` : ''; },
     clic(ctx, el) {
+      if (el.dataset.az === 'modo-bandiera') { ctx.ui.msBandiera = !ctx.ui.msBandiera; return ctx.ridisegna ? ctx.ridisegna() : modoCampo(el, ctx); }
       if (el.dataset.az !== 'apri' || ctx.partita.finita) return;
+      // modo bandierina (per il telefono, dove non c'è il clic destro): il tocco mette o toglie la bandierina
+      if (ctx.ui.msBandiera) return ctx.invia({ tipo: 'bandiera', cella: Number(el.dataset.cella) });
       if (el.querySelector('.ms-bandiera')) return; // con la bandierina non si scopre
       ctx.invia({ tipo: 'apri', cella: Number(el.dataset.cella) });
     },

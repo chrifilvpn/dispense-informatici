@@ -1105,3 +1105,19 @@ button.bc-zona { cursor: pointer; } button.bc-zona:hover:not(:disabled) { backgr
   .filtro-sel span { display: none; }
   .filtro-tipo button { font-size: .78rem; padding: .3rem .5rem; }
 }
+/* sul telefono durante la partita la firma finiva sopra i pulsanti in basso */
+@media (max-width: 700px) { #schermo-gioco:not([hidden]) ~ .firma { display: none; } }
+/* Scala 40 sul telefono: le 13-14 carte stanno tutte nello schermo (si sovrappongono di più) */
+@media (max-width: 600px) { .mano-scala .carta { --w: clamp(44px, 13vw, 78px); margin-left: calc(var(--w) * -.56); } }
+/* sul telefono i pulsanti della barra sono icone e "Tocca a te" va su una riga sua, così si legge per intero */
+@media (max-width: 620px) {
+  .barra { flex-wrap: wrap; row-gap: .25rem; padding: .4rem .5rem .3rem; }
+  .barra-dx { gap: .3rem; }
+  .stato-turno { order: 3; flex: 1 0 100%; font-size: .9rem; line-height: 1.25; }
+  .stato-turno:empty { display: none; }
+}
+/* campo minato: pulsante scava / bandierine (serve sul telefono, dove non c'è il clic destro) */
+.ms-barra { flex-wrap: wrap; row-gap: .3rem; }
+.ms-modo { margin-left: auto; background: rgba(0, 0, 0, .2); color: #fff; border-color: rgba(255, 255, 255, .4); }
+.ms-modo[aria-pressed="true"] { background: #e2412f; border-color: #fff; }
+@media (max-width: 620px) { .ms-barra { gap: .7rem; padding: .4rem .7rem; font-size: .95rem; } }

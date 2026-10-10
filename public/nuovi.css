@@ -1598,3 +1598,46 @@ button.rl-c:hover:not(:disabled) { box-shadow: inset 0 0 0 2px var(--oro); }
   .bd-bandiera svg { height: clamp(7rem, 24vh, 11rem); }
 }
 @media (prefers-reduced-motion: reduce) { .bd-scelta.giusta, .bd-scelta.sbagliata { animation: none; } }
+
+/* ============ PONTE FRAGILE ============
+   Il ponte è in verticale (partenza in basso, arrivo in alto): sta in uno schermo di telefono senza scorrere. */
+.pf { width: min(100%, 30rem); display: grid; gap: .5rem; justify-items: center; margin-inline: auto; }
+.pf-ponte { width: 100%; display: grid; grid-template-rows: auto 1fr auto; gap: .3rem;
+  height: clamp(18rem, calc(100dvh - 21rem), calc(var(--righe) * 3.1rem + 6rem));
+  padding: .45rem; border-radius: 16px; background: radial-gradient(ellipse at 50% 40%, #1d2b44, #0b1120 75%); box-shadow: inset 0 0 40px rgba(0, 0, 0, .7), 0 6px 18px rgba(0, 0, 0, .35); }
+.pf-riva { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .3rem; min-height: 2.3rem; padding: .25rem .5rem; border-radius: 10px; background: linear-gradient(#5b5246, #3c362e); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .15); }
+.pf-riva.arrivo { background: linear-gradient(#3f6b4f, #2c4b37); }
+.pf-etichetta { font-size: .75rem; color: rgba(255, 255, 255, .75); margin-right: .3rem; }
+.pf-righe { display: grid; grid-template-rows: repeat(var(--righe), minmax(0, 1fr)); gap: 3px; min-height: 0; padding-inline: 4%; }
+.pf-riga { display: grid; grid-template-columns: 1.3rem 1fr 1fr; gap: 10%; align-items: stretch; min-height: 0; position: relative; }
+.pf-num { align-self: center; font-size: .66rem; color: rgba(255, 255, 255, .35); text-align: right; }
+.pf-vetro { position: relative; display: flex; align-items: center; justify-content: center; gap: 2px; min-height: 0; padding: 0; border-radius: 4px; border: 1px solid rgba(190, 225, 255, .45);
+  background: linear-gradient(135deg, rgba(180, 220, 255, .28), rgba(120, 170, 220, .12) 55%, rgba(220, 240, 255, .3)); color: #fff; font: inherit; overflow: visible; }
+.pf-vetro.buono { background: linear-gradient(135deg, rgba(150, 230, 190, .55), rgba(90, 180, 140, .35)); border-color: rgba(170, 255, 210, .8); }
+.pf-vetro.rotto { background: transparent; border: 1px dashed rgba(255, 140, 120, .45); }
+.pf-vetro.prossima { border-color: rgba(255, 220, 130, .7); }
+.pf-vetro.attiva { cursor: pointer; border: 2px solid #ffd76a; box-shadow: 0 0 12px rgba(255, 215, 106, .55); animation: pf-brilla 1.4s ease-in-out infinite; }
+.pf-vetro.attiva:hover, .pf-vetro.attiva:focus-visible { background: linear-gradient(135deg, rgba(255, 235, 170, .5), rgba(200, 220, 255, .25)); }
+.pf-vetro.attiva.premuta { transform: scale(.96); }
+.pf-vetro.indizio { box-shadow: 0 0 18px rgba(130, 255, 200, .85); }
+.pf-vetro.svelato-buono { background: linear-gradient(135deg, rgba(150, 230, 190, .3), rgba(90, 180, 140, .15)); border-style: dotted; }
+.pf-vetro.svelato-rotto { opacity: .35; }
+.pf-vetro.rotto.appena .pf-crepa { animation: pf-cade .9s ease-in forwards; }
+.pf-vetro.buono.appena { animation: pf-regge .5s ease-out; }
+.pf-crepa { font-size: .8rem; opacity: .7; }
+.pf-luce { position: absolute; right: 2px; top: -2px; font-size: .75rem; }
+.pf-pedina { display: inline-grid; place-items: center; width: 1.55rem; height: 1.55rem; max-height: 100%; aspect-ratio: 1; border-radius: 50%; background: var(--col); color: #fff; font-size: .62rem; font-weight: 700; border: 2px solid rgba(255, 255, 255, .85); box-shadow: 0 2px 4px rgba(0, 0, 0, .45); text-transform: uppercase; }
+.pf-righe .pf-pedina { height: auto; width: auto; min-width: 1.1rem; max-height: calc(100% + 6px); }
+.pf-pedina.davanti { outline: 2px solid #ffd76a; outline-offset: 1px; }
+.pf-scelta { display: grid; grid-template-columns: 1fr auto 1fr; gap: .4rem; width: min(100%, 30rem); margin-inline: auto; }
+.pf-scelta .bottone { padding-inline: .5rem; white-space: nowrap; }
+@keyframes pf-brilla { 50% { box-shadow: 0 0 20px rgba(255, 215, 106, .9); } }
+@keyframes pf-regge { 0% { transform: scale(1.12); } 100% { transform: none; } }
+@keyframes pf-cade { 0% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(26px) scale(.4) rotate(40deg); } }
+@media (prefers-reduced-motion: reduce) { .pf-vetro.attiva, .pf-vetro.appena, .pf-vetro.appena .pf-crepa { animation: none; } }
+/* Tetris sul telefono: colonne laterali più strette, niente sbordo a destra */
+@media (max-width: 480px) {
+  .tt-gioco { gap: .35rem; max-width: 100%; }
+  .tt-lato { min-width: 3.6rem; }
+  .tt-lato canvas { max-width: 3.6rem; height: auto; }
+}

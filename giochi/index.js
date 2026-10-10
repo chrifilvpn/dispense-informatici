@@ -72,8 +72,9 @@ const shutbox = require('./shutbox');
 const sblocca = require('./sblocca');
 const wanted = require('./wanted');
 const duello = require('./duello');
+const ponte = require('./ponte');
 
-const GIOCHI = { briscola, scopa, scopone, rubamazzo, scala40, tris, forza4, battaglia, dama, scacchi, impiccato, morra, numero, blackjack, baccarat, higherlower, texas, poker5, uno, campo, impostore, coccodrillo, blockblast, peppa, fastwest, wordle, angolo, sudoku, snake, tetris, airhockey, pallone, interruttori, casellebombe, tesoro, coperti, dubito, nascondino, mappa, tasti, mensola, mind, flip7, cirulla, solitario, chirurgo, benchmark, disegna, putt, palloncini, gattotopi, colori, bumper, differenze, fuga, monete, arcobaleno, pioggia, paintball, piattaforme, massi, stella, fune, dalgona, buio, alieno, shutbox, sblocca, wanted, duello, strada, bersaglio, mangiatutto, tigerball, roulette, bandiere };
+const GIOCHI = { briscola, scopa, scopone, rubamazzo, scala40, tris, forza4, battaglia, dama, scacchi, impiccato, morra, numero, blackjack, baccarat, higherlower, texas, poker5, uno, campo, impostore, coccodrillo, blockblast, peppa, fastwest, wordle, angolo, sudoku, snake, tetris, airhockey, pallone, interruttori, casellebombe, tesoro, coperti, dubito, nascondino, mappa, tasti, mensola, mind, flip7, cirulla, solitario, chirurgo, benchmark, disegna, putt, palloncini, gattotopi, colori, bumper, differenze, fuga, monete, arcobaleno, pioggia, paintball, piattaforme, massi, stella, fune, dalgona, buio, alieno, shutbox, sblocca, wanted, duello, strada, bersaglio, mangiatutto, tigerball, roulette, bandiere, ponte };
 
 // Tiene solo le opzioni previste, con valori ammessi
 function pulisciOpzioni(id, opzioni = {}) {

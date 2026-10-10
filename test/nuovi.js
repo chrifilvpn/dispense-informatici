@@ -2560,7 +2560,8 @@ function giocaTutta(M, n, livelli, opzioni = {}) {
   assert.ok(!prova([[0, { tipo: 'giu', suLogo: true, x: 10, y: 10 }], [2000, { tipo: 'su' }], [3000, { tipo: 'tempo' }]]), 'staccato prima: no');
   assert.ok(!prova([[0, { tipo: 'giu', suLogo: true, x: 10, y: 10 }], [1000, { tipo: 'muovi', x: 60, y: 10 }], [3000, { tipo: 'tempo' }]]), 'dito spostato: no');
   assert.ok(!prova([[0, { tipo: 'giu', suLogo: false, x: 10, y: 10 }], [3500, { tipo: 'tempo' }]]), 'fuori dal logo: no');
-  assert.ok(/const clicCentrale = \(e\) => e\.button === 1;/.test(boss) && /SECONDI_MIN = 1, SECONDI_MAX = 5, SECONDI_BASE = 2/.test(boss), 'rotellina come Esc; finestra grigia da 1 a 5 secondi (predefinito 2)');
+  const indice0 = fs.readFileSync(path.join(cartella, '..', 'index.html'), 'utf8');
+  assert.ok(/const clicCentrale = \(e\) => e\.button === 1;/.test(boss) && /SECONDI_MIN = 0, SECONDI_MAX = 5, SECONDI_BASE = 2/.test(boss) && /if \(cfg\.secondi === 0\) \{ attiva\(\{ subito: true \}\); return; \}/.test(boss) && /<option value="0">0 \(subito\)<\/option>/.test(indice0), 'rotellina come Esc; finestra grigia da 0 (subito) a 5 secondi (predefinito 2)');
   const pag = fs.readFileSync(path.join(cartella, 'boss-pagina.js'), 'utf8'), indice = fs.readFileSync(path.join(cartella, '..', 'index.html'), 'utf8');
   assert.ok(!/data-torna|Torna al gioco/.test(pag), 'nessun pulsante per tornare al gioco nelle dispense');
   // apertura dentro un capitolo (mai un indice), menu con la sola materia corrente, ultimo capitolo ricordato
@@ -2570,7 +2571,7 @@ function giocaTutta(M, n, livelli, opzioni = {}) {
   assert.ok(/function menu\(\) \{\n    const m = materia\(/.test(pag) && /data-cambia-m/.test(pag), 'menu laterale della sola materia; la materia si cambia dalle briciole');
   assert.ok(/if \(st\.vista === 'argomento'\) \{ al0\.m = st\.m; al0\.a = st\.a;/.test(pag), 'esercitazioni e verifiche partono dalla materia e dal capitolo che si stava leggendo');
   assert.ok(/const avvio = \(\) => \{ prepara\(\); attiva\(\{ subito: true \}\); \};/.test(boss), 'all\'apertura si parte sempre dalle dispense');
-  assert.ok(/<html lang="it" class="avvio-studio">/.test(indice) && /<title data-vero="Informatica Facile">Dispense di Informatica/.test(indice) && /<link rel="icon" href="[^"]*" data-vero="[^"]*">/.test(indice), 'nessun lampo del sito vero: pagina nascosta, titolo e icona finti fin dall\'inizio');
+  assert.ok(/<html lang="it" class="avvio-studio">/.test(indice) && /html\.avvio-studio,html\.avvio-studio body\{background:#f5f7fa!important\}/.test(indice) && /if \(document\.body\) avvio\(\);/.test(boss) && /<title data-vero="Informatica Facile">Dispense di Informatica/.test(indice) && /<link rel="icon" href="[^"]*" data-vero="[^"]*">/.test(indice), 'nessun lampo del sito vero (nemmeno lo sfondo verde): pagina nascosta, sfondo delle dispense, titolo e icona finti fin dall\'inizio, dispense disegnate subito');
   console.log(`✓ Dispense: ${file.length} materie, ${argomenti} argomenti con la loro pagina, ${domande} domande valide (risposta giusta riconosciuta, spiegazione), subnetting generato, niente percentuali di avanzamento, scorciatoie di ritorno ferme dentro i campi di testo, partenza sempre dalle dispense senza pulsanti di ritorno, logo premuto 3 secondi, apertura dentro un capitolo (primo a caso in Sistemi e Reti, poi l'ultimo visitato), menu della sola materia, esercitazioni contestuali`);
 }
 
@@ -2814,4 +2815,46 @@ function giocaTutta(M, n, livelli, opzioni = {}) {
   Date.now = vero;
   assert.ok(vinte.difficile > vinte.medio && vinte.difficile > vinte.facile && vinte.difficile >= 25, `difficile vince di più: ${JSON.stringify(vinte)}`);
   console.log(`✓ Indovina la bandiera: ${PAESI.length} bandiere con SVG pulito, 4 risposte diverse, il nome non arriva prima, punti per velocità, tempo scaduto, computer (${JSON.stringify(vinte)} su 40)`);
+}
+
+// ======================= PONTE FRAGILE =======================
+{
+  const M = GIOCHI.ponte;
+  const { LUNGHEZZE, BONUS_ARRIVO } = M._test;
+  // una caduta apre la strada: la riga diventa nota e il prossimo parte da lì
+  const g = M.crea({ n: 3, primo: 0, opzioni: { lunghezza: 'corto', round: 1 } });
+  assert.ok(g.L === LUNGHEZZE.corto && g.turno === 0 && g.fronte === 0, 'si parte dal primo della fila');
+  assert.ok(g.azione(1, { tipo: 'salta', lato: 0 }).errore, 'salta solo chi è davanti');
+  assert.ok(g.azione(0, { tipo: 'salta', lato: 2 }).errore, 'solo sinistra o destra');
+  assert.strictEqual(g.vista(1).sicuroFinale, null, 'i vetri buoni non arrivano al browser');
+  g.azione(0, { tipo: 'salta', lato: g.sicuro[0] });
+  assert.ok(g.fronte === 1 && g.passi[0] === 1 && g.noto[0] === g.sicuro[0] && g.turno === 0, 'il vetro regge: si va avanti e tutti vedono il pannello buono');
+  g.azione(0, { tipo: 'salta', lato: 1 - g.sicuro[1] });
+  assert.ok(g.stato[0] === 'caduto' && g.passi[0] === 1 && g.rotto[1] === 1 - g.sicuro[1] && g.noto[1] === g.sicuro[1] && g.inAttesa, 'il vetro si rompe: cade, ma la riga ora è nota');
+  g.avanza();
+  assert.ok(g.turno === 1 && g.passi[1] === 2 && g.fronte === 2, 'il prossimo cammina sui vetri noti fino alla prima riga sconosciuta');
+  // il riflesso: una volta per round, visto solo da chi lo usa
+  assert.ok(g.azione(1, { tipo: 'riflesso' }).ok && g.azione(1, { tipo: 'riflesso' }).errore, 'un riflesso per round');
+  assert.ok([0, 1].includes(g.vista(1).indizio) && g.vista(2).indizio === null, 'l\'indizio lo vede solo chi l\'ha chiesto');
+  while (!g.finita) { if (g.inAttesa) g.avanza(); else g.azione(g.turno, { tipo: 'salta', lato: g.sicuro[g.fronte] }); }
+  assert.ok(g.stato[1] === 'salvo' && g.stato[2] === 'salvo' && g.punti[1] === g.L + BONUS_ARRIVO && g.punti[0] === 1, 'chi arriva prende le righe + il bonus');
+  assert.deepStrictEqual(g.risultato.vincitori, [], 'due arrivati a pari punti: pareggio');
+  // tutti i vetri già noti: chi resta in fila attraversa da solo
+  const t = M.crea({ n: 2, opzioni: { lunghezza: 'corto', round: 1 } });
+  t.noto = t.sicuro.slice(); t.fronte = t.L - 1;
+  t.azione(t.turno, { tipo: 'salta', lato: t.sicuro[t.L - 1] }); t.avanza();
+  assert.ok(t.finita && t.stato.every((x) => x === 'salvo'), 'il secondo passa da solo sui vetri noti');
+  // più round: la fila gira, tutti partono davanti; migliaia di partite tra computer senza blocchi
+  const r = M.crea({ n: 3, primo: 0, opzioni: { round: 3 } }); const primi = new Set();
+  while (!r.finita) { primi.add(r.ordine[0]); if (r.inAttesa) r.avanza(); else r.azione(r.turno, M.bot(r, r.turno, 'medio')); }
+  assert.ok(primi.size === 3 && r.storico.length === 3, 'a ogni round parte davanti un altro');
+  const media = { facile: 0, medio: 0, difficile: 0 };
+  for (let k = 0; k < 1500; k++) {
+    const n = 2 + (k % 7), liv = ['facile', 'medio', 'difficile'];
+    const p = M.crea({ n, primo: k % n, opzioni: { lunghezza: ['corto', 'medio', 'lungo'][k % 3], round: [1, 3, 5][k % 3] } });
+    let mosse = 0;
+    while (!p.finita) { assert.ok(++mosse < 3000, 'la partita finisce'); if (p.inAttesa) { p.avanza(); continue; } const x = p.azione(p.turno, M.bot(p, p.turno, liv[p.turno % 3])); assert.ok(!x.errore, x.errore); }
+    p.punti.forEach((x, i) => { media[liv[i % 3]] += x; });
+  }
+  console.log(`✓ Ponte fragile: vetro che regge o si rompe, righe note a tutti, il prossimo parte dalla caduta, riflesso privato una volta per round, bonus all'arrivo, fila che gira, 1500 partite tra computer (punti f/m/d ${media.facile}/${media.medio}/${media.difficile})`);
 }

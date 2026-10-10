@@ -16,11 +16,14 @@ window.Boss = (() => {
   const CFG_CHIAVE = 'if:studio';
 
   // ---------- impostazioni (finestra grigia) ----------
-  // la soglia va da 1 a 5 secondi (predefinito 2): cambiando scheda si arriva alle dispense quasi subito
-  const SECONDI_MIN = 1, SECONDI_MAX = 5, SECONDI_BASE = 2;
+  // la soglia va da 0 (subito: appena si esce dalla finestra) a 5 secondi (predefinito 2)
+  const SECONDI_MIN = 0, SECONDI_MAX = 5, SECONDI_BASE = 2;
   const cfg = { grigia: true, secondi: SECONDI_BASE };
   try { Object.assign(cfg, JSON.parse(localStorage.getItem(CFG_CHIAVE) || '{}')); } catch {}
-  const secondiValidi = (v) => Math.min(SECONDI_MAX, Math.max(SECONDI_MIN, Math.round(Number(v) || SECONDI_BASE)));
+  const secondiValidi = (v) => {
+    const n = v === '' || v == null ? NaN : Number(v);
+    return Number.isFinite(n) ? Math.min(SECONDI_MAX, Math.max(SECONDI_MIN, Math.round(n))) : SECONDI_BASE;
+  };
   cfg.secondi = secondiValidi(cfg.secondi); // chi aveva salvato un valore vecchio (per esempio 25) scende a 5
   function config(nuove) {
     if (nuove) {
@@ -62,6 +65,14 @@ window.Boss = (() => {
       iconeVere.forEach(([l, h]) => { l.href = h; });
       iconeVere = [];
     }
+  }
+
+  // colore della barra del browser sul telefono: bianco sulle dispense, verde sul sito vero
+  function cambiaColoreBarra(finta) {
+    const m = document.querySelector('meta[name="theme-color"]');
+    if (!m) return;
+    if (!m.dataset.vero) m.dataset.vero = m.content;
+    m.content = finta ? '#ffffff' : m.dataset.vero;
   }
 
   // ---------- indirizzo e cronologia ----------
@@ -165,6 +176,7 @@ window.Boss = (() => {
     salvaUrl();
     descTitolo.set.call(document, TITOLO_FINTO);
     cambiaFavicon(true);
+    cambiaColoreBarra(true);
     replaceVero(history.state, '', INDIRIZZO_FINTO + (window.BossPagina ? window.BossPagina.query() : ''));
     zittisci(true);
     rendiInerte(true);
@@ -197,6 +209,7 @@ window.Boss = (() => {
     try { sessionStorage.removeItem('if:urlVero'); } catch {}
     urlVero = null;
     cambiaFavicon(false);
+    cambiaColoreBarra(false);
     descTitolo.set.call(document, titoloVero);
     zittisci(false);
     if (focusPrima && document.contains(focusPrima) && focusPrima.focus) {
@@ -282,6 +295,8 @@ window.Boss = (() => {
   let tUscita;
   function uscito() {
     if (attivo || !cfg.grigia || uscitoAlle) return;
+    // soglia 0: le dispense si aprono subito, così anche l'anteprima delle app del telefono mostra solo loro
+    if (cfg.secondi === 0) { attiva({ subito: true }); return; }
     uscitoAlle = Date.now();
     clearTimeout(tUscita);
     tUscita = setTimeout(() => { if (uscitoAlle && !attivo) attiva({ subito: true }); }, cfg.secondi * 1000);
@@ -299,9 +314,11 @@ window.Boss = (() => {
   // Se si ricarica mentre si "studia" (indirizzo /dispense), al ritorno si va dove si era.
   const eraInStudio = location.pathname.startsWith(INDIRIZZO_FINTO);
   if (eraInStudio) urlVero = leggiUrlSalvato();
+  // Lo script sta in fondo al <body>: la pagina è già tutta letta, quindi le dispense si disegnano SUBITO,
+  // senza aspettare il caricamento degli altri script (prima per un attimo si vedeva lo sfondo verde del sito).
   const avvio = () => { prepara(); attiva({ subito: true }); };
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', avvio);
-  else avvio();
+  if (document.body) avvio();
+  else document.addEventListener('DOMContentLoaded', avvio);
 
   return {
     attiva,

@@ -613,6 +613,23 @@
     return `<div class="${classi}">${esc(posto === stato.mioPosto ? g.nome : nomeDi(posto))}${compagno ? ' <span class="compagno" title="Compagno">♦</span>' : ''}${badge}</div>`;
   }
 
+  // sul telefono una mano con tante carte (scopone, UNO…) non deve uscire dallo schermo: le carte si sovrappongono
+  // quanto basta per stare nella larghezza disponibile
+  function stringiMano() {
+    const m = $('#mano');
+    if (!m || m.hidden || m.classList.contains('larga')) return;
+    const carte = [...m.children].filter((c) => c.classList.contains('carta'));
+    carte.forEach((c) => { c.style.marginLeft = ''; });
+    if (carte.length < 2) return;
+    const gap = parseFloat(getComputedStyle(m).columnGap) || 0;
+    const tot = carte.reduce((t, c) => t + c.offsetWidth, 0) + gap * (carte.length - 1);
+    const W = Math.min(m.clientWidth, document.documentElement.clientWidth) - 8;
+    if (tot <= W) return;
+    const meno = (tot - W) / (carte.length - 1);
+    carte.slice(1).forEach((c) => { c.style.marginLeft = `${-meno}px`; });
+  }
+  window.addEventListener('resize', () => stringiMano());
+
   function disegnaGioco() {
     const p = stato.partita;
     const T = Tavoli[p.gioco];
@@ -658,6 +675,7 @@
     $('#mano').className = `mano ${mioTurno ? 'attiva' : ''} ${T.manoLarga ? 'larga' : ''}`;
     $('#mano').innerHTML = T.mano ? T.mano(ctx) : '';
     $('#mano').hidden = !!T.libero && !T.mano;
+    stringiMano();
     const inStudio = stato.giocatori.map((g, i) => (g && g.nascosto && i !== stato.mioPosto ? nomeDi(i) : null)).filter(Boolean);
     $('#pausa-studio').hidden = !stato.inPausa;
     $('#pausa-studio').textContent = stato.esecuzione ? '🌋 Esecuzione pubblica in corso: il gioco è fermo per tutti'

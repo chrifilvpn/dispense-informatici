@@ -3,7 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#173f33">
+  <meta name="theme-color" content="#ffffff" data-vero="#173f33">
+  <!-- si parte dalle dispense: finché la loro pagina non è disegnata lo sfondo è già il loro (niente lampo verde) -->
+  <style>html.avvio-studio,html.avvio-studio body{background:#f5f7fa!important}html.avvio-studio body>*:not(#studio):not(#studio-carica){visibility:hidden}</style>
   <!-- all'apertura si parte sempre dalle dispense: titolo e icona finti già qui, quelli veri in data-vero (vedi boss.js) -->
   <title data-vero="Informatica Facile">Dispense di Informatica · Informatica Facile</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M7 2h12l7 7v19a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z' fill='%231a5fb4'/><path d='M19 2v5a2 2 0 0 0 2 2h5z' fill='%238fb4e3'/><rect x='9' y='14' width='13' height='2' rx='1' fill='%23fff'/><rect x='9' y='18' width='13' height='2' rx='1' fill='%23fff'/><rect x='9' y='22' width='9' height='2' rx='1' fill='%23fff'/></svg>" data-vero="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect x='3' y='6' width='34' height='22' rx='3' fill='%23173f33'/><rect x='6' y='9' width='28' height='16' rx='1' fill='%23f7f0de'/><path d='M20 12c-2 3-5 4-5 7a3 3 0 0 0 5 2 3 3 0 0 0 5-2c0-3-3-4-5-7z' fill='%23b3261e'/><rect x='14' y='30' width='12' height='3' rx='1' fill='%23173f33'/></svg>">
@@ -98,8 +100,8 @@
       <section class="blocco studio-imp">
         <h2>Modalità studio</h2>
         <p class="piccolo">Premi <kbd>Esc</kbd> o la rotellina del mouse in qualsiasi momento per aprire le dispense. Per tornare dove eri premi <kbd>/</kbd> o <kbd>\</kbd>, oppure scrivi <b>gioca</b>. La partita continua a essere salvata. In chat scrivi <b>!prof</b> per aprire le dispense a tutto il tavolo.</p>
-        <label class="studio-riga"><input type="checkbox" id="studio-grigia"><span>Apri le dispense se resto fuori dalla finestra per più di</span>
-          <select id="studio-secondi" aria-label="Secondi"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select><span>secondi</span></label>
+        <label class="studio-riga"><input type="checkbox" id="studio-grigia"><span>Apri le dispense se esco dalla finestra dopo</span>
+          <select id="studio-secondi" aria-label="Secondi"><option value="0">0 (subito)</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select><span>secondi</span></label>
       </section>
     </div>
   </main>
@@ -146,9 +148,9 @@
         <button id="suono" class="bottone piccolo-bt icona-bt" aria-label="Suoni" title="Suoni"></button>
         <button id="torna-tavolo" class="bottone piccolo-bt" type="button" title="Esci da questa partita e torna al tavolo (gli altri continuano)" aria-label="Torna al tavolo"><span class="solo-stretto" aria-hidden="true">🚪</span><span class="solo-largo">🚪 Torna al tavolo</span></button>
         <button id="termina-voto" class="bottone piccolo-bt" title="Proponi di terminare la partita: decide la maggioranza" aria-label="Termina la partita a votazione"><span class="solo-stretto" aria-hidden="true">🗳️</span><span class="solo-largo">Termina</span></button>
-        <button class="bottone piccolo-bt" data-regole-di="">Regole</button>
+        <button class="bottone piccolo-bt" data-regole-di="" aria-label="Regole"><span class="solo-largo">Regole</span><span class="solo-stretto" aria-hidden="true">📖</span></button>
         <button id="apri-globale-tavolo" class="bottone piccolo-bt" type="button" title="Chat globale" aria-label="Chat globale">🌍<span id="globale-non-letti-tavolo" class="pallino" hidden></span></button>
-        <button id="apri-chat" class="bottone piccolo-bt">Chat<span id="non-letti" class="pallino" hidden></span></button>
+        <button id="apri-chat" class="bottone piccolo-bt" aria-label="Chat"><span class="solo-largo">Chat</span><span class="solo-stretto" aria-hidden="true">💬</span><span id="non-letti" class="pallino" hidden></span></button>
       </div>
     </header>
     <div id="punteggio" class="punteggio" hidden></div>
@@ -328,6 +330,7 @@
   <script src="/js/tigerball-livelli.js"></script>
   <script src="/js/giochi/tigerball.js"></script>
   <script src="/js/giochi/bandiere.js"></script>
+  <script src="/js/giochi/ponte.js"></script>
   <script src="/js/esecuzione.js"></script>
   <script src="/js/esilio.js"></script>
   <script src="/js/app.js"></script>
