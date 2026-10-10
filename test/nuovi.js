@@ -1277,7 +1277,7 @@ function giocaTutta(M, n, livelli, opzioni = {}) {
     return liv[x.risultato.vincitori[0]];
   };
   const varianti = {};
-  for (const [mz, ct, partite] of [['grande', 3, 1000], ['grande', 5, 600], ['grande', 10, 200], ['classico', 3, 200], ['classico', 10, 200]]) {
+  for (const [mz, ct, partite] of [['grande', 3, 2000], ['grande', 5, 600], ['grande', 10, 200], ['classico', 3, 200], ['classico', 10, 200]]) {
     const v = { medio: 0, difficile: 0 };
     for (let k = 0; k < partite; k++) v[giocaV(k % 2 ? ['medio', 'difficile'] : ['difficile', 'medio'], { mazzo: mz, carte: ct })]++;
     for (let k = 0; k < 30; k++) giocaV(['facile', 'medio', 'difficile', 'medio', 'facile', 'difficile'].slice(k % 3, (k % 3) + 4), { mazzo: mz, carte: ct });
