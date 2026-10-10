@@ -18,6 +18,14 @@ Sito per giocare online con gli amici o contro il computer: **briscola, scopa, s
 
 Made by chry_pala. Altri giochi arriveranno uno alla volta.
 
+## Ultime migliorie
+
+- **Telefono**: i giochi d'azione adattano il campo all'altezza libera (joystick e pulsanti sempre in vista); in orizzontale joystick e pulsante vanno ai lati sopra il campo, che diventa grande (per i campi larghi compare l'invito a girare il telefono). Sistemati Wordle (tastiera intera), UNO (mano che si stringe, UNO! sopra le carte), Tetris (pulsanti in una riga), Poker, Texas e Baccarat (pulsanti per puntare in vista), Roulette (ruota più piccola, gettoni attaccati in basso), Attraversa la strada (frecce in vista), la barra di fine partita e la sala d'attesa. Il gioco sta subito sotto il punteggio. Durante la partita lo schermo non si spegne da solo.
+- **Record personale**: a fine partita, il miglior risultato di sempre in quel gioco (con quelle opzioni e quel numero di giocatori), salvato nel browser; "meno è meglio" per tiri, tempi e penalità.
+- **Annulla mossa contro il computer** in Tris (tutte le varianti), Forza 4, Dama e Scacchi (senza orologio): si torna a prima della propria ultima mossa. Codice comune in `giochi/annulla.js`.
+- **Aiuti per imparare**: 💡 Consiglio nel Blackjack (strategia di base), ↶ Annulla e 💡 Suggerimento nel Solitario, 💡 Aiuto nel Sudoku (+30 s), ↶ Annulla e 💡 Aiuto nello Sblocca il blocco (+2 mosse), combinazioni possibili come pulsanti in Shut the box.
+- **Giochi**: Ponte fragile con 20 secondi per saltare; ripasso delle bandiere sbagliate a fine partita in Indovina la bandiera; la differenza cerchiata nella soluzione di Trova le differenze; in Dalgona una lente sopra il dito sul telefono e, con l'ago fermo fuori dal solco, crepe che crescono col tempo (si ha un attimo per rientrare); nel Tiro al bersaglio il mirino sta sopra il dito; Campo minato col modo bandierine al tocco.
+
 ## Provarlo sul tuo computer
 
 Serve [Node.js](https://nodejs.org) versione 18 o più recente.
