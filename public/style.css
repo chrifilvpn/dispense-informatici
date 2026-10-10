@@ -1141,3 +1141,17 @@ button.bc-zona { cursor: pointer; } button.bc-zona:hover:not(:disabled) { backgr
 /* sul telefono il pulsante fisso della chat globale non copre gli ultimi pulsanti della pagina */
 @media (max-width: 620px) { #schermo-home, #schermo-attesa { padding-bottom: 4.5rem; } }
 .f4-annulla { display: block; margin: .6rem auto 0; }
+/* poker, texas e baccarat sul telefono: tavolo più basso, così i pulsanti per puntare restano nello schermo */
+@media (max-width: 620px) {
+  .pk { --wc: 44px; }
+  .pk-ovale { height: clamp(11.5rem, 30vh, 15rem); margin: 1.8rem 0 .7rem; }
+  .pk-centro { inset: 18% 12%; gap: .25rem; }
+  .pk-fase { font-size: 1rem; }
+  .pk-posto { min-width: 5.5rem; }
+  .pk-mie { --wc: 58px; gap: .3rem; }
+  .pk-comandi .bottone { min-width: 0; flex: 1; }
+  .bc { --wc: 44px; }
+  .bc-carte { gap: .5rem; flex-wrap: nowrap; }
+  .bc-lato { min-width: 0; flex: 1; padding: .35rem .5rem .5rem; }
+  .bc-zona { min-height: 4.5rem; padding: .4rem; }
+}

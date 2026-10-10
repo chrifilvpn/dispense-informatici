@@ -150,7 +150,7 @@ window.Arena = (() => {
       // il campo prende l'altezza che resta sotto la barra e il punteggio, lasciando in vista i comandi per il dito
       // (sul telefono il joystick finiva mezzo fuori dallo schermo nei campi alti come Mangiatutto)
       const sopra = Math.max(0, box.getBoundingClientRect().top + (window.scrollY || 0));
-      const comandi = box.parentElement && box.parentElement.querySelector('.ar-touch');
+      const comandi = box.parentElement && box.parentElement.querySelector('.ar-touch, .st-frecce');
       // in orizzontale sul telefono i comandi stanno ai lati, sopra il campo (vedi .ar-touch nel CSS): non tolgono altezza
       const ai_lati = comandi && getComputedStyle(comandi).position === 'fixed';
       const spazioSotto = (comandi && !ai_lati ? comandi.offsetHeight + 16 : 0) + (touch() ? (ai_lati ? 14 : 52) : 70);

@@ -50,7 +50,10 @@
     const io = stato.t[ctx.mio];
     const box = document.querySelector('.tt-mio');
     if (!box) return;
-    const l = Math.max(14, Math.min(34, Math.floor((window.innerHeight - 230) / 20)));
+    // sul telefono sotto il tabellone ci sono anche i pulsanti: il tabellone lascia loro lo spazio
+    const pulsanti = document.querySelector('.tt-pulsanti');
+    const spazio = pulsanti && pulsanti.offsetHeight ? 275 : 230;
+    const l = Math.max(14, Math.min(34, Math.floor((window.innerHeight - spazio) / 20)));
     tabellone(mia.tela, io, l, true);
     pezzetto(mia.hold, io.h, Math.round(l * 0.6), io.hu);
     (io.nx || []).forEach((t, k) => pezzetto(mia.next[k], t, Math.round(l * (k ? 0.5 : 0.6))));
