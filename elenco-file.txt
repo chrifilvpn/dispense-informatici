@@ -13,6 +13,7 @@ giochi/alieno-mappe/polare.js
 giochi/alieno-mappe/vulcano.js
 giochi/alieno.js
 giochi/angolo.js
+giochi/annulla.js
 giochi/arcobaleno.js
 giochi/arena.js
 giochi/baccarat.js

@@ -1140,3 +1140,4 @@ button.bc-zona { cursor: pointer; } button.bc-zona:hover:not(:disabled) { backgr
 @keyframes fine-sale-tel { from { transform: translateY(20px); opacity: 0; } }
 /* sul telefono il pulsante fisso della chat globale non copre gli ultimi pulsanti della pagina */
 @media (max-width: 620px) { #schermo-home, #schermo-attesa { padding-bottom: 4.5rem; } }
+.f4-annulla { display: block; margin: .6rem auto 0; }

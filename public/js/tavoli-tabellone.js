@@ -18,6 +18,8 @@
     return `<div class="${cls}" aria-label="${s ? NOME_SEGNO[s] : etichetta}">${s ? SEGNO[s] : ''}</div>`;
   }
 
+  // "↶ Annulla mossa" contro il computer (tris, forza 4)
+  const annullaMossa = (p) => (p.puoAnnullare ? `<button type="button" class="bottone piccolo-bt f4-annulla" data-az="annullaMossa">↶ Annulla mossa${p.annullate ? ` <small>(${p.annullate})</small>` : ''}</button>` : '');
   const tris = {
     libero: true,
     panno(ctx) {
@@ -44,7 +46,7 @@
             p.linea && p.linea.includes(t) ? 'vince' : ''].join(' ');
           riq.push(`<div class="${cls}">${celle.join('')}${sopra}</div>`);
         }
-        return `<div class="tr-tabellone tr-ultimate">${riq.join('')}</div>`;
+        return `<div class="tr-tabellone tr-ultimate">${riq.join('')}</div>${annullaMossa(p)}`;
       }
       const lato = p.lato;
       const celle = p.celle.map((v, i) => casella(ctx, {
@@ -58,7 +60,7 @@
         etichetta: `Casella riga ${Math.floor(i / lato) + 1}, colonna ${(i % lato) + 1}`,
       }));
       const nota = p.fantasma ? `<p class="piccolo tr-nota">👻 Ghost Tris: massimo ${p.limite} segni a testa, il più vecchio (trasparente) sparisce alla prossima mossa · ${p.mosse}/${p.maxMosse} segni</p>` : '';
-      return `<div class="tr-tabellone tr-lato-${lato}" style="--lato:${lato}">${celle.join('')}</div>${nota}`;
+      return `<div class="tr-tabellone tr-lato-${lato}" style="--lato:${lato}">${celle.join('')}</div>${nota}${annullaMossa(p)}`;
     },
     stato(ctx) {
       const p = ctx.partita;
@@ -81,6 +83,7 @@
       return `gioca con ${NOME_SEGNO[ctx.partita.simboli[posto]]}`;
     },
     clic(ctx, el) {
+      if (el.dataset.az === 'annullaMossa') return ctx.invia({ tipo: 'annulla' });
       if (el.dataset.az !== 'segna') return;
       const a = { tipo: 'segna', cella: Number(el.dataset.cella) };
       if (el.dataset.tab !== undefined) a.tab = Number(el.dataset.tab);
@@ -113,7 +116,8 @@
           ? `<button type="button" class="f4-col attiva" data-az="cala" data-col="${c}" aria-label="Cala nella colonna ${c + 1}">${inner}</button>`
           : `<div class="f4-col">${inner}</div>`);
       }
-      return `<div class="f4" style="--col:${p.colonne};--rig:${p.righe}">${colonne.join('')}</div>`;
+      const annulla = p.puoAnnullare ? `<button type="button" class="bottone piccolo-bt f4-annulla" data-az="annullaMossa">↶ Annulla mossa${p.annullate ? ` <small>(${p.annullate})</small>` : ''}</button>` : '';
+      return `<div class="f4" style="--col:${p.colonne};--rig:${p.righe}">${colonne.join('')}</div>${annulla}`;
     },
     stato(ctx) {
       const p = ctx.partita;
@@ -127,6 +131,7 @@
     },
     infoPosto(ctx, posto) { return ctx.partita.colori[posto] === 'rosso' ? 'pedine rosse' : 'pedine gialle'; },
     clic(ctx, el) {
+      if (el.dataset.az === 'annullaMossa') return ctx.invia({ tipo: 'annulla' });
       if (el.dataset.az !== 'cala') return;
       el.disabled = true;
       ctx.invia({ tipo: 'cala', colonna: Number(el.dataset.col) });
@@ -380,6 +385,7 @@
         ${schedaGiocatore(ctx, altro, { colore: p.lato[altro] === 0 ? 'bianco' : 'nero', attivo: p.turno === altro, extra: `<span class="piccolo">${conta(p.lato[altro])} pezzi</span>` })}
         <div class="sc-centro">${mio && p.obbligo ? '<p class="dm-obbligo">⚠ Devi catturare</p>' : ''}
           ${p.quiete >= 40 ? `<p class="piccolo">Patta tra ${Math.ceil((80 - p.quiete) / 2)} mosse senza catture o pedine</p>` : ''}
+          ${p.puoAnnullare ? `<button type="button" class="bottone piccolo-bt" data-az="annullaMossa">↶ Annulla mossa${p.annullate ? ` <small>(${p.annullate})</small>` : ''}</button>` : ''}
           ${!p.finita ? `<button type="button" class="bottone piccolo-bt" data-az="abbandona">${ui.confermaAbb ? 'Sicuro? Clicca ancora' : '🏳 Abbandona'}</button>` : ''}</div>
         ${schedaGiocatore(ctx, ctx.mio, { colore: mioLato === 0 ? 'bianco' : 'nero', attivo: mio, extra: `<span class="piccolo">${conta(mioLato)} pezzi</span>` })}
       </aside>`;
@@ -400,6 +406,7 @@
         if (!ui.confermaAbb) { ui.confermaAbb = true; ctx.ridisegna(); setTimeout(() => { ui.confermaAbb = false; }, 3000); return; }
         return ctx.invia({ tipo: 'abbandona' });
       }
+      if (el.dataset.az === 'annullaMossa') { ui.perc = null; return ctx.invia({ tipo: 'annulla' }); }
       if (el.dataset.az !== 'casa') return;
       const i = Number(el.dataset.i);
       const perc = ui.perc || [];
@@ -495,6 +502,7 @@
         if (p.patta === altro) centro = `<div class="sc-proposta"><p>${esc(ctx.nome(altro))} propone la patta</p><button type="button" class="bottone piccolo-bt primario-bt" data-az="patta">Accetta</button><button type="button" class="bottone piccolo-bt" data-az="rifiutaPatta">Rifiuta</button></div>`;
         else if (p.patta === ctx.mio) centro = '<p class="piccolo">Hai proposto la patta: si aspetta la risposta.</p>';
         else centro = '<button type="button" class="bottone piccolo-bt" data-az="patta">½ Proponi patta</button>';
+        if (p.puoAnnullare) centro += `<button type="button" class="bottone piccolo-bt" data-az="annullaMossa">↶ Annulla mossa${p.annullate ? ` <small>(${p.annullate})</small>` : ''}</button>`;
         centro += `<button type="button" class="bottone piccolo-bt" data-az="abbandona">${ui.confermaAbb ? 'Sicuro? Clicca ancora' : '🏳 Abbandona'}</button>`;
       }
       const pannello = `<aside class="sc-pannello">
@@ -521,6 +529,7 @@
         return ctx.invia({ tipo: 'abbandona' });
       }
       if (az === 'patta' || az === 'rifiutaPatta') return ctx.invia({ tipo: az });
+      if (az === 'annullaMossa') { ui.sel = null; return ctx.invia({ tipo: 'annulla' }); }
       if (az === 'annullaPromo') { ui.promo = null; return ctx.ridisegna(); }
       if (az === 'promo') { const { da, a } = ui.promo; ui.promo = null; ui.sel = null; return ctx.invia({ tipo: 'muovi', da, a, promo: Number(el.dataset.t) }); }
       if (az !== 'casa') return;

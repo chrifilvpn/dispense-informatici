@@ -83,8 +83,10 @@ function iniziale() {
   return b;
 }
 
+const ANN = require('./annulla');
+
 class Dama {
-  constructor({ n, primo = 0 }) {
+  constructor({ n, primo = 0, bot = [] }) {
     this.id = 'dama';
     this.n = n;
     this.b = iniziale();
@@ -101,6 +103,7 @@ class Dama {
     this.nEv = 0;
     this.ultima = null;
     this.legali = mosseLegali(this.b, 0);
+    ANN.prepara(this, bot, ['b', 'turno', 'quiete', 'ultima', 'legali']);
   }
 
   annuncia(posto, testo, testoIo, forte = false) { this.evento = { id: ++this.nEv, posto, testo, testoIo, forte }; }
@@ -113,6 +116,7 @@ class Dama {
       this.annuncia(p, 'abbandona', 'hai abbandonato', true);
       return this.chiudi(1 - p, 'abbandono');
     }
+    if (a.tipo === 'annulla') return ANN.annulla(this, p);
     if (p !== this.turno) return { errore: 'Non è il tuo turno' };
     if (a.tipo !== 'muovi' || !Array.isArray(a.percorso)) return { errore: 'Mossa non valida' };
     const perc = a.percorso.map(Number);
@@ -121,6 +125,7 @@ class Dama {
       const obbligo = this.legali[0] && this.legali[0].presi.length;
       return { errore: obbligo ? 'La presa è obbligatoria: devi catturare (con la presa che vale di più)' : 'Mossa non valida' };
     }
+    ANN.salva(this, p);
     const eraPedina = !this.b[perc[0]].d;
     const { b, promossa } = applica(this.b, m);
     this.b = b;
@@ -161,7 +166,7 @@ class Dama {
       gioco: this.id, n: this.n, b: this.b, lato: this.lato, turno: this.turno, inAttesa: false,
       finita: this.finita, risultato: this.risultato, evento: this.evento, ultima: this.ultima, motivo: this.motivo || null,
       mosse: this.turno === p ? this.legali : [], obbligo: !!(this.legali[0] && this.legali[0].presi.length),
-      quiete: this.quiete,
+      quiete: this.quiete, puoAnnullare: ANN.puo(this, p), annullate: this.annullate,
     };
   }
 }
@@ -257,6 +262,7 @@ module.exports = {
       'Vince chi cattura tutti i pezzi avversari o lascia l\'avversario senza mosse possibili. Si può anche abbandonare.',
       'Patta: se per 40 mosse a testa nessuno cattura e nessuno muove una pedina (si muovono solo le dame).',
       'Come si gioca sul sito: clicca un tuo pezzo (sono evidenziati quelli che possono muovere), poi la casella di arrivo. Nelle prese multiple clicca una casella dopo l\'altra.',
+      'Contro il computer c\'è "↶ Annulla mossa": torna a prima della tua ultima mossa (si annulla anche la risposta del computer).',
     ],
   },
   crea: (o) => new Dama(o),

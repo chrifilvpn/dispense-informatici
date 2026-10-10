@@ -26,8 +26,10 @@ function vinceCon(celle, i) {
   return FIN_DI[i].find((f) => f.every((k) => celle[k] === v)) || null;
 }
 
+const ANN = require('./annulla');
+
 class Forza4 {
-  constructor({ n, primo = 0 }) {
+  constructor({ n, primo = 0, bot = [] }) {
     this.id = 'forza4';
     this.n = n;
     this.celle = new Array(COL * RIG).fill(null);
@@ -43,18 +45,21 @@ class Forza4 {
     this.ultima = null;
     this.linea = null;
     this.mosse = 0;
+    ANN.prepara(this, bot, ['celle', 'turno', 'ultima', 'mosse']);
   }
 
   annuncia(posto, testo, testoIo, forte = false) { this.evento = { id: ++this.nEv, posto, testo, testoIo, forte }; }
 
   azione(p, a) {
     if (this.finita) return { errore: 'La partita è finita' };
+    if (a && a.tipo === 'annulla') return ANN.annulla(this, p);
     if (p !== this.turno) return { errore: 'Non è il tuo turno' };
     if (!a || a.tipo !== 'cala') return { errore: 'Mossa non valida' };
     const c = Number(a.colonna);
     if (!(c >= 0 && c < COL)) return { errore: 'Colonna non valida' };
     const r = rigaLibera(this.celle, c);
     if (r < 0) return { errore: 'Questa colonna è piena' };
+    ANN.salva(this, p);
     const i = id(r, c);
     this.celle[i] = p;
     this.mosse++;
@@ -81,9 +86,9 @@ class Forza4 {
     return { ok: true };
   }
 
-  vista() {
+  vista(p) {
     return {
-      gioco: this.id, n: this.n, colonne: COL, righe: RIG, celle: this.celle, colori: this.colori,
+      gioco: this.id, n: this.n, colonne: COL, righe: RIG, celle: this.celle, colori: this.colori, puoAnnullare: ANN.puo(this, p), annullate: this.annullate,
       turno: this.turno, inAttesa: false, finita: this.finita, risultato: this.risultato,
       evento: this.evento, ultima: this.ultima, linea: this.linea,
     };
@@ -265,6 +270,7 @@ module.exports = {
       'Vince chi mette per primo quattro pedine del suo colore in fila, in orizzontale, in verticale o in diagonale.',
       'Non si può giocare in una colonna piena. Se la griglia si riempie senza un vincitore, è pareggio.',
       'Suggerimento: le colonne centrali permettono più combinazioni. Il computer difficile calcola molte mosse in avanti.',
+      'Contro il computer c\'è "↶ Annulla mossa": torna a prima della tua ultima pedina (si annulla anche la risposta del computer).',
     ],
   },
   crea: (o) => new Forza4(o),

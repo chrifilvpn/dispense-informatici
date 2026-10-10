@@ -1,6 +1,7 @@
 // TRIS: classico 3×3, 4×4 (quattro in fila) e Ultimate Tris (9 tris dentro un tris grande).
 // Le celle contengono null oppure il posto (0 o 1) di chi le ha segnate.
 const { casuale } = require('./carte');
+const ANN = require('./annulla');
 
 function lineeDi(lato, fila) {
   const L = [];
@@ -59,7 +60,7 @@ function esitoU(u) {
 }
 
 class Tris {
-  constructor({ n, primo = 0, opzioni = {} }) {
+  constructor({ n, primo = 0, opzioni = {}, bot = [] }) {
     this.id = 'tris';
     this.n = n;
     this.variante = VARIANTI[opzioni.variante] ? opzioni.variante : 'classico';
@@ -79,14 +80,25 @@ class Tris {
     // Ghost Tris (3×3 e 4×4): ognuno tiene al massimo 3 segni (4 nel 4×4); il segno in più fa sparire il più vecchio
     this.fantasma = opzioni.fantasma === 'si' && this.variante !== 'ultimate';
     if (this.fantasma) { this.limite = VARIANTI[this.variante].lato; this.code = [[], []]; this.mosse = 0; this.sparito = null; }
+    ANN.prepara(this, bot, ['turno', 'ultima', 'u', 'celle', 'code', 'mosse', 'sparito']);
   }
 
   annuncia(posto, testo, testoIo, forte = false) { this.evento = { id: ++this.nEv, posto, testo, testoIo, forte }; }
 
   azione(p, a) {
     if (this.finita) return { errore: 'La partita è finita' };
+    if (a && a.tipo === 'annulla') return ANN.annulla(this, p);
     if (p !== this.turno) return { errore: 'Non è il tuo turno' };
     if (!a || a.tipo !== 'segna') return { errore: 'Mossa non valida' };
+    // si salva la partita per "Annulla mossa"; se poi la mossa non è valida la copia si butta
+    const prima = this.annIndietro.length;
+    ANN.salva(this, p);
+    const r = this.segna(p, a);
+    if (r && r.errore && this.annIndietro.length > prima) this.annIndietro.pop();
+    return r;
+  }
+
+  segna(p, a) {
     const i = Number(a.cella);
     if (this.variante === 'ultimate') {
       const t = Number(a.tab);
@@ -134,9 +146,9 @@ class Tris {
     return { ok: true };
   }
 
-  vista() {
+  vista(p) {
     const v = {
-      gioco: this.id, n: this.n, variante: this.variante, simboli: this.simboli,
+      gioco: this.id, n: this.n, variante: this.variante, simboli: this.simboli, puoAnnullare: ANN.puo(this, p), annullate: this.annullate,
       turno: this.turno, inAttesa: false, finita: this.finita, risultato: this.risultato,
       evento: this.evento, ultima: this.ultima, linea: this.linea,
     };
@@ -360,6 +372,7 @@ module.exports = {
       'Ghost Tris (si sceglie prima di iniziare, vale per il 3×3 e il 4×4): ognuno può avere in griglia al massimo 3 segni (4 nel 4×4). Quando metti il quarto (il quinto nel 4×4), il tuo segno più vecchio sparisce. Il segno che sparirà alla tua prossima mossa è mezzo trasparente, e lo stesso si vede per l\'avversario.',
       'Ghost Tris: la griglia non si riempie mai, quindi si continua finché qualcuno fa la fila. Il segno che sparisce se ne va prima di controllare la fila: non conta più. Se dopo 100 segni in tutto nessuno ha vinto, è pareggio. Nell\'Ultimate Tris l\'opzione non si usa.',
       'Il computer difficile è quasi imbattibile, ma ogni tanto sbaglia: approfittane!',
+      'Contro il computer c\'è "↶ Annulla mossa": torna a prima della tua ultima mossa (si annulla anche la risposta del computer).',
     ],
   },
   crea: (o) => new Tris(o),

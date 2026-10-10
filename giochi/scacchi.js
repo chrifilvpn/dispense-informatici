@@ -154,9 +154,11 @@ const chiave = (s) => `${s.b.join(',')}|${s.lato}|${s.arrocco}|${s.ep}`;
 const TEMPI = { nessuno: null, '3+2': [180, 2], '5+0': [300, 0], '10+0': [600, 0], '15+10': [900, 10] };
 
 class Scacchi {
-  constructor({ n, primo = 0, opzioni = {} }) {
+  constructor({ n, primo = 0, opzioni = {}, bot = [] }) {
     this.id = 'scacchi';
     this.n = n;
+    this.bot = [bot[0] || null, bot[1] || null];
+    this.indietro = []; // per "Annulla mossa" contro il computer: la partita prima di ogni mia mossa
     this.s = posizioneIniziale();
     this.colore = [];
     this.colore[primo] = 1; // chi inizia ha il Bianco
@@ -224,11 +226,13 @@ class Scacchi {
       this.annuncia(p, 'rifiuta la patta', 'hai rifiutato la patta');
       return { ok: true };
     }
+    if (a.tipo === 'annulla') return this.annulla(p);
     if (p !== this.turno) return { errore: 'Non è il tuo turno' };
     if (a.tipo !== 'muovi') return { errore: 'Mossa non valida' };
     const da = Number(a.da), aa = Number(a.a), promo = a.promo ? Number(a.promo) : undefined;
     const m = this.legaliOra.find((x) => x.da === da && x.a === aa && (x.promo || undefined) === (promo || (x.promo ? Q : undefined)));
     if (!m) return { errore: 'Mossa non valida' };
+    if (this.puoAnnullare(p, true)) this.indietro.push({ p, ...this.fotografia() });
 
     const lato = this.s.lato;
     const nuovo = applica(this.s, m);
@@ -263,6 +267,24 @@ class Scacchi {
     return { ok: true };
   }
 
+  // ANNULLA MOSSA: solo contro il computer e senza orologio (con una persona o col tempo non sarebbe giusto).
+  // Torna a prima della mia ultima mossa: si annulla anche la risposta del computer.
+  puoAnnullare(p, perSalvare = false) {
+    if (this.finita || this.orologio || !this.bot[1 - p] || this.bot[p]) return false;
+    return perSalvare || this.indietro.some((x) => x.p === p);
+  }
+  fotografia() {
+    return { s: { ...this.s, b: Array.from(this.s.b) }, storia: new Map(this.storia), catturati: { 1: [...this.catturati[1]], '-1': [...this.catturati[-1]] }, nMosse: this.nMosse, ultima: this.ultima, turno: this.turno, legaliOra: this.legaliOra, patta: this.patta };
+  }
+  annulla(p) {
+    if (!this.puoAnnullare(p)) return { errore: 'Puoi annullare solo contro il computer, senza orologio, dopo una tua mossa' };
+    let f; do { f = this.indietro.pop(); } while (f && f.p !== p);
+    Object.assign(this, { s: f.s, storia: f.storia, catturati: f.catturati, nMosse: f.nMosse, ultima: f.ultima, turno: f.turno, legaliOra: f.legaliOra, patta: f.patta });
+    this.annullate = (this.annullate || 0) + 1;
+    this.annuncia(p, 'annulla la mossa', 'mossa annullata ↶');
+    return { ok: true };
+  }
+
   chiudi(vince, motivo) {
     const o = this.orologio;
     if (o && o.dal !== null) { o.resto[this.s.lato] = this.restoOra(this.s.lato); o.dal = null; }
@@ -286,7 +308,7 @@ class Scacchi {
       turno: this.turno, inAttesa: false, finita: this.finita, risultato: this.risultato, evento: this.evento,
       ultima: this.ultima, motivo: this.motivo || null, patta: this.patta,
       scacco: inScacco(this.s, this.s.lato) ? casaRe(this.s.b, this.s.lato) : -1,
-      catturati: this.catturati, nMosse: this.nMosse,
+      catturati: this.catturati, nMosse: this.nMosse, puoAnnullare: this.puoAnnullare(p), annullate: this.annullate || 0,
       mosse: this.turno === p ? this.legaliOra.map(({ da, a, promo }) => ({ da, a, promo: promo || 0 })) : [],
       orologio: o ? { bianco: this.restoOra(1), nero: this.restoOra(-1), corre: o.dal !== null && !this.finita ? this.s.lato : 0 } : null,
     };
@@ -435,6 +457,7 @@ module.exports = {
       'Patta: stallo (chi deve muovere non ha mosse legali ma non è sotto scacco), stessa posizione ripetuta tre volte, 50 mosse a testa senza catture né mosse di pedone, materiale insufficiente per dare matto, oppure accordo tra i giocatori.',
       'Orologio (se scelto): ogni giocatore ha il suo tempo, che scorre durante il suo turno e parte dopo la prima mossa del Bianco. Con "+ secondi" si guadagna quel tempo a ogni mossa. Chi finisce il tempo perde, ma se l\'avversario non ha materiale per dare matto è patta.',
       'Puoi proporre la patta (l\'avversario accetta o rifiuta; se muove senza rispondere vale come rifiuto) o abbandonare.',
+      'Contro il computer e senza orologio c\'è anche "↶ Annulla mossa": torna a prima della tua ultima mossa (si annulla anche la risposta del computer). Utile per imparare.',
       'Come si gioca sul sito: clicca un tuo pezzo e vedrai i punti dove può andare, poi clicca la casa di arrivo.',
     ],
   },

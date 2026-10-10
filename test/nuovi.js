@@ -2924,3 +2924,22 @@ function giocaTutta(M, n, livelli, opzioni = {}) {
   assert.ok(SD.finita, 'con gli aiuti lo schema si completa');
   console.log('✓ Aiuti: consiglio del blackjack, annulla e suggerimento nel solitario, aiuto nel sudoku');
 }
+{
+  // annulla mossa contro il computer: tris, forza 4, dama, scacchi; tra persone no
+  const prova = (id, mossa) => {
+    const M = GIOCHI[id], g = M.crea({ n: 2, primo: 0, opzioni: {}, bot: [null, 'medio'] });
+    const prima = JSON.stringify({ ...g.vista(0), evento: null, annullate: 0, puoAnnullare: 0, orologio: null });
+    assert.ok(g.azione(0, { tipo: 'annulla' }).errore, `${id}: all'inizio non si annulla`);
+    assert.ok(g.azione(0, mossa(g)).ok && g.azione(1, M.bot(g, 1, 'medio')).ok && g.vista(0).puoAnnullare, `${id}: dopo la mia mossa e la risposta del computer si può annullare`);
+    assert.ok(g.azione(0, { tipo: 'annulla' }).ok && JSON.stringify({ ...g.vista(0), evento: null, annullate: 0, puoAnnullare: 0, orologio: null }) === prima, `${id}: si torna esattamente a prima`);
+    const h = M.crea({ n: 2, primo: 0, opzioni: {}, bot: [null, null] }); h.azione(0, mossa(h));
+    assert.ok(h.azione(0, { tipo: 'annulla' }).errore && !h.vista(0).puoAnnullare, `${id}: tra persone non si annulla`);
+  };
+  prova('tris', (g) => GIOCHI.tris.bot(g, 0, 'medio'));
+  prova('forza4', () => ({ tipo: 'cala', colonna: 3 }));
+  prova('dama', (g) => ({ tipo: 'muovi', percorso: g.legali[0].percorso }));
+  prova('scacchi', (g) => ({ tipo: 'muovi', da: g.legaliOra[0].da, a: g.legaliOra[0].a }));
+  const s = GIOCHI.scacchi.crea({ n: 2, primo: 0, opzioni: { tempo: '5+0' }, bot: [null, 'medio'] }); s.azione(0, { tipo: 'muovi', da: s.legaliOra[0].da, a: s.legaliOra[0].a });
+  assert.ok(s.azione(0, { tipo: 'annulla' }).errore, 'scacchi: con l\'orologio non si annulla');
+  console.log('✓ Annulla mossa contro il computer: tris (tutte le varianti), forza 4, dama e scacchi (senza orologio); tra persone no');
+}
