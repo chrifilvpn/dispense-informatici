@@ -214,6 +214,18 @@ class Blackjack extends Casino {
     this.prossimaMano();
   }
 
+  // la mossa della strategia di base per la mano che sto giocando (il pulsante 💡 nel browser la mostra a chi la vuole)
+  consiglio(p) {
+    if (this.fase !== 'turni' || this.turno !== p) return null;
+    const m = this.mani[p] && this.mani[p][this.manoAttiva];
+    if (!m || !this.banco[0]) return null;
+    const az = this.azioniPossibili(p);
+    if (!az.carta) return null;
+    let x = strategia(m, this.banco[0], az.raddoppia, az.dividi);
+    if (!az[x]) x = x === 'raddoppia' ? 'carta' : 'stai';
+    return x;
+  }
+
   vista(p) {
     const bancoVisto = this.coperta ? [this.banco[0], null].filter((x, k) => k < this.banco.length) : this.banco;
     return {
@@ -221,7 +233,7 @@ class Blackjack extends Casino {
       fiche: this.fiche, puntato: this.puntato, passato: this.passato,
       banco: { carte: bancoVisto, totale: this.coperta ? (this.banco[0] ? conta([this.banco[0]]).tot : 0) : conta(this.banco).tot, coperta: this.coperta },
       mani: this.mani.map((ms) => ms.map((m) => ({ ...m, ...conta(m.carte) }))),
-      azioni: this.azioniPossibili(p), esiti: this.esiti, mescolata: this.mescolata,
+      azioni: this.azioniPossibili(p), esiti: this.esiti, mescolata: this.mescolata, consiglio: this.consiglio(p),
       tempoPuntate: this.tempoPuntateMs(),
       tempoDecisione: this.scadenzaTurno() ? Math.max(0, this.scadenzaTurno() - Date.now()) : null,
       carteScarpa: this.scarpa.length, totaleScarpa: this.totaleScarpa, nMano: this.nMano,
@@ -295,6 +307,7 @@ module.exports = {
       'Se superi 21 hai sballato e perdi subito, anche se poi sballa il banco. Hai 30 secondi per decidere, poi stai automaticamente.',
       'Il banco, se mostra un asso o una carta da 10, controlla subito se ha blackjack. Alla fine scopre la carta coperta e pesca finché non arriva almeno a 17; su 17 si ferma sempre, anche soft.',
       'Pagamenti: se batti il banco (o il banco sballa) vinci quanto hai puntato; a parità di punti riprendi la puntata. Niente assicurazione e niente resa.',
+      'Il pulsante 💡 Consiglio fa vedere cosa farebbe la strategia di base (la mossa che in media fa perdere meno) con le tue carte e la carta scoperta del banco.',
       'Si gioca con 6 mazzi; quando ne resta meno di un quarto si rimescola. I computer seduti al tavolo si ricaricano da soli quando finiscono le fiche.',
     ],
   },

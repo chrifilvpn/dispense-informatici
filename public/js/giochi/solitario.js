@@ -28,6 +28,22 @@
 
   function tavoloMio(ctx) {
     const p = ctx.partita, t = p.mio, sel = ctx.ui.soSel;
+    return segnaAiuto(p, tavoloMioHtml(ctx, p, t, sel));
+  }
+  // il suggerimento: la carta da spostare e dove (o il tallone da pescare) brillano
+  function segnaAiuto(p, html) {
+    const x = p.suggerito;
+    if (!x) return html;
+    const box = document.createElement('div'); box.innerHTML = html;
+    if (x.pesca) { const el = box.querySelector('.so-tallone'); if (el) el.classList.add('so-aiuto'); }
+    else {
+      const q = x.da.tipo === 'col' ? `[data-da="col"][data-i="${x.da.i}"][data-k="${x.da.k}"]` : x.da.tipo === 'scarti' ? '[data-da="scarti"]' : `[data-da="base"][data-i="${x.da.i}"]`;
+      const el = box.querySelector(q); if (el) el.classList.add('so-aiuto');
+      const d = box.querySelector(`[data-dest="${x.a.tipo}"][data-i="${x.a.i}"]`); if (d) d.classList.add('so-aiuto-dest');
+    }
+    return box.innerHTML;
+  }
+  function tavoloMioHtml(ctx, p, t, sel) {
     const cimaScarti = t.scarti[t.scarti.length - 1];
     const scarti = cimaScarti
       ? `${t.scarti.length > 1 ? `<div class="so-sotto">${Carte.fronte(t.scarti[t.scarti.length - 2])}</div>` : ''}${Carte.fronte(cimaScarti, `so-su ${sel && sel.tipo === 'scarti' ? 'so-scelta' : ''}`, da('scarti'))}`
@@ -77,6 +93,8 @@
       if (p.stato === 'finito') return '<span class="suggerimento">Hai finito! 🏆</span>';
       if (p.stato === 'arreso') return '<span class="suggerimento">Ti sei arreso: guardi gli altri</span>';
       return `<span class="suggerimento">Trascina le carte, oppure toccane una e poi dove metterla. Doppio clic: sulla base.</span>
+        <button type="button" class="bottone mini-bt" data-az="annulla" ${p.puoAnnullare ? '' : 'disabled'}>↶ Annulla</button>
+        <button type="button" class="bottone mini-bt" data-az="aiuto" title="Mostra una mossa utile">💡 Suggerimento${p.aiuti ? ` <small>(${p.aiuti})</small>` : ''}</button>
         <button type="button" class="bottone mini-bt" data-az="arrenditi">🏳️ Mi arrendo</button>`;
     },
     dopo(ctx) {
@@ -101,6 +119,7 @@
       if (az === 'pesca') { ctx.ui.soSel = null; suono([[520, 0.03]], { volume: 0.03 }); return ctx.invia({ tipo: 'pesca' }); }
       if (az === 'arrenditi') { if (confirm('Vuoi davvero arrenderti? Conteranno le carte che hai messo sulle basi.')) ctx.invia({ tipo: 'arrenditi' }); return; }
       if (az === 'finisci') return ctx.invia({ tipo: 'finisci' });
+      if (az === 'annulla' || az === 'aiuto') { ctx.ui.soSel = null; return ctx.invia({ tipo: az }); }
     },
   };
 

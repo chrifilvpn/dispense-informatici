@@ -8,6 +8,7 @@ const LUNGHEZZE = { corto: 10, medio: 14, lungo: 18 };
 const BONUS_ARRIVO = 10;
 const PROB_INDIZIO = 0.75;
 const PAUSA_CADUTA = 1800, PAUSA_ARRIVO = 1100, PAUSA_ROUND = 3800;
+const TEMPO_SALTO = 20000; // chi è davanti ha 20 secondi per saltare, poi salta a caso
 
 class Ponte {
   constructor({ n, primo = 0, opzioni = {} }) {
@@ -58,6 +59,7 @@ class Ponte {
       this.passi[p] = this.fronte;
       if (this.fronte >= this.L) { this.stato[p] = 'salvo'; this.annuncia(p, 'attraversa tutto il ponte sui vetri già scoperti', 'attraversi il ponte sui vetri già scoperti'); continue; }
       this.turno = p;
+      this.fineSalto = Date.now() + TEMPO_SALTO;
       return;
     }
     this.fineRound();
@@ -110,6 +112,16 @@ class Ponte {
     return { ok: true };
   }
 
+  // l'orologio del salto: allo scadere chi è davanti salta a caso (il server chiama controllaTempo)
+  scadenza() { return this.finita || this.inAttesa || this.turno === null ? null : this.fineSalto; }
+  controllaTempo() {
+    if (this.finita || this.inAttesa || this.turno === null || Date.now() < this.fineSalto) return false;
+    const p = this.turno;
+    this.azione(p, { tipo: 'salta', lato: Math.random() < 0.5 ? 0 : 1 });
+    if (this.evento && this.evento.posto === p) this.evento = { ...this.evento, testo: `non si decide: salta a caso e ${this.evento.testo}`, testoIo: `tempo scaduto, salti a caso: ${this.evento.testoIo}` };
+    return true;
+  }
+
   // dopo una caduta, un arrivo o la fine del round
   avanza() {
     if (!this.inAttesa) return;
@@ -137,7 +149,7 @@ class Ponte {
       gioco: this.id, n: this.n, fase: this.fase, turno: this.turno, inAttesa: this.inAttesa, pausaMs: this.pausaMs,
       L: this.L, round: this.round, nRound: this.nRound, fronte: this.fronte, noto: this.noto, rotto: this.rotto,
       ordine: this.ordine, stato: this.stato, passi: this.passi, punti: this.punti, storico: this.storico,
-      riflessi: this.riflessi, indizio: ind && ind.riga === this.fronte && this.turno === posto ? ind.lato : null,
+      riflessi: this.riflessi, restaSalto: this.turno !== null && !this.inAttesa ? Math.max(0, this.fineSalto - Date.now()) : null, indizio: ind && ind.riga === this.fronte && this.turno === posto ? ind.lato : null,
       ultimo: this.ultimo, sicuroFinale: this.fase === 'fineRound' || this.finita ? this.sicuro : null,
       finita: this.finita, risultato: this.risultato, evento: this.evento,
     };
@@ -172,6 +184,7 @@ module.exports = {
       'Il ponte ha 14 righe (oppure 10 o 18) di due pannelli di vetro, a sinistra e a destra. In ogni riga uno regge e l\'altro si rompe.',
       'Si attraversa in fila. Chi è davanti sceglie dove saltare: se il vetro regge avanza di una riga e tutti vedono il pannello buono; se si rompe cade e tocca al prossimo della fila.',
       'Chi sale sul ponte cammina da solo sui vetri già scoperti fino alla prima riga sconosciuta: chi è più indietro nella fila rischia meno.',
+      'Chi è davanti ha 20 secondi per saltare: se non si decide, salta a caso.',
       'Una volta per round puoi usare il 🔍 riflesso: guardi il vetro della riga davanti e vedi (solo tu) da che parte sembra temperato. Ha ragione 3 volte su 4.',
       'Punti del round: 1 per ogni riga superata, più 10 se arrivi dall\'altra parte. A ogni round l\'ordine della fila gira, così tutti partono davanti almeno una volta (con abbastanza round).',
       'Dopo l\'ultimo round vince chi ha più punti. A parità è pareggio.',

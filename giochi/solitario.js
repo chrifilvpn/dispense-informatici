@@ -24,6 +24,33 @@ const puoSuColonna = (c, col) => {
   return t.su && !!ROSSO[t.seme] !== !!ROSSO[c.seme] && t.rango === c.rango + 1;
 };
 const suBasi = (t) => t.basi.reduce((s, b) => s + b.length, 0);
+const copia = (t) => JSON.parse(JSON.stringify({ colonne: t.colonne, tallone: t.tallone, scarti: t.scarti, basi: t.basi }));
+
+// SUGGERIMENTO: una mossa utile, nell'ordine in cui la cercherebbe un buon giocatore:
+// 1) una carta sulle basi, 2) una pila che scopre una carta coperta (anche un re su una colonna vuota),
+// 4) la carta degli scarti su una colonna, 5) altrimenti pescare. Restituisce { da, a } oppure { pesca: true }.
+function suggerisci(t) {
+  const cima = (col) => col[col.length - 1];
+  // 1) sulle basi: dalle colonne e dagli scarti (gli assi e i due prima di tutto)
+  const versoBase = [];
+  t.colonne.forEach((col, i) => { const c = cima(col); if (c && c.su) versoBase.push({ c, da: { tipo: 'col', i, k: col.length - 1 } }); });
+  if (t.scarti.length) versoBase.push({ c: cima(t.scarti), da: { tipo: 'scarti' } });
+  versoBase.sort((x, y) => x.c.rango - y.c.rango);
+  for (const x of versoBase) { const b = t.basi.findIndex((base) => puoSuBase(x.c, base)); if (b >= 0) return { da: x.da, a: { tipo: 'base', i: b } }; }
+  // 2) e 3) spostare una pila intera (dalla prima carta scoperta) quando così si scopre una carta coperta
+  // (anche un re su una colonna vuota); spostare una pila che non scopre niente non serve
+  for (let i = 0; i < t.colonne.length; i++) {
+    const col = t.colonne[i], k = col.findIndex((c) => c.su);
+    if (k <= 0) continue;
+    const j = t.colonne.findIndex((dest, jj) => jj !== i && puoSuColonna(col[k], dest));
+    if (j >= 0) return { da: { tipo: 'col', i, k }, a: { tipo: 'col', i: j } };
+  }
+  // 4) la carta degli scarti su una colonna
+  if (t.scarti.length) { const c = cima(t.scarti); const j = t.colonne.findIndex((col) => puoSuColonna(c, col)); if (j >= 0) return { da: { tipo: 'scarti' }, a: { tipo: 'col', i: j } }; }
+  // 5) pescare (o rigirare gli scarti)
+  if (t.tallone.length || t.scarti.length) return { pesca: true };
+  return null;
+}
 
 class Solitario {
   constructor({ n, opzioni = {} }) {
@@ -36,6 +63,9 @@ class Solitario {
     this.tempi = new Array(n).fill(null);
     this.mosse = new Array(n).fill(0);
     this.giri = new Array(n).fill(0); // quante volte si è rigirato il tallone
+    this.indietro = Array.from({ length: n }, () => []); // per "Annulla": il tavolo prima di ogni mossa
+    this.aiuti = new Array(n).fill(0);
+    this.suggerito = new Array(n).fill(null);
     this.inizio = Date.now();
     this.turno = null; this.inAttesa = false; this.finita = false; this.risultato = null; this.evento = null; this.nEv = 0;
     this.pausaBoss = n === 1; // da soli la partita si ferma con le dispense; in gara no (il tempo corre per tutti)
@@ -83,6 +113,21 @@ class Solitario {
       this.annuncia(p, `si arrende con ${suBasi(t)} carte sulle basi 🏳️`, `ti sei arreso con ${suBasi(t)} carte sulle basi 🏳️`);
       return this.controllaFine();
     }
+    // annulla l'ultima mossa (conta come una mossa)
+    if (a.tipo === 'annulla') {
+      const prima = this.indietro[p].pop();
+      if (!prima) return { errore: 'Non c\'è niente da annullare' };
+      Object.assign(t, prima); this.mosse[p]++; this.suggerito[p] = null;
+      return { ok: true };
+    }
+    // suggerimento: si mostra una mossa utile (si contano gli aiuti chiesti)
+    if (a.tipo === 'aiuto') {
+      const x = suggerisci(t);
+      if (!x) return { errore: 'Non ci sono mosse utili: forse è il momento di arrendersi' };
+      this.suggerito[p] = x; this.aiuti[p]++;
+      return { ok: true };
+    }
+    if (a.tipo === 'pesca' || a.tipo === 'muovi') { this.indietro[p].push(copia(t)); if (this.indietro[p].length > 60) this.indietro[p].shift(); this.suggerito[p] = null; }
     if (a.tipo === 'pesca') {
       if (t.tallone.length) { const c = t.tallone.pop(); c.su = true; t.scarti.push(c); }
       else if (t.scarti.length) { t.tallone = t.scarti.reverse().map((c) => ({ ...c, su: false })); t.scarti = []; this.giri[p]++; }
@@ -91,6 +136,16 @@ class Solitario {
       return { ok: true };
     }
     if (a.tipo === 'muovi') {
+      const r = this.muovi(p, t, a);
+      if (r.errore) this.indietro[p].pop(); // una mossa non valida non si annulla
+      return r;
+    }
+    if (a.tipo === 'finisci') return this.finisci(p, t);
+    return { errore: 'Mossa non valida' };
+  }
+
+  muovi(p, t, a) {
+    {
       const presa = this.prendi(t, a.da);
       if (!presa) return { errore: 'Non puoi prendere questa carta' };
       const [prima] = presa.carte;
@@ -115,7 +170,10 @@ class Solitario {
       this.mosse[p]++;
       return this.controllaVinto(p);
     }
-    if (a.tipo === 'finisci') {
+  }
+
+  finisci(p, t) {
+    {
       // tutte le carte scoperte e tallone vuoto: si mandano da sole sulle basi
       if (t.tallone.length || t.scarti.length || t.colonne.some((c) => c.some((x) => !x.su))) return { errore: 'Si può finire da soli solo con tutte le carte scoperte' };
       for (let guardia = 0; guardia < 60 && suBasi(t) < 52; guardia++) {
@@ -128,7 +186,6 @@ class Solitario {
       }
       return this.controllaVinto(p);
     }
-    return { errore: 'Mossa non valida' };
   }
 
   controllaVinto(p) {
@@ -182,6 +239,7 @@ class Solitario {
       },
       altri: this.tavoli.map((x, i) => ({ basi: suBasi(x), cime: x.basi.map((b) => (b.length ? b[b.length - 1] : null)), coperte: x.colonne.reduce((s, c) => s + c.filter((y) => !y.su).length, 0), stato: this.stato[i], tempo: this.tempi[i], mosse: this.mosse[i] })),
       giri: this.giri[p], mosse: this.mosse[p], stato: this.stato[p],
+      puoAnnullare: this.indietro[p].length > 0, suggerito: this.suggerito[p], aiuti: this.aiuti[p],
       record: this.finita ? this.record : RECORD.slice(0, 5),
     };
   }

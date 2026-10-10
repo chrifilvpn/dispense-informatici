@@ -42,7 +42,7 @@
         const stessa = sel != null && (Math.floor(sel / 9) === r || sel % 9 === c || (Math.floor(Math.floor(sel / 9) / 3) === Math.floor(r / 3) && Math.floor((sel % 9) / 3) === Math.floor(c / 3)));
         const altri = [...cursori].filter(([posto, cella]) => cella === i && posto !== ctx.mio).map(([posto]) => posto);
         const cls = ['sd-cella', p.dati[i] ? 'dato' : '', sel === i ? 'scelta' : stessa ? 'zona' : '', v && v === valSel && sel !== i ? 'uguale' : '',
-          p.sbagliate && p.sbagliate[i] ? 'sbagliata' : '', c % 3 === 2 && c < 8 ? 'bordo-dx' : '', r % 3 === 2 && r < 8 ? 'bordo-giu' : ''].join(' ');
+          p.sbagliate && p.sbagliate[i] ? 'sbagliata' : '', p.ultimoAiuto && p.ultimoAiuto.cella === i && !p.finita ? 'aiutata' : '', c % 3 === 2 && c < 8 ? 'bordo-dx' : '', r % 3 === 2 && r < 8 ? 'bordo-giu' : ''].join(' ');
         const colore = !p.dati[i] && v && p.n > 1 && p.chi[i] != null ? `color:${COLORI[p.chi[i] % 6]};` : '';
         const note = !v && ui.note && ui.note[i] && ui.note[i].length ? `<span class="sd-note">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<i>${ui.note[i].includes(n) ? n : ''}</i>`).join('')}</span>` : '';
         const segni = altri.map((posto) => `<b class="sd-altro" style="--col:${COLORI[posto % 6]}" title="${esc(ctx.nome(posto))}"></b>`).join('');
@@ -50,12 +50,12 @@
       }
       const conti = [1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => p.griglia.filter((x) => x === n).length);
       const tasti = [1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<button type="button" class="sd-tasto ${conti[n - 1] >= 9 ? 'finito' : ''}" data-az="num" data-v="${n}">${n}</button>`).join('');
-      const rec = p.finita && p.record.length ? `<div class="bb-record"><b>🏆 Tempi migliori · ${esc(p.nomeLivello)}${p.n > 1 ? ' in squadra' : ''}</b><ol>${p.record.map((x, k) => `<li class="${k === p.posizioneRecord ? 'nuovo' : ''}">${fmt(x.ms)} <small>(${x.errori} errori${x.giocatori > 1 ? `, ${x.giocatori} giocatori` : ''})</small></li>`).join('')}</ol></div>` : '';
+      const rec = p.finita && p.record.length ? `<div class="bb-record"><b>🏆 Tempi migliori · ${esc(p.nomeLivello)}${p.n > 1 ? ' in squadra' : ''}</b><ol>${p.record.map((x, k) => `<li class="${k === p.posizioneRecord ? 'nuovo' : ''}">${fmt(x.ms)} <small>(${x.errori} errori${x.aiuti ? `, ${x.aiuti} aiuti` : ''}${x.giocatori > 1 ? `, ${x.giocatori} giocatori` : ''})</small></li>`).join('')}</ol></div>` : '';
       return `<div class="sd">
         <div class="sd-barra"><span>⏱ <b class="sd-tempo">${fmt(tempo(p))}</b></span><span>${esc(p.nomeLivello)}</span>${p.errori != null ? `<span>Errori <b>${p.errori}</b></span>` : ''}</div>
         <div class="sd-griglia ${p.finita ? 'finita' : ''}">${celle}</div>
         ${p.finita ? '' : `<div class="sd-tasti">${tasti}</div>
-        <div class="sd-comandi"><button type="button" class="bottone ${ui.appunti ? 'attivo-bt' : ''}" data-az="appunti" aria-pressed="${!!ui.appunti}">✏️ Appunti ${ui.appunti ? 'sì' : 'no'}</button><button type="button" class="bottone" data-az="cancella">⌫ Cancella</button></div>`}
+        <div class="sd-comandi"><button type="button" class="bottone ${ui.appunti ? 'attivo-bt' : ''}" data-az="appunti" aria-pressed="${!!ui.appunti}">✏️ Appunti ${ui.appunti ? 'sì' : 'no'}</button><button type="button" class="bottone" data-az="cancella">⌫ Cancella</button><button type="button" class="bottone" data-az="aiuto" title="Scrive un numero giusto: +30 secondi">💡 Aiuto${p.aiuti ? ` <small>(${p.aiuti})</small>` : ''}</button></div>`}
         ${rec}</div>`;
     },
     stato(ctx) { const p = ctx.partita; return p.finita ? null : p.n > 1 ? 'Risolvetelo insieme' : 'Risolvi il sudoku'; },
@@ -66,6 +66,7 @@
       if (az === 'cella') return scegli(ctx, Number(el.dataset.i));
       if (az === 'num') return scrivi(ctx, Number(el.dataset.v));
       if (az === 'cancella') { if (ctx.ui.note && ctx.ui.sel != null) delete ctx.ui.note[ctx.ui.sel]; return ctx.partita.griglia[ctx.ui.sel] ? scrivi(ctx, 0) : ctx.ridisegna(); }
+      if (az === 'aiuto') return ctx.invia({ tipo: 'aiuto' });
       if (az === 'appunti') { ctx.ui.appunti = !ctx.ui.appunti; return ctx.ridisegna(); }
     },
   };

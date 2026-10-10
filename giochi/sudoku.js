@@ -85,6 +85,7 @@ class Sudoku {
   azione(p, a) {
     if (this.finita) return { errore: 'La partita è finita' };
     if (this.inPausa) return { errore: 'Partita in pausa' };
+    if (a && a.tipo === 'aiuto') return this.aiuto(p);
     const i = Number(a && a.cella), v = Number(a && a.valore);
     if (!a || a.tipo !== 'metti' || !Number.isInteger(i) || i < 0 || i > 80 || !Number.isInteger(v) || v < 0 || v > 9) return { errore: 'Mossa non valida' };
     if (this.dati[i]) return { errore: 'Questo numero fa parte dello schema' };
@@ -99,12 +100,34 @@ class Sudoku {
     return { ok: true };
   }
 
+  // AIUTO: scrive il numero giusto in una casella, scegliendo (se c'è) quella con un solo numero possibile, così si
+  // capisce il ragionamento; costa 30 secondi sul cronometro. Prima toglie l'eventuale numero sbagliato di quella casella.
+  aiuto(p) {
+    const g = this.griglia.map((x, k) => (x === this.soluzione[k] ? x : 0));
+    let meglio = -1, minimo = 10;
+    for (let k = 0; k < 81; k++) {
+      if (this.griglia[k] === this.soluzione[k]) continue;
+      let n = 0; for (let v = 1; v <= 9; v++) if (puo(g, k, v)) n++;
+      if (n < minimo) { minimo = n; meglio = k; }
+    }
+    if (meglio < 0) return { errore: 'Non c\'è niente da aiutare' };
+    this.griglia[meglio] = this.soluzione[meglio];
+    this.chi[meglio] = null;
+    this.aiuti = (this.aiuti || 0) + 1;
+    this.ultimoAiuto = { cella: meglio, unico: minimo === 1, id: this.aiuti };
+    this.tempo += 30000; // il prezzo dell'aiuto
+    const dove = `riga ${riga(meglio) + 1}, colonna ${col(meglio) + 1}`;
+    this.annuncia(p, `chiede un aiuto: ${this.soluzione[meglio]} in ${dove} (+30 s)`, `aiuto: ${this.soluzione[meglio]} in ${dove}${minimo === 1 ? ', l\'unico numero possibile lì' : ''} (+30 s)`);
+    if (this.griglia.every((x, k) => x === this.soluzione[k])) this.chiudi();
+    return { ok: true };
+  }
+
   chiudi() {
     this.tempo = this.cronometro(); this.dal = null;
     this.finita = true;
     const chiave = `${this.livello}:${this.n === 1 ? 'solo' : 'coop'}`;
     const lista = (RECORD[chiave] = RECORD[chiave] || []);
-    const voce = { ms: this.tempo, errori: this.errori, giocatori: this.n, id: Math.random() };
+    const voce = { ms: this.tempo, errori: this.errori, aiuti: this.aiuti || 0, giocatori: this.n, id: Math.random() };
     lista.push(voce); lista.sort((x, y) => x.ms - y.ms); lista.splice(5);
     this.posizioneRecord = lista.indexOf(voce);
     this.annuncia(null, 'Sudoku completato! 🎉', '', true);
@@ -118,7 +141,7 @@ class Sudoku {
       griglia: this.griglia, dati: this.dati, chi: this.chi,
       // gli errori si segnano solo se l'opzione è attiva (o a fine partita)
       sbagliate: this.mostraErrori || this.finita ? this.griglia.map((x, k) => !!x && x !== this.soluzione[k]) : null,
-      errori: this.mostraErrori ? this.errori : null, messi: this.messi,
+      errori: this.mostraErrori ? this.errori : null, messi: this.messi, aiuti: this.aiuti || 0, ultimoAiuto: this.ultimoAiuto || null,
       tempo: this.cronometro(), corre: !this.finita && !this.inPausa, record: RECORD[chiave] || [], posizioneRecord: this.finita ? this.posizioneRecord : -1,
       turno: null, inAttesa: false, finita: this.finita, risultato: this.risultato, evento: this.evento,
     };
@@ -145,6 +168,7 @@ module.exports = {
       'Difficoltà: Facile (circa 40 numeri dati), Medio (32), Difficile (27), Esperto (23).',
       'Con "Segna subito i numeri sbagliati" un numero sbagliato diventa rosso e viene contato tra gli errori; un numero giusto non si può più cambiare. Con "Non segnarli" lo scopri solo alla fine.',
       'In collaborazione tutti lavorano sulla stessa griglia nello stesso momento: si vedono le caselle scelte dagli altri e ogni numero ha il colore di chi l\'ha scritto. Si vince insieme quando la griglia è completa; il tempo finisce nella classifica di squadra.',
+      '"💡 Aiuto" scrive il numero giusto in una casella (di solito una dove c\'è un solo numero possibile, così vedi il ragionamento), ma aggiunge 30 secondi al cronometro.',
       'Il cronometro parte subito. Se qualcuno apre le dispense la partita e il cronometro si fermano per tutti. Si gioca solo tra persone.',
     ],
   },

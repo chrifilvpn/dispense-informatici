@@ -913,7 +913,7 @@
   }
   const blackjack = {
     libero: true,
-    reset: segnaRicevuto,
+    reset(ctx) { segnaRicevuto(ctx); if (ctx.ui.bjConsiglio === undefined) { try { ctx.ui.bjConsiglio = localStorage.getItem('if:bjConsiglio') === '1'; } catch { ctx.ui.bjConsiglio = false; } } },
     panno(ctx) {
       const p = ctx.partita, io = ctx.mio, ui = ctx.ui;
       const banco = `<div class="bj-banco"><p class="cs-etichetta">Banco${p.banco.carte.length ? ` · <b>${p.banco.totale}</b>${p.banco.coperta ? ' + ?' : ''}` : ''}</p>
@@ -931,12 +931,14 @@
       let comandi = '';
       const az = p.azioni || {};
       if (az.carta) {
+        // 💡 consiglio: la mossa della strategia di base (si accende e si spegne, il browser se lo ricorda)
+        const cons = ui.bjConsiglio && p.consiglio ? p.consiglio : null;
+        const NOMI = { carta: 'Carta', stai: 'Stai', raddoppia: 'Raddoppia', dividi: 'Dividi' };
+        const bt = (k, cls) => `<button type="button" class="bottone ${cls} ${cons === k ? 'bj-consigliato' : ''}" data-az="${k}" ${k === 'raddoppia' || k === 'dividi' ? (az[k] ? '' : 'disabled') : ''}>${NOMI[k]}</button>`;
         comandi = `<div class="cs-pannello"><div class="bj-comandi">
-          <button type="button" class="bottone primario-bt" data-az="carta">Carta</button>
-          <button type="button" class="bottone primario-bt" data-az="stai">Stai</button>
-          <button type="button" class="bottone" data-az="raddoppia" ${az.raddoppia ? '' : 'disabled'}>Raddoppia</button>
-          <button type="button" class="bottone" data-az="dividi" ${az.dividi ? '' : 'disabled'}>Dividi</button></div>
-          <p class="piccolo">${contoAlla(ctx, p.tempoDecisione, 'Tempo per decidere:')}</p></div>`;
+          ${bt('carta', 'primario-bt')}${bt('stai', 'primario-bt')}${bt('raddoppia', '')}${bt('dividi', '')}</div>
+          <p class="piccolo">${contoAlla(ctx, p.tempoDecisione, 'Tempo per decidere:')}
+          <button type="button" class="bottone mini-bt bj-cons-bt" data-az="consiglio" aria-pressed="${!!ui.bjConsiglio}">💡 Consiglio${cons ? `: <b>${NOMI[cons]}</b>` : ''}</button></p></div>`;
       }
       const punta = pannelloPuntate(ctx, `${selettore(ctx, 'bj', p.fiche[io])}
         <div class="bj-comandi"><button type="button" class="bottone primario-bt" data-az="punta" ${(ui.bj || 0) > 0 ? '' : 'disabled'}>Punta ${fmtFiche(Math.min(ui.bj || 0, p.fiche[io]))}</button>
@@ -956,6 +958,7 @@
       if (clicFiche(ctx, el)) return;
       const az = el.dataset.az, p = ctx.partita;
       if (az === 'punta') { const v = Math.min(ctx.ui.bj || 0, p.fiche[ctx.mio]); if (v > 0) ctx.invia({ tipo: 'punta', importo: v }); return; }
+      if (az === 'consiglio') { ctx.ui.bjConsiglio = !ctx.ui.bjConsiglio; try { localStorage.setItem('if:bjConsiglio', ctx.ui.bjConsiglio ? '1' : ''); } catch {} return ctx.ridisegna(); }
       if (['carta', 'stai', 'raddoppia', 'dividi'].includes(az)) { el.disabled = true; ctx.invia({ tipo: az }); }
     },
   };

@@ -52,6 +52,7 @@
           <div class="pf-riva partenza"><span class="pf-etichetta">Partenza</span>${partenza.map((i) => pedina(ctx, i, p.turno === i ? 'davanti' : '')).join('')}</div>
         </div>
         <p class="pa-msg" aria-live="polite">${msg}</p>
+        ${p.restaSalto !== null && p.restaSalto !== undefined ? `<p class="pf-tempo ${p.restaSalto < 6000 ? 'poco' : ''}" data-fine="${Date.now() + p.restaSalto}">⏱ <b>${Math.ceil(p.restaSalto / 1000)}</b> s</p>` : ''}
         <p class="pa-info">Round ${p.round} di ${p.nRound}${caduti.length ? ` · caduti: ${caduti.map((i) => esc(i === ctx.mio ? 'tu' : ctx.nome(i))).join(', ')}` : ''}</p>
       </div>`;
     },
@@ -66,6 +67,13 @@
     },
     dopo(ctx) {
       const p = ctx.partita;
+      // il conto alla rovescia del salto si aggiorna da solo tra un messaggio e l'altro
+      clearInterval(ctx.ui._pfT);
+      ctx.ui._pfT = setInterval(() => {
+        const el = document.querySelector('.pf-tempo'); if (!el) return clearInterval(ctx.ui._pfT);
+        const resta = Math.max(0, Number(el.dataset.fine) - Date.now());
+        el.querySelector('b').textContent = Math.ceil(resta / 1000); el.classList.toggle('poco', resta < 6000);
+      }, 250);
       if (!p.ultimo) return;
       if (primaVolta(ctx.ui, `pf-${p.round}-${p.ultimo.riga}`)) {
         if (p.ultimo.regge) suono([[520, 0.05], [780, 0.08]], { tipo: 'triangle', volume: 0.05 });

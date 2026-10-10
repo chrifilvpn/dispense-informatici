@@ -2882,7 +2882,45 @@ function giocaTutta(M, n, livelli, opzioni = {}) {
   assert.ok(D.segno && Number.isFinite(D.segno.x) && Number.isFinite(D.segno.y), 'si sa dove sta la differenza');
   // dalgona: l'ago fermo fuori dal solco crepa piano (c'è tempo per tornare dentro), muovendolo fuori si rompe in fretta
   const G = GIOCHI.dalgona.crea({ n: 1, opzioni: { round: 1 }, bot: [null] }); let ora = Date.now(); while (G.fase !== 'gioco') { ora += 33; G.fineFase = ora; G.tick(ora); }
+  G.b[0].forma = 'cerchio'; G.b[0].fatto = new Uint8Array(GIOCHI.dalgona._test.PUNTI.cerchio.length);
   Object.assign(G.inp[0], { a: true, mx: 500, my: 330 }); for (let k = 0; k < 30; k++) G.passo(0.033);
   assert.ok(G.b[0].stato === 'gioco' && G.b[0].danno < 60, `un secondo fermo fuori dal solco non rompe il biscotto (${Math.round(G.b[0].danno)}%)`);
   console.log('✓ Migliorie: Sblocca con annulla e aiuto, ripasso delle bandiere sbagliate, differenza cerchiata nella soluzione, Dalgona più giusta con l\'ago fermo');
+}
+{
+  // ponte fragile: chi è davanti ha 20 secondi, poi salta a caso
+  const P = GIOCHI.ponte.crea({ n: 2, opzioni: { round: 1 } });
+  assert.ok(P.scadenza() > Date.now() && !P.controllaTempo(), 'c\'è un orologio per il salto');
+  P.fineSalto = Date.now() - 1; assert.ok(P.controllaTempo() && P.fronte === 1 && /a caso/.test(P.evento.testo), 'allo scadere salta a caso');
+  console.log('✓ Ponte fragile: 20 secondi per saltare, poi si salta a caso');
+}
+{
+  // blackjack: il consiglio della strategia di base arriva solo a chi deve giocare
+  const BJ = GIOCHI.blackjack.crea({ n: 2, opzioni: {}, fiche: [1000, 1000] });
+  BJ.azione(0, { tipo: 'punta', importo: 10 }); BJ.azione(1, { tipo: 'punta', importo: 10 });
+  let k = 0; while (BJ.fase !== 'turni' && k++ < 20) { if (BJ.inAttesa) BJ.avanza(); else break; }
+  if (BJ.fase === 'turni' && BJ.turno !== null) {
+    const c = BJ.vista(BJ.turno).consiglio, altro = BJ.vista(1 - BJ.turno).consiglio;
+    assert.ok(['carta', 'stai', 'raddoppia', 'dividi'].includes(c) && altro === null && BJ.vista(BJ.turno).azioni[c], 'consiglio valido solo per chi gioca');
+  }
+  // solitario: annulla rimette il tavolo com'era; il suggerimento è sempre una mossa valida
+  const SO = GIOCHI.solitario.crea({ n: 1, opzioni: {} });
+  const prima = JSON.stringify(SO.tavoli[0]);
+  SO.azione(0, { tipo: 'pesca' }); assert.ok(SO.azione(0, { tipo: 'annulla' }).ok && JSON.stringify(SO.tavoli[0]) === prima, 'annulla rimette il tavolo com\'era');
+  assert.ok(SO.azione(0, { tipo: 'muovi', da: { tipo: 'scarti' }, a: { tipo: 'base', i: 0 } }).errore && !SO.vista(0).puoAnnullare, 'una mossa non valida non si annulla');
+  for (let n = 0; n < 300 && !SO.finita; n++) {
+    if (SO.azione(0, { tipo: 'aiuto' }).errore) break;
+    const x = SO.suggerito[0];
+    const r = x.pesca ? SO.azione(0, { tipo: 'pesca' }) : SO.azione(0, { tipo: 'muovi', da: x.da, a: x.a });
+    assert.ok(!r.errore, `il suggerimento è una mossa valida (${r.errore})`);
+    if (SO.giri[0] > 3) break;
+  }
+  // sudoku: l'aiuto scrive un numero giusto e costa 30 secondi; con gli aiuti lo schema si completa
+  const SD = GIOCHI.sudoku.crea({ n: 1, opzioni: { difficolta: 'facile' } });
+  const t0 = SD.cronometro(); SD.azione(0, { tipo: 'aiuto' });
+  const c = SD.ultimoAiuto.cella;
+  assert.ok(SD.griglia[c] === SD.soluzione[c] && SD.cronometro() - t0 >= 30000 && SD.ultimoAiuto.unico, 'aiuto giusto, di solito una casella con un solo numero possibile, +30 s');
+  for (let n = 0; n < 90 && !SD.finita; n++) SD.azione(0, { tipo: 'aiuto' });
+  assert.ok(SD.finita, 'con gli aiuti lo schema si completa');
+  console.log('✓ Aiuti: consiglio del blackjack, annulla e suggerimento nel solitario, aiuto nel sudoku');
 }
