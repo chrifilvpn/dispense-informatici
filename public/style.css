@@ -1127,3 +1127,16 @@ button.bc-zona { cursor: pointer; } button.bc-zona:hover:not(:disabled) { backgr
 @keyframes record-brilla { 50% { box-shadow: 0 0 0 4px rgba(209, 154, 42, .35); } }
 /* sul telefono il gioco sta subito sotto il punteggio (centrato in verticale lasciava una fascia vuota in alto) */
 @media (max-width: 620px) { .tavolo.libero .panno { align-items: start; align-content: start; } }
+/* se le carte non ci stanno, si scorre senza perdere quelle a sinistra */
+.mano, .uno-mano { justify-content: safe center; }
+/* UNO sul telefono: il pulsante UNO! sta sopra la mano, non sopra le ultime carte */
+@media (max-width: 620px) { .uno-bt.fisso { bottom: calc(9.5rem + env(safe-area-inset-bottom, 0px)); padding: .45rem 1.2rem; font-size: 1.05rem; } }
+/* barra di fine partita sul telefono: tutta larga, testo sopra e pulsanti sotto */
+@media (max-width: 620px) {
+  .fine-barra { left: .5rem; right: .5rem; transform: none; width: auto; max-width: none; flex-wrap: wrap; justify-content: center; text-align: center; gap: .4rem; }
+  .fine-barra > span { flex: 1 0 100%; }
+}
+@media (max-width: 620px) { .fine-barra { border-radius: 18px; padding: .55rem .7rem; animation-name: fine-sale-tel; } }
+@keyframes fine-sale-tel { from { transform: translateY(20px); opacity: 0; } }
+/* sul telefono il pulsante fisso della chat globale non copre gli ultimi pulsanti della pagina */
+@media (max-width: 620px) { #schermo-home, #schermo-attesa { padding-bottom: 4.5rem; } }

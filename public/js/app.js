@@ -629,15 +629,17 @@
   function stringiMano() {
     const m = $('#mano');
     if (!m || m.hidden || m.classList.contains('larga')) return;
-    const carte = [...m.children].filter((c) => c.classList.contains('carta'));
+    const cont = m.querySelector('.uno-mano') || m; // UNO ha la sua fila di carte dentro la mano
+    const carte = [...cont.children].filter((c) => c.classList.contains('carta') || c.classList.contains('uno-carta'));
     carte.forEach((c) => { c.style.marginLeft = ''; });
     if (carte.length < 2) return;
-    const gap = parseFloat(getComputedStyle(m).columnGap) || 0;
-    const tot = carte.reduce((t, c) => t + c.offsetWidth, 0) + gap * (carte.length - 1);
-    const W = Math.min(m.clientWidth, document.documentElement.clientWidth) - 8;
+    const cs = getComputedStyle(cont), gap = parseFloat(cs.columnGap) || 0;
+    const margini = carte.slice(1).map((c) => parseFloat(getComputedStyle(c).marginLeft) || 0);
+    const tot = carte.reduce((t, c) => t + c.offsetWidth, 0) + margini.reduce((a, b) => a + b, 0) + gap * (carte.length - 1);
+    const W = Math.min(cont.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0), document.documentElement.clientWidth) - 8;
     if (tot <= W) return;
     const meno = (tot - W) / (carte.length - 1);
-    carte.slice(1).forEach((c) => { c.style.marginLeft = `${-meno}px`; });
+    carte.slice(1).forEach((c, i) => { c.style.marginLeft = `${margini[i] - meno}px`; });
   }
   window.addEventListener('resize', () => stringiMano());
 

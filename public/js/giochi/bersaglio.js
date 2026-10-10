@@ -11,7 +11,9 @@
   function coord(e) {
     const tela = document.querySelector('.ar-tela'); if (!tela) return null;
     const r = tela.getBoundingClientRect(), p = ctxB.partita;
-    return [((e.clientX - r.left) / r.width) * p.W, ((e.clientY - r.top) / r.height) * p.H];
+    // col dito il mirino sta 70 pixel sopra il polpastrello, altrimenti il dito copre proprio quello che si mira
+    const su = e.pointerType === 'touch' ? 70 : 0;
+    return [((e.clientX - r.left) / r.width) * p.W, ((e.clientY - su - r.top) / r.height) * p.H];
   }
   const tira = (m) => { if (attiva() && m) ctxB.emetti('azione', { tipo: 'tira', t: tLoc, mx: Math.round(m[0]), my: Math.round(m[1]) }); };
   document.addEventListener('pointermove', (e) => { if (ctxB && e.target.classList && e.target.classList.contains('ar-tela')) { mira = coord(e); if (tocco && e.pointerId === tocco) e.preventDefault(); } }, { passive: false });
@@ -50,7 +52,7 @@
     clicAzione: false,
     comandi: 'nessuno',
     obiettivo: 'punti',
-    istruzioni: () => (window.Arena.touch() ? 'Appoggia il dito sul campo e trascina per mirare: staccalo per tirare.' : 'Mira col mouse e tira con un clic (o spazio).') + ' Una freccia per bersaglio: la freccia cala e il vento la sposta, attento alle assi!',
+    istruzioni: () => (window.Arena.touch() ? 'Appoggia il dito sul campo e trascina per mirare (il mirino sta un po\' sopra il dito): staccalo per tirare.' : 'Mira col mouse e tira con un clic (o spazio).') + ' Una freccia per bersaglio: la freccia cala e il vento la sposta, attento alle assi!',
     statoGioco: (ctx, s) => (s.s.ti[ctx.mio] ? 'Freccia tirata!' : 'Mira e tira!'),
     sottotitolo: (p) => (p.extra ? `bersaglio ${p.extra.dist}${p.extra.per > 1 ? ` (×${p.extra.per})` : ''}` : ''),
     hud: (ctx, s) => `<span>⏱️ ${s.s.resta} s</span><span>🏹 ${s.s.ti.filter(Boolean).length}/${s.s.ti.length} hanno tirato</span>`,

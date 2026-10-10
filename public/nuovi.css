@@ -1685,3 +1685,12 @@ button.rl-c:hover:not(:disabled) { box-shadow: inset 0 0 0 2px var(--oro); }
 .df-segno { fill: none; stroke: #e8221b; stroke-width: 6; stroke-dasharray: 0; animation: df-segno .9s ease-out; }
 .df-segno.prima { stroke-width: 4; stroke-dasharray: 10 8; opacity: .8; }
 @keyframes df-segno { from { opacity: 0; transform-box: fill-box; transform-origin: center; transform: scale(1.6); } }
+/* Wordle sul telefono: griglia e tastiera (con Invio e Cancella) stanno tutte nello schermo */
+@media (max-width: 620px) {
+  .wd-centro { gap: .45rem; }
+  .wd-griglia, .wd-riga { gap: 5px; }
+  .wd-riga { grid-template-columns: repeat(var(--n), min(3rem, calc((100vw - 3rem) / var(--n) - 5px), 5.4vh)); }
+  .wd-cella { font-size: clamp(1rem, 3.3vh, 1.6rem); border-radius: 6px; }
+  .wd-tastiera { gap: 5px; }
+  .wd-tasto { height: 2.7rem; }
+}
