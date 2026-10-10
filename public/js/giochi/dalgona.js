@@ -42,6 +42,18 @@
       g.stroke();
     }
   }
+  // sul telefono il dito copre il solco: una lente sopra il dito mostra ingrandito quello che c'è sotto
+  function lente(g, x, y, W, H) {
+    const k = g.canvas.width / W, R = 52, zoom = 2, r = R / zoom;
+    const dx = Math.max(R + 4, Math.min(W - R - 4, x)), dy = y - 120 < R + 4 ? Math.min(H - R - 4, y + 120) : y - 120;
+    g.save();
+    g.beginPath(); g.arc(dx, dy, R, 0, Math.PI * 2); g.closePath();
+    g.fillStyle = '#2b1606'; g.fill(); g.clip();
+    g.drawImage(g.canvas, (x - r) * k, (y - r) * k, 2 * r * k, 2 * r * k, dx - R, dy - R, 2 * R, 2 * R);
+    g.restore();
+    g.lineWidth = 3; g.strokeStyle = 'rgba(255,255,255,.85)'; g.beginPath(); g.arc(dx, dy, R, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = 'rgba(255,60,60,.9)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(dx - 7, dy); g.lineTo(dx + 7, dy); g.moveTo(dx, dy - 7); g.lineTo(dx, dy + 7); g.stroke();
+  }
   function ago(g, x, y, premuto) {
     g.save(); g.translate(x, y); g.rotate(-0.7);
     g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(4, 6, 3, 80);
@@ -105,7 +117,11 @@
         g.restore();
         // l'ago
         const ip = prima && prima.s.b[ctx.mio];
-        if (!rotto && !fatto && io.x !== null && io.x !== undefined) { const x = ip && ip.x != null ? ip.x + (io.x - ip.x) * u : io.x, y = ip && ip.y != null ? ip.y + (io.y - ip.y) * u : io.y; ago(g, x, y, io.a); }
+        if (!rotto && !fatto && io.x !== null && io.x !== undefined) {
+          const x = ip && ip.x != null ? ip.x + (io.x - ip.x) * u : io.x, y = ip && ip.y != null ? ip.y + (io.y - ip.y) * u : io.y;
+          ago(g, x, y, io.a);
+          if (io.a && window.Arena.touch()) lente(g, x, y, W, H);
+        }
         // barre in alto: ritagliato e crepe
         g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(W / 2 - 160, 12, 320, 40);
         g.fillStyle = '#7dffa0'; g.fillRect(W / 2 - 150, 20, 300 * io.pr / 100, 8);

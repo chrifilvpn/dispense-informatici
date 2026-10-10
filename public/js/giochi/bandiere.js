@@ -29,6 +29,14 @@
     return '<p class="bd-msg">Di che paese è questa bandiera?</p>';
   }
 
+  // a partita finita: le bandiere sbagliate da ripassare
+  function ripasso(p) {
+    if (!p.finita || !p.ripasso) return '';
+    if (!p.ripasso.length) return '<p class="bd-msg si">🏆 Nessun errore: le hai indovinate tutte!</p>';
+    return `<section class="bd-ripasso" aria-label="Bandiere da ripassare"><h3>📚 Da ripassare (${p.ripasso.length})</h3><div class="bd-rip-elenco">${p.ripasso.map((x) => `
+      <figure><svg viewBox="0 0 ${x.w} 200" aria-hidden="true">${x.svg}</svg><figcaption><b>${esc(x.nome)}</b>${x.detto ? `<small>avevi detto ${esc(x.detto)}</small>` : '<small>tempo scaduto</small>'}</figcaption></figure>`).join('')}</div></section>`;
+  }
+
   const tavolo = {
     libero: true,
     reset(ctx) { ctxB = ctx; },
@@ -42,6 +50,7 @@
         <div class="bd-bandiera"><svg viewBox="0 0 ${p.bandiera.w} 200" role="img" aria-label="Bandiera da indovinare">${p.bandiera.svg}</svg></div>
         ${messaggio(ctx)}
         <div class="bd-scelte">${bottoni(ctx)}</div>
+        ${ripasso(p)}
       </div>`;
     },
     dopo(ctx) {

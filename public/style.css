@@ -1106,7 +1106,7 @@ button.bc-zona { cursor: pointer; } button.bc-zona:hover:not(:disabled) { backgr
   .filtro-tipo button { font-size: .78rem; padding: .3rem .5rem; }
 }
 /* sul telefono durante la partita la firma finiva sopra i pulsanti in basso */
-@media (max-width: 700px) { #schermo-gioco:not([hidden]) ~ .firma { display: none; } }
+@media (max-width: 700px), (pointer: coarse) { #schermo-gioco:not([hidden]) ~ .firma { display: none; } }
 /* Scala 40 sul telefono: le 13-14 carte stanno tutte nello schermo (si sovrappongono di più) */
 @media (max-width: 600px) { .mano-scala .carta { --w: clamp(44px, 13vw, 78px); margin-left: calc(var(--w) * -.56); } }
 /* sul telefono i pulsanti della barra sono icone e "Tocca a te" va su una riga sua, così si legge per intero */
@@ -1121,3 +1121,9 @@ button.bc-zona { cursor: pointer; } button.bc-zona:hover:not(:disabled) { backgr
 .ms-modo { margin-left: auto; background: rgba(0, 0, 0, .2); color: #fff; border-color: rgba(255, 255, 255, .4); }
 .ms-modo[aria-pressed="true"] { background: #e2412f; border-color: #fff; }
 @media (max-width: 620px) { .ms-barra { gap: .7rem; padding: .4rem .7rem; font-size: .95rem; } }
+/* record personale a fine partita */
+.record { margin: .2rem 0 .6rem; padding: .45rem .7rem; border-radius: 10px; background: rgba(28, 26, 22, .06); text-align: center; font-size: .92rem; }
+.record.nuovo { background: rgba(209, 154, 42, .25); font-weight: 600; animation: record-brilla 1.6s ease-in-out 2; }
+@keyframes record-brilla { 50% { box-shadow: 0 0 0 4px rgba(209, 154, 42, .35); } }
+/* sul telefono il gioco sta subito sotto il punteggio (centrato in verticale lasciava una fascia vuota in alto) */
+@media (max-width: 620px) { .tavolo.libero .panno { align-items: start; align-content: start; } }

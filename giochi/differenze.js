@@ -32,7 +32,11 @@ function modifica(sc, tipo) {
   else if (tipo === 'grande') o.s = Math.round(o.s * 1.45);
   else if (tipo === 'gira') o.g = o.g ? 0 : 1;
   else if (tipo === 'extra') { const n = { tipo: scegli(TIPI), x: Math.round(rnd(12, 88)), y: Math.round(rnd(20, 86)), s: Math.round(rnd(8, 12)), c: scegli(COLORI), g: 0 }; s.ogg.push(n); }
-  return { scena: s, indice: i, tipo };
+  // dove sta la differenza (per cerchiarla nella soluzione): l'oggetto cambiato, o il posto dove mancava
+  const q = tipo === 'extra' ? s.ogg[s.ogg.length - 1] : tipo === 'manca' ? sc.ogg[i] : s.ogg[i];
+  const segno = { x: q.x, y: q.y, s: q.s };
+  if (tipo === 'sposta') segno.prima = { x: sc.ogg[i].x, y: sc.ogg[i].y };
+  return { scena: s, indice: i, tipo, segno };
 }
 
 class Differenze {
@@ -54,8 +58,8 @@ class Differenze {
     const k = Math.min(14, 6 + this.round);
     const base = scena(k);
     this.cambio = scegli(this.round <= 2 ? ['colore', 'manca', 'grande'] : CAMBI);
-    const { scena: diversa, tipo } = modifica(base, this.cambio);
-    this.cambio = tipo;
+    const { scena: diversa, tipo, segno } = modifica(base, this.cambio);
+    this.cambio = tipo; this.segno = segno;
     this.diversa = Math.floor(Math.random() * 4);
     this.immagini = [0, 1, 2, 3].map((i) => (i === this.diversa ? diversa : base));
     this.guardaMs = Math.max(2500, 6500 - this.round * 350);
@@ -109,7 +113,7 @@ class Differenze {
     return {
       gioco: this.id, n: this.n, turno: null, inAttesa: this.inAttesa, pausaMs: this.pausaMs, fase: f, round: this.round, nRound: this.nRound,
       immagini: f === 'guarda' || scopri ? this.immagini : null, restaMs: Math.max(0, this.fineFase - Date.now()), guardaMs: this.guardaMs,
-      diversa: scopri ? this.diversa : null, cambio: scopri ? this.cambio : null, mia: this.risposte[p] ?? null, risposto: this.risposte[p] !== undefined,
+      diversa: scopri ? this.diversa : null, cambio: scopri ? this.cambio : null, segno: scopri ? this.segno : null, mia: this.risposte[p] ?? null, risposto: this.risposte[p] !== undefined,
       pronti: Array.from({ length: this.n }, (_, i) => this.risposte[i] !== undefined), ultimi: scopri ? this.ultimi : null, punti: this.punti, giuste: this.giuste,
       finita: this.finita, risultato: this.risultato, evento: this.evento,
     };

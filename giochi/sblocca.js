@@ -123,7 +123,8 @@ class Sblocca {
     const [cod, m] = scelto.split(':');
     const pz = { blocchi: cod.match(/.{4}/g).map((x) => ({ o: x[0], l: Number(x[1]), r: Number(x[2]), c: Number(x[3]) })), minimo: Number(m) };
     this.iniziale = pz.blocchi; this.minimo = pz.minimo;
-    this.tavole = Array.from({ length: this.n }, () => ({ blocchi: pz.blocchi.map((b) => ({ ...b })), mosse: 0, fatto: null }));
+    // indietro: le posizioni prima di ogni mossa (per "Annulla"); aiuto: la prossima mossa giusta chiesta con "Aiuto"
+    this.tavole = Array.from({ length: this.n }, () => ({ blocchi: pz.blocchi.map((b) => ({ ...b })), mosse: 0, fatto: null, indietro: [], aiuto: null, aiuti: 0 }));
     this.arrivi = [];
     this.inizio = Date.now(); this.fine = this.inizio + TEMPO;
     this.menti = {};
@@ -157,12 +158,29 @@ class Sblocca {
     if (!t || t.fatto !== null) return { errore: 'Hai già risolto questo puzzle' };
     if (!a) return { errore: 'Mossa non valida' };
     if (a.tipo === 'pensa') return { ok: true };
-    if (a.tipo === 'ricomincia') { t.blocchi = this.iniziale.map((b) => ({ ...b })); return { ok: true }; }
+    if (a.tipo === 'ricomincia') { t.indietro.push(t.blocchi); t.blocchi = this.iniziale.map((b) => ({ ...b })); t.aiuto = null; return { ok: true }; }
+    // annulla l'ultima mossa: vale come una mossa (è come rimettere il blocco dov'era)
+    if (a.tipo === 'annulla') {
+      if (!t.indietro.length) return { errore: 'Non c\'è niente da annullare' };
+      t.blocchi = t.indietro.pop(); t.mosse++; t.aiuto = null;
+      return { ok: true };
+    }
+    // aiuto: la prossima mossa della strada più corta, al prezzo di 2 mosse
+    if (a.tipo === 'aiuto') {
+      if (t.aiuto) return { ok: true };
+      const strada = risolvi(t.blocchi);
+      if (!strada || !strada.length) return { errore: 'Nessun aiuto disponibile' };
+      t.aiuto = strada[0]; t.mosse += 2; t.aiuti++;
+      return { ok: true };
+    }
     if (a.tipo !== 'muovi') return { errore: 'Mossa non valida' };
     const i = Number(a.b), r = Number(a.r), c = Number(a.c);
     if (!t.blocchi[i]) return { errore: 'Blocco sconosciuto' };
     if (!posizioni(t.blocchi, i).some((q) => q.r === r && q.c === c)) return { errore: 'Il blocco non può arrivare lì' };
+    t.indietro.push(t.blocchi.map((b) => ({ ...b })));
+    if (t.indietro.length > 200) t.indietro.shift();
     t.blocchi[i] = { ...t.blocchi[i], r, c }; t.mosse++;
+    t.aiuto = null;
     if (risolto(t.blocchi)) {
       t.fatto = Date.now() - this.inizio; this.arrivi.push(p);
       const pos = this.arrivi.length;
@@ -197,6 +215,7 @@ class Sblocca {
     return {
       gioco: this.id, n: this.n, round: this.round, nRound: this.nRound, livello: this.livello, lato: L, uscita: USCITA,
       blocchi: t.blocchi, mosse: t.mosse, fatto: t.fatto, stelle: t.stelle || 0, minimo: this.minimo,
+      aiuto: t.aiuto, aiuti: t.aiuti, puoAnnullare: t.indietro.length > 0,
       altri: this.tavole.map((x) => ({ mosse: x.mosse, fatto: x.fatto, stelle: x.stelle || 0 })), arrivi: this.arrivi,
       resta: Math.max(0, this.fine - Date.now()), punti: this.punti, storico: this.storico,
       turno: null, inAttesa: this.inAttesa, pausaMs: this.pausaMs, finita: this.finita, risultato: this.risultato, evento: this.evento,
@@ -242,7 +261,8 @@ module.exports = {
       'Ogni puzzle è generato a caso e risolto dal server prima di dartelo: è sempre risolvibile e si sa il numero minimo di mosse (una mossa = far scorrere un blocco, anche di più caselle). Difficoltà: facile 4-8 mosse, media 9-14, difficile 15 o più.',
       'Sfida: tutti ricevono lo stesso puzzle nello stesso momento, ognuno sulla sua griglia; si vede quante mosse hanno fatto gli altri e chi ha finito. Il primo prende 3 punti, il secondo 2, il terzo 1; chi usa il numero minimo di mosse prende 1 punto in più. Ci sono 3 minuti per puzzle.',
       'Da soli: ogni puzzle vale da 1 a 3 stelle (3 stelle con il numero minimo di mosse, 2 fino a una volta e mezza).',
-      '"Ricomincia" rimette il puzzle com\'era (le mosse fatte restano contate).',
+      '"Ricomincia" rimette il puzzle com\'era (le mosse fatte restano contate). "Annulla" rimette il blocco dov\'era prima dell\'ultima mossa (conta come una mossa).',
+      '"💡 Aiuto" fa vedere la prossima mossa della strada più corta (il blocco da spostare e dove), ma costa 2 mosse.',
       'Il computer conosce la strada più corta: il difficile la segue velocemente, il medio è più lento e ogni tanto sbaglia, il facile è lento e fa spesso mosse a caso.',
     ],
   },

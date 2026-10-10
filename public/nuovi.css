@@ -1641,3 +1641,47 @@ button.rl-c:hover:not(:disabled) { box-shadow: inset 0 0 0 2px var(--oro); }
   .tt-lato { min-width: 3.6rem; }
   .tt-lato canvas { max-width: 3.6rem; height: auto; }
 }
+/* bandiere: ripasso a fine partita */
+.bd-ripasso { width: 100%; margin-top: .4rem; padding: .7rem; border-radius: 14px; background: rgba(0, 0, 0, .2); }
+.bd-ripasso h3 { margin: 0 0 .5rem; font: 400 1.1rem var(--serif); text-align: center; }
+.bd-rip-elenco { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); gap: .6rem; }
+.bd-rip-elenco figure { margin: 0; display: grid; gap: .3rem; justify-items: center; text-align: center; }
+.bd-rip-elenco svg { width: 100%; max-width: 9rem; height: auto; border-radius: 4px; box-shadow: 0 2px 6px rgba(0, 0, 0, .4); }
+.bd-rip-elenco figcaption { display: grid; font-size: .85rem; line-height: 1.25; }
+.bd-rip-elenco small { color: var(--tenue); font-size: .75rem; }
+/* giochi d'azione sul telefono in orizzontale: joystick e pulsante ai lati, sopra il campo, e il campo usa tutta l'altezza */
+.ar-gira { margin: 0; text-align: center; color: var(--oro); }
+@media (orientation: landscape) { .ar-gira { display: none; } }
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 520px) {
+  .ar-touch { position: fixed; left: 0; right: 0; bottom: max(.4rem, env(safe-area-inset-bottom)); z-index: 30; padding: 0 max(.6rem, env(safe-area-inset-left)) 0 max(.6rem, env(safe-area-inset-right)); pointer-events: none; }
+  .ar-touch > * { pointer-events: auto; opacity: .82; }
+  .ar-joy { width: 6.5rem; height: 6.5rem; }
+  .ar-bt { width: 5rem; height: 5rem; font-size: .9rem; }
+  .ar-bt.grande { width: 9rem; height: 4rem; margin-left: auto; }
+  .ar-istr { display: none; }
+  #schermo-gioco .punteggio { padding-block: .1rem; }
+}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 520px) {
+  #schermo-gioco:has(.ar) .barra { padding: .2rem .5rem; }
+  #schermo-gioco:has(.ar) .barra .bottone.piccolo-bt { padding: .2rem .5rem; font-size: .78rem; }
+  #schermo-gioco:has(.ar) .barra-titolo { display: none; }
+  #schermo-gioco:has(.ar) .punteggio { font-size: .8rem; padding-block: 0; }
+  #schermo-gioco:has(.ar) .pos-alto:empty, #schermo-gioco:has(.ar) .io { display: none; }
+  #schermo-gioco:has(.ar) .tavolo { padding-block: .1rem; gap: .1rem; }
+  .ar { gap: .15rem; }
+  .ar .pa-round { font-size: .7rem; margin: 0; }
+  .ar-hud { font-size: .78rem; min-height: 0; }
+}
+/* shut the box: le combinazioni possibili come scorciatoie */
+.sb-combo { display: flex; flex-wrap: wrap; gap: .35rem; justify-content: center; max-width: 34rem; }
+.sb-combo .bottone { font-variant-numeric: tabular-nums; }
+/* sblocca: comandi, aiuto (blocco che lampeggia e casella d'arrivo tratteggiata) */
+.sbl-comandi { display: flex; flex-wrap: wrap; gap: .4rem; justify-content: center; }
+.sbl-comandi small { opacity: .7; font-size: .75em; }
+.sbl-blocco.aiuto span { animation: sbl-aiuto .8s ease-in-out infinite; outline: 3px solid #ffe066; outline-offset: -1px; }
+@keyframes sbl-aiuto { 50% { filter: brightness(1.35); } }
+.sbl-ombra { position: absolute; border: 3px dashed #ffe066; border-radius: 10px; pointer-events: none; box-sizing: border-box; background: rgba(255, 224, 102, .15); }
+/* trova le differenze: la differenza cerchiata nella soluzione */
+.df-segno { fill: none; stroke: #e8221b; stroke-width: 6; stroke-dasharray: 0; animation: df-segno .9s ease-out; }
+.df-segno.prima { stroke-width: 4; stroke-dasharray: 10 8; opacity: .8; }
+@keyframes df-segno { from { opacity: 0; transform-box: fill-box; transform-origin: center; transform: scale(1.6); } }

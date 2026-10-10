@@ -52,11 +52,20 @@
     const k = `${stato.round}`;
     if (chiave !== k) { chiave = k; box.innerHTML = stato.blocchi.map((b, i) => `<div class="sbl-blocco ${i === 0 ? 'rosso' : b.o} l${b.l}" data-i="${i}"><span></span></div>`).join(''); }
     stato.blocchi.forEach((b, i) => {
-      const el = box.children[i]; if (!el || (trascina && trascina.i === i)) return;
+      const el = box.querySelectorAll('.sbl-blocco')[i]; if (!el || (trascina && trascina.i === i)) return;
       el.style.left = `${(b.c / L) * 100}%`; el.style.top = `${(b.r / L) * 100}%`;
       el.style.width = `${((b.o === 'h' ? b.l : 1) / L) * 100}%`; el.style.height = `${((b.o === 'v' ? b.l : 1) / L) * 100}%`;
     });
     tav.classList.toggle('risolto', !!stato.fatto);
+    // l'aiuto: il blocco da spostare lampeggia e un'ombra tratteggiata mostra dove va
+    box.querySelectorAll('.sbl-blocco').forEach((el, i) => el.classList.toggle('aiuto', !!(stato.aiuto && stato.aiuto.b === i)));
+    let ombra = tav.querySelector('.sbl-ombra');
+    const a = stato.aiuto, ba = a && stato.blocchi[a.b];
+    if (ba && !stato.fatto) {
+      if (!ombra) { ombra = document.createElement('div'); ombra.className = 'sbl-ombra'; box.append(ombra); }
+      ombra.style.left = `${(a.c / L) * 100}%`; ombra.style.top = `${(a.r / L) * 100}%`;
+      ombra.style.width = `${((ba.o === 'h' ? ba.l : 1) / L) * 100}%`; ombra.style.height = `${((ba.o === 'v' ? ba.l : 1) / L) * 100}%`;
+    } else if (ombra) ombra.remove();
   }
   const tavolo = {
     libero: true,
@@ -68,7 +77,13 @@
       return `<div class="sbl"><p class="pa-round">Puzzle ${p.round} di ${p.nRound} · ${{ facile: 'facile', medio: 'medio', difficile: 'difficile' }[p.livello]}</p>
         <div class="sbl-posto"></div>${stelle}<p class="pa-msg">${msg}</p>${altri}</div>`;
     },
-    azioni(ctx) { const p = ctx.partita; return p.fatto === null && !p.finita && !p.inAttesa ? '<button type="button" class="bottone" data-az="ricomincia">↺ Ricomincia</button>' : ''; },
+    azioni(ctx) {
+      const p = ctx.partita;
+      if (p.fatto !== null || p.finita || p.inAttesa) return '';
+      return `<div class="sbl-comandi"><button type="button" class="bottone" data-az="annulla" ${p.puoAnnullare ? '' : 'disabled'}>↶ Annulla</button>
+        <button type="button" class="bottone" data-az="aiuto" ${p.aiuto ? 'disabled' : ''} title="Mostra la prossima mossa giusta (costa 2 mosse)">💡 Aiuto <small>+2</small></button>
+        <button type="button" class="bottone" data-az="ricomincia">↺ Ricomincia</button></div>`;
+    },
     dopo(ctx) {
       ctxS = ctx;
       if (!tav) crea();
@@ -85,7 +100,7 @@
     stato(ctx) { const p = ctx.partita; if (p.finita) return null; return p.fatto !== null ? 'Risolto! ✅' : 'Libera il blocco rosso'; },
     punteggio(ctx) { const p = ctx.partita; return p.punti.map((x, i) => `<span>${esc(i === ctx.mio ? 'Tu' : ctx.nome(i))} <b>${x}</b></span>`).join('') + `<span class="obiettivo">${p.n === 1 ? 'stelle' : 'punti'}</span>`; },
     infoPosto(ctx, posto) { const x = ctx.partita.altri[posto]; return x.fatto !== null ? `✅ ${x.mosse} mosse` : `${x.mosse} mosse`; },
-    clic(ctx, el) { if (el.dataset.az === 'ricomincia') ctx.invia({ tipo: 'ricomincia' }); },
+    clic(ctx, el) { if (['ricomincia', 'annulla', 'aiuto'].includes(el.dataset.az)) ctx.invia({ tipo: el.dataset.az }); },
   };
   Object.assign(window.Tavoli, { sblocca: tavolo });
 })();

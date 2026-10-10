@@ -4,6 +4,16 @@
   const { esc, primaVolta, suono, ritardo } = window.Nuovi;
   const PUNTI_DADO = { 1: [[50, 50]], 2: [[28, 28], [72, 72]], 3: [[28, 28], [50, 50], [72, 72]], 4: [[28, 28], [72, 28], [28, 72], [72, 72]], 5: [[28, 28], [72, 28], [50, 50], [28, 72], [72, 72]], 6: [[28, 25], [72, 25], [28, 50], [72, 50], [28, 75], [72, 75]] };
   const dado = (v, k, st) => `<svg class="sb-dado" viewBox="0 0 100 100" style="--k:${k};${st}"><rect x="5" y="5" width="90" height="90" rx="18"/>${PUNTI_DADO[v].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9"/>`).join('')}</svg>`;
+  // tutti i modi di fare la somma dei dadi con le tessere ancora alzate (come sul server)
+  function combinazioni(alzate, somma) {
+    const out = [], su = [...alzate].sort((a, b) => a - b);
+    const giro = (i, resto, scelta) => {
+      if (resto === 0) { out.push(scelta); return; }
+      for (let k = i; k < su.length && su[k] <= resto; k++) giro(k + 1, resto - su[k], [...scelta, su[k]]);
+    };
+    giro(0, somma, []);
+    return out.sort((a, b) => a.length - b.length || b[b.length - 1] - a[a.length - 1]);
+  }
   const tavolo = {
     libero: true,
     panno(ctx) {
@@ -26,10 +36,13 @@
       else msg = `Gioca ${esc(ctx.nome(p.turno))}`;
       const righe = p.storico.map((r, i) => `<tr><td>Round ${i + 1}</td>${r.map((x) => `<td>${x === null ? '·' : x}</td>`).join('')}</tr>`).join('');
       const tabella = p.n > 1 || p.storico.length ? `<table class="sb-tab"><tr><th></th>${Array.from({ length: p.n }, (_, i) => `<th>${esc(i === ctx.mio ? 'Tu' : ctx.nome(i))}</th>`).join('')}</tr>${righe}<tr class="tot"><td>Totale</td>${p.punti.map((x) => `<td>${x}</td>`).join('')}</tr></table>` : '';
+      // le combinazioni possibili come pulsanti: un tocco e le tessere si abbassano (si possono anche scegliere a mano)
+      const combo = mio && p.fase === 'scegli' ? combinazioni(alzate, p.somma) : [];
+      const scorciatoie = combo.length ? `<div class="sb-combo" role="group" aria-label="Combinazioni possibili">${combo.map((c) => `<button type="button" class="bottone mini-bt" data-az="combo" data-t="${c.join(',')}">${c.join(' + ')}</button>`).join('')}</div>` : '';
       return `<div class="sb">
         <p class="pa-round">Round ${p.round} di ${p.nRound}</p>
         <div class="sb-scatola"><div class="sb-tessere" style="--n:${p.max}">${tessere}</div><div class="sb-panno">${dadi}</div></div>
-        <p class="pa-msg" aria-live="polite">${msg}</p>${tabella}</div>`;
+        <p class="pa-msg" aria-live="polite">${msg}</p>${scorciatoie}${tabella}</div>`;
     },
     azioni(ctx) {
       const p = ctx.partita, ui = ctx.ui;
@@ -52,6 +65,7 @@
       const ui = ctx.ui, az = el.dataset.az;
       if (az === 'tessera') { const k = Number(el.dataset.k); ui.sel = (ui.sel || []).includes(k) ? ui.sel.filter((x) => x !== k) : [...(ui.sel || []), k].sort((a, b) => a - b); suono([[500 + k * 30, 0.03]], { volume: 0.03 }); return ctx.ridisegna(); }
       if (az === 'tira' || az === 'tira1') return ctx.invia({ tipo: 'tira', uno: az === 'tira1' });
+      if (az === 'combo') { ui.sel = []; return ctx.invia({ tipo: 'chiudi', tessere: el.dataset.t.split(',').map(Number) }); }
       if (az === 'chiudi') { const tessere = ui.sel; ui.sel = []; return ctx.invia({ tipo: 'chiudi', tessere }); }
     },
   };

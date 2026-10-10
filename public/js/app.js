@@ -39,7 +39,18 @@
   // ---------- utilità ----------
   const meta = (id) => giochi.find((g) => g.id === id);
   // al tavolo il pulsante della chat globale sta nella barra in alto (in basso coprirebbe le carte)
-  function mostra(id) { for (const s of $$('.schermo')) s.hidden = s.id !== id; const b = $('#apri-globale'); if (b) b.hidden = id === 'schermo-gioco'; }
+  function mostra(id) { for (const s of $$('.schermo')) s.hidden = s.id !== id; const b = $('#apri-globale'); if (b) b.hidden = id === 'schermo-gioco'; schermoAcceso(); }
+  // durante la partita lo schermo del telefono non si spegne da solo (Wake Lock); sulle dispense e fuori dal gioco sì
+  let blocco = null;
+  async function schermoAcceso() {
+    const serve = !$('#schermo-gioco').hidden && !(window.Boss && Boss.attivo) && document.visibilityState === 'visible';
+    try {
+      if (serve && !blocco && navigator.wakeLock) { blocco = await navigator.wakeLock.request('screen'); blocco.addEventListener('release', () => { blocco = null; }); }
+      else if (!serve && blocco) { const b = blocco; blocco = null; await b.release(); }
+    } catch { blocco = null; }
+  }
+  document.addEventListener('visibilitychange', schermoAcceso);
+  if (window.Boss) Boss.onCambio(schermoAcceso);
   let tAvviso;
   function avviso(t, ms = 2600) {
     const el = $('#avviso');
@@ -364,7 +375,7 @@
     if (primo) { $('#avviso').hidden = true; history.replaceState(null, '', `?tavolo=${s.codice}`); }
     const firma = s.partita ? `${s.codice}:${s.gioco}:${s.partita.gioco}` : null;
     if (firma !== firmaPartita) { ui = {}; firmaPartita = firma; }
-    if (s.partita && !s.partita.finita && ui._fineDal) { ui._fineDal = null; ui._fineSubito = false; } // rivincita: si riparte
+    if (s.partita && !s.partita.finita && ui._fineDal) { ui._fineDal = null; ui._fineSubito = false; ui._record = null; } // rivincita: si riparte
     disegnaTutto();
     gestisciChat();
     disegnaVoto();
@@ -781,11 +792,13 @@
     const alContrario = r.etichetta === 'penalità' || r.crescente;
     const ordinate = [...r.fazioni].sort((a, b) => (alContrario ? a.punti - b.punti : b.punti - a.punti));
     const vittorie = stato.giocatori.map((g, i) => (g ? `<span>${esc(nomeDi(i))} <b>${g.vittorie}</b></span>` : '')).join('');
+    const rec = recordPersonale(p, r, alContrario);
     $('#fine-scheda').innerHTML = `
       <h2>${esc(titolo)}</h2>
       ${T.riepilogo && p.riepilogo ? `<details class="dettaglio"><summary>Ultima smazzata</summary>${T.riepilogo(ctx)}</details>` : ''}
       <ul class="fine-punti">${ordinate.map((f) => `<li class="${r.vincitori.includes(f.posti[0]) && !r.pareggio ? 'vince' : ''}">
         <span>${esc(nomi(f.posti))}</span><span class="p">${f.punti} <small>${r.etichetta}</small></span></li>`).join('')}</ul>
+      ${rec}
       <p class="piccolo">Partite vinte a questo tavolo</p>
       <div class="vittorie">${vittorie}</div>
       ${stato.sonoHost
@@ -793,6 +806,27 @@
         : '<p class="piccolo">La rivincita la avvia chi ha aperto il tavolo.</p><button class="bottone primario" data-fine="sala">🏠 Torna alla lobby</button>'}
       <button class="bottone leggero" data-fine="esci">Torna all'ingresso</button>`;
   }
+  // RECORD PERSONALE: il miglior risultato di sempre in questo gioco, con queste opzioni e questo numero di giocatori
+  // (salvato nel browser). Si aggiorna una volta sola per partita; "meno è meglio" vale per tiri, tempi, penalità…
+  function recordPersonale(p, r, alContrario) {
+    const mia = r.fazioni.find((f) => f.posti.length === 1 && f.posti[0] === stato.mioPosto);
+    if (!mia || !Number.isFinite(Number(mia.punti)) || p.aSquadre) return '';
+    const opz = Object.keys(stato.opzioni || {}).sort().map((k) => `${k}=${stato.opzioni[k]}`).join('&');
+    const chiave = `record:${p.gioco}:${p.n}:${r.etichetta}:${opz}`;
+    const valore = Number(mia.punti);
+    if (!ui._record) {
+      const prima = mem.get(chiave);
+      const vecchio = prima == null ? null : Number(prima);
+      const nuovo = vecchio === null || (alContrario ? valore < vecchio : valore > vecchio);
+      if (nuovo) mem.set(chiave, String(valore));
+      ui._record = { nuovo: nuovo && vecchio !== null, primo: vecchio === null, vecchio, migliore: nuovo ? valore : vecchio };
+    }
+    const x = ui._record;
+    if (x.nuovo) return `<p class="record nuovo">🏅 Nuovo record personale: <b>${valore}</b> ${esc(r.etichetta)} <small>(prima: ${x.vecchio})</small></p>`;
+    if (x.primo) return `<p class="record">📌 Primo risultato salvato: <b>${valore}</b> ${esc(r.etichetta)}. Prova a batterlo!</p>`;
+    return `<p class="record">🏅 Il tuo record: <b>${x.migliore}</b> ${esc(r.etichetta)}</p>`;
+  }
+
   // a fine partita: scegli subito un altro gioco per lo stesso tavolo (solo chi l'ha aperto)
   let dopo = { gioco: null, opzioni: {} };
   function sceltaAltroGioco() {

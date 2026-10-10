@@ -60,6 +60,7 @@ class Bandiere {
     this.giuste = new Array(n).fill(0);
     this.serie = new Array(n).fill(0);     // risposte giuste di fila
     this.migliore = new Array(n).fill(0);  // la serie più lunga
+    this.sbagliate = Array.from({ length: n }, () => []); // le bandiere sbagliate di ognuno: il ripasso alla fine
     this.k = -1;
     this.turno = null; this.inAttesa = false; this.pausaMs = PAUSA_MS;
     this.finita = false; this.risultato = null; this.evento = null; this.nEv = 0;
@@ -126,7 +127,7 @@ class Bandiere {
   chiudiDomanda() {
     for (let p = 0; p < this.n; p++) {
       const x = this.risposte[p];
-      if (x && x.giusto) { this.punti[p] += x.punti; this.giuste[p]++; this.serie[p]++; this.migliore[p] = Math.max(this.migliore[p], this.serie[p]); } else this.serie[p] = 0;
+      if (x && x.giusto) { this.punti[p] += x.punti; this.giuste[p]++; this.serie[p]++; this.migliore[p] = Math.max(this.migliore[p], this.serie[p]); } else { this.serie[p] = 0; this.sbagliate[p].push({ giusta: this.giusta, scelta: x && x.scelta >= 0 ? this.opzioni[x.scelta] : null }); }
     }
     const nome = PAESI[this.giusta].nome;
     const primi = this.risposte.map((x, i) => (x && x.giusto ? i : -1)).filter((i) => i >= 0).sort((a, b) => this.risposte[a].ms - this.risposte[b].ms);
@@ -169,6 +170,8 @@ class Bandiere {
       giusta: svela ? this.opzioni.indexOf(this.giusta) : null,
       altri: this.risposte.map((x, i) => ({ risposto: x !== null, giusto: svela && x ? x.giusto : null, scelta: svela && x ? x.scelta : null, punti: this.punti[i], giuste: this.giuste[i], serie: this.serie[i] })),
       punti: this.punti, giuste: this.giuste, serie: this.serie[p], migliore: this.migliore[p],
+      // a partita finita: le bandiere che hai sbagliato, con il nome giusto (e quello che avevi detto) per ripassarle
+      ripasso: this.finita ? this.sbagliate[p].map((x) => ({ svg: PAESI[x.giusta].svg, w: PAESI[x.giusta].W, nome: PAESI[x.giusta].nome, detto: x.scelta === null ? null : PAESI[x.scelta].nome })) : null,
       turno: null, inAttesa: this.inAttesa, pausaMs: this.pausaMs, finita: this.finita, risultato: this.risultato, evento: this.evento,
     };
   }
@@ -211,6 +214,7 @@ module.exports = {
       'Sfida (da 2 a 8): tutti vedono la stessa bandiera nello stesso momento. Una risposta giusta vale 10 punti più un bonus fino a 10 per la velocità (più rispondi presto, più prendi). Le risposte sbagliate valgono 0. Vince chi ha più punti alla fine.',
       'Prima di iniziare si sceglie quante bandiere (10, 20 o 30), il tempo per ognuna (10, 15 o 6 secondi) e quali bandiere: tutte, solo le famose o solo le difficili.',
       'Gli stemmi più complicati sono disegnati in modo semplificato, ma colori e disposizione sono quelli veri.',
+      'A fine partita compare il ripasso: le bandiere che hai sbagliato, con il nome giusto e quello che avevi scelto.',
       'Il computer facile conosce solo le bandiere famose ed è lento; il medio ne sa di più; il difficile le conosce quasi tutte e risponde in fretta.',
     ],
   },

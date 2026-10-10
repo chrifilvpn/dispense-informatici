@@ -16,9 +16,12 @@
     fungo: (c) => `<rect x="-12" y="0" width="24" height="36" rx="6" fill="#f5ecd6" stroke="${L}" stroke-width="3"/><path d="M-42 4 Q0 -60 42 4Z" fill="${c}" stroke="${L}" stroke-width="4"/><circle cx="-14" cy="-14" r="6" fill="#fff"/><circle cx="12" cy="-20" r="5" fill="#fff"/>`,
     aquilone: (c) => `<path d="M0 -40 L28 0 L0 40 L-28 0Z" fill="${c}" stroke="${L}" stroke-width="4"/><path d="M0 -40 V40 M-28 0 H28" stroke="${L}" stroke-width="2"/><path d="M0 40 Q-10 55 6 62 Q-6 72 10 80" fill="none" stroke="${L}" stroke-width="2.5"/><path d="M-4 55 l8 -4 M2 68 l8 -3" stroke="#e8453c" stroke-width="4"/>`,
   };
-  function disegno(sc, cls = '', attr = '') {
+  function disegno(sc, cls = '', attr = '', segno = null) {
     const ogg = sc.ogg.map((o) => `<g transform="translate(${o.x * 4} ${o.y * 3}) scale(${(o.s / 30) * (o.g ? -1 : 1)} ${o.s / 30})">${DIS[o.tipo](o.c)}</g>`).join('');
-    return `<svg class="df-img ${cls}" viewBox="0 0 400 300" ${attr}><rect width="400" height="300" fill="${sc.cielo}"/><path d="M0 190 Q100 170 200 188 T400 184 V300 H0Z" fill="${sc.prato}"/>${ogg}</svg>`;
+    // nella soluzione: un cerchio rosso sulla differenza (e uno tratteggiato dove l'oggetto era prima, se è stato spostato)
+    const r = segno ? Math.max(26, segno.s * 2.4) : 0;
+    const cerchio = segno ? `${segno.prima ? `<circle class="df-segno prima" cx="${segno.prima.x * 4}" cy="${segno.prima.y * 3}" r="${r}"/>` : ''}<circle class="df-segno" cx="${segno.x * 4}" cy="${segno.y * 3}" r="${r}"/>` : '';
+    return `<svg class="df-img ${cls}" viewBox="0 0 400 300" ${attr}><rect width="400" height="300" fill="${sc.cielo}"/><path d="M0 190 Q100 170 200 188 T400 184 V300 H0Z" fill="${sc.prato}"/>${ogg}${cerchio}</svg>`;
   }
   const NOMI_CAMBIO = { colore: 'un oggetto ha cambiato colore', manca: 'mancava un oggetto', sposta: 'un oggetto era spostato', grande: 'un oggetto era più grande', gira: 'un oggetto era girato al contrario', extra: 'c\'era un oggetto in più' };
   const tavolo = {
@@ -33,7 +36,7 @@
         griglia = [0, 1, 2, 3].map((i) => `<button type="button" class="df-fig df-scelta ${p.mia === i ? 'scelto' : ''}" ${p.risposto ? 'disabled' : `data-az="scegli" data-i="${i}"`}><span>${i + 1}</span></button>`).join('');
         msg = p.risposto ? 'Risposta data: si aspettano gli altri' : `Quale era diverso? <span class="df-conto" data-fine="${Date.now() + p.restaMs}"></span>`;
       } else {
-        griglia = p.immagini.map((sc, i) => `<figure class="df-fig ${i === p.diversa ? 'giusta' : ''} ${p.mia === i && i !== p.diversa ? 'sbagliata' : ''}">${disegno(sc)}<figcaption>${i + 1}${i === p.diversa ? ' · diverso!' : ''}</figcaption></figure>`).join('');
+        griglia = p.immagini.map((sc, i) => `<figure class="df-fig ${i === p.diversa ? 'giusta' : ''} ${p.mia === i && i !== p.diversa ? 'sbagliata' : ''}">${disegno(sc, '', '', i === p.diversa ? p.segno : null)}<figcaption>${i + 1}${i === p.diversa ? ' · diverso!' : ''}</figcaption></figure>`).join('');
         const pt = p.ultimi ? p.ultimi[ctx.mio] : 0;
         msg = `Era il ${p.diversa + 1}: ${NOMI_CAMBIO[p.cambio]}. ${pt ? `+${pt} punti per te!` : p.mia === null ? 'Non hai risposto.' : 'Peccato!'}`;
       }

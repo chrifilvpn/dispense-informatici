@@ -144,6 +144,9 @@ class Dalgona extends Arena {
       // correre troppo incrina il biscotto
       const vel = l / Math.max(dt, 0.001);
       if (vel > 420) b.danno += ((vel - 420) / 420) * 2.5;
+      // con l'ago fermo fuori dal solco il danno cresce col tempo e non a ogni passo del server: un tocco appena
+      // sbagliato (sul telefono capita) lascia il tempo di tornare nel solco invece di rompere tutto in mezzo secondo
+      const fermo = l < 1 ? Math.min(1, dt * 6) : 1;
       for (let k = 1; k <= n; k++) {
         const qx = pr[0] + ((x - pr[0]) * k) / n, qy = pr[1] + ((y - pr[1]) * k) / n;
         if (Math.hypot(qx - CX, qy - CY) > R_BISCOTTO) continue; // fuori dal biscotto: niente
@@ -151,7 +154,7 @@ class Dalgona extends Arena {
         if (d <= tol) {
           const pts = PUNTI[b.forma];
           for (const j of vicini(b.forma, qx, qy)) if (Math.hypot(pts[j][0] - qx, pts[j][1] - qy) <= tol + 3) b.fatto[j] = 1;
-        } else b.danno += Math.min(7, 0.6 + (d - tol) * 0.32) * (FORME[b.forma].fragile || 1); // fuori dal solco: il biscotto si incrina (la Torre Eiffel è più fragile)
+        } else b.danno += Math.min(7, 0.6 + (d - tol) * 0.32) * (FORME[b.forma].fragile || 1) * fermo; // fuori dal solco: il biscotto si incrina (la Torre Eiffel è più fragile)
       }
       b.prima = [x, y];
       if (b.danno >= 100) { b.danno = 100; this.rompi(p); continue; }
@@ -229,7 +232,7 @@ module.exports = {
     regole: [
       'Ognuno riceve il suo biscotto di caramello con una forma impressa, estratta a caso: cerchio, triangolo, stella o ombrello. Ogni tanto escono le forme impossibili, con solchi strettissimi e un biscotto più fragile: Ingranaggio (circa 1 volta su 10, 18 denti), Fiocco di neve (1 su 15, sei bracci con i rametti), Mano (1 su 20, dita separate da fessure sottilissime), Seppia (1 su 25, otto tentacoli) e Torre Eiffel (1 su 30). Chi ne ritaglia una prende molti punti in più.',
       'Si ritaglia tenendo premuto il tasto sinistro del mouse (sul telefono il dito) e seguendo il solco della forma. Se rilasci ti fermi; ripremi quando vuoi per riprendere, anche da un altro punto.',
-      'Il biscotto è fragile e il solco è stretto: se l\'ago esce dal solco il biscotto si incrina subito, e più esci e più ti allontani, più si crepa. Si crepa anche se corri troppo veloce, e un po\' ogni volta che riappoggi l\'ago (3%): meglio non staccarlo troppo spesso. La barra delle crepe arriva fino a 100%: a quel punto il biscotto si rompe e sei eliminato (macchia rossa stilizzata e nome grigio). Sulla Torre Eiffel il solco è più stretto.',
+      'Il biscotto è fragile e il solco è stretto: se l\'ago esce dal solco il biscotto si incrina subito, e più esci e più ti allontani, più si crepa. Si crepa anche se corri troppo veloce, e un po\' ogni volta che riappoggi l\'ago (3%): meglio non staccarlo troppo spesso. Se appoggi l\'ago fuori dal solco e lo tieni fermo il biscotto si crepa più piano: hai un paio di secondi per riportarlo dentro. La barra delle crepe arriva fino a 100%: a quel punto il biscotto si rompe e sei eliminato (macchia rossa stilizzata e nome grigio). Sulla Torre Eiffel il solco è più stretto.',
       'Quando hai ritagliato tutto il solco la forma si stacca e hai passato il round. Chi non finisce entro 90 secondi è eliminato.',
       'Punti: 5 per aver passato il round, più un punto ogni 10 secondi avanzati; la Torre Eiffel vale 20 punti in più. Dopo 3 round (o 1, o 5) vince chi ha più punti.',
       'Il gioco è in tempo reale: si ferma per tutti quando qualcuno apre le dispense.',

@@ -1145,7 +1145,7 @@ function giocaTutta(M, n, livelli, opzioni = {}) {
   const vd = { facile: 0, medio: 0, difficile: 0 }, cadute = { medio: 0, difficile: 0 };
   const D = M._test.Duello, pc0 = D.prototype.perdiCuore; let livC = null;
   D.prototype.perdiCuore = function (p, perche) { if (livC && this.e[p].stordito <= 0 && this.tempoRound < 60 && cadute[livC[p]] !== undefined) cadute[livC[p]]++; return pc0.call(this, p, perche); };
-  for (const mappa of Object.keys(MAPPE)) for (let k = 0; k < 24; k++) {
+  for (const mappa of Object.keys(MAPPE)) for (let k = 0; k < 36; k++) {
     livC = ['facile', 'medio', 'difficile'].map((_, i) => ['facile', 'medio', 'difficile'][(i + k) % 3]);
     const x = M.crea({ n: 3, opzioni: { round: 1, mappa }, bot: livC }); let ora = Date.now(), passi = 0;
     while (!x.finita) { ora += 33; if (x.fase === 'via' || x.fase === 'pausaRound') x.fineFase = Math.min(x.fineFase, ora); x.tick(ora); assert.ok(passi++ < 20000, 'il round finisce'); }
@@ -2857,4 +2857,32 @@ function giocaTutta(M, n, livelli, opzioni = {}) {
     p.punti.forEach((x, i) => { media[liv[i % 3]] += x; });
   }
   console.log(`✓ Ponte fragile: vetro che regge o si rompe, righe note a tutti, il prossimo parte dalla caduta, riflesso privato una volta per round, bonus all'arrivo, fila che gira, 1500 partite tra computer (punti f/m/d ${media.facile}/${media.medio}/${media.difficile})`);
+}
+
+// ======================= MIGLIORIE AI GIOCHI (ottobre) =======================
+{
+  // sblocca: annulla (vale una mossa) e aiuto (la prossima mossa della strada più corta, costa 2 mosse)
+  const S = GIOCHI.sblocca, g = S.crea({ n: 1, opzioni: { livello: 'facile' } }), t = g.tavole[0];
+  assert.ok(g.azione(0, { tipo: 'annulla' }).errore, 'all\'inizio non c\'è niente da annullare');
+  assert.ok(g.azione(0, { tipo: 'aiuto' }).ok && t.mosse === 2 && t.aiuto && g.vista(0).aiuto, 'l\'aiuto costa 2 mosse e si vede');
+  const prima = t.blocchi.map((b) => ({ ...b }));
+  assert.ok(g.azione(0, { tipo: 'muovi', ...t.aiuto }).ok && t.aiuto === null && g.vista(0).puoAnnullare, 'seguendo l\'aiuto la mossa vale');
+  assert.ok(g.azione(0, { tipo: 'annulla' }).ok && JSON.stringify(t.blocchi) === JSON.stringify(prima) && t.mosse === 4, 'annulla rimette il blocco e conta una mossa');
+  // risolvere seguendo sempre l'aiuto porta alla soluzione
+  const h = S.crea({ n: 1, opzioni: { livello: 'facile' } });
+  for (let k = 0; k < 40 && h.tavole[0].fatto === null; k++) { h.azione(0, { tipo: 'aiuto' }); h.azione(0, { tipo: 'muovi', ...h.tavole[0].aiuto }); }
+  assert.ok(h.tavole[0].fatto !== null, 'con gli aiuti il puzzle si risolve');
+  // bandiere: a fine partita il ripasso delle bandiere sbagliate (solo le proprie)
+  const B = GIOCHI.bandiere.crea({ n: 2, opzioni: { domande: 10 } });
+  for (let k = 0; k < 10; k++) { const giusta = B.opzioni.indexOf(B.giusta); B.azione(0, { tipo: 'risposta', scelta: giusta }); B.azione(1, { tipo: 'risposta', scelta: (giusta + 1) % 4 }); B.avanza(); }
+  assert.ok(B.finita && B.vista(0).ripasso.length === 0 && B.vista(1).ripasso.length === 10 && B.vista(1).ripasso.every((x) => x.svg && x.nome && x.detto), 'ripasso: le sbagliate con il nome giusto e quello detto');
+  // differenze: nella soluzione arriva il punto da cerchiare, prima no
+  const D = GIOCHI.differenze.crea({ n: 1, opzioni: {} });
+  assert.strictEqual(D.vista(0).segno, null, 'il punto della differenza non arriva prima');
+  assert.ok(D.segno && Number.isFinite(D.segno.x) && Number.isFinite(D.segno.y), 'si sa dove sta la differenza');
+  // dalgona: l'ago fermo fuori dal solco crepa piano (c'è tempo per tornare dentro), muovendolo fuori si rompe in fretta
+  const G = GIOCHI.dalgona.crea({ n: 1, opzioni: { round: 1 }, bot: [null] }); let ora = Date.now(); while (G.fase !== 'gioco') { ora += 33; G.fineFase = ora; G.tick(ora); }
+  Object.assign(G.inp[0], { a: true, mx: 500, my: 330 }); for (let k = 0; k < 30; k++) G.passo(0.033);
+  assert.ok(G.b[0].stato === 'gioco' && G.b[0].danno < 60, `un secondo fermo fuori dal solco non rompe il biscotto (${Math.round(G.b[0].danno)}%)`);
+  console.log('✓ Migliorie: Sblocca con annulla e aiuto, ripasso delle bandiere sbagliate, differenza cerchiata nella soluzione, Dalgona più giusta con l\'ago fermo');
 }
