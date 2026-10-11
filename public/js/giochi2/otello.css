@@ -1,0 +1,35 @@
+/* REVERSI */
+.ot { --ot-nero: radial-gradient(circle at 35% 30%, #5b5b5b, #1b1b1b 55%, #000); --ot-bianco: radial-gradient(circle at 35% 30%, #fff, #ecebe6 55%, #c9c6bb);
+  display: grid; justify-items: center; gap: .6rem; width: 100%; padding: .3rem 0 .6rem; }
+.ot-punti { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; justify-content: center; }
+.ot-conto { display: inline-flex; align-items: center; gap: .4rem; padding: .3rem .7rem; border-radius: 999px; background: rgba(0, 0, 0, .25); border: 2px solid transparent; max-width: 44vw; }
+.ot-conto b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 7.5rem; }
+.ot-conto strong { font: 400 1.3rem var(--serif); }
+.ot-conto.di-turno { border-color: var(--oro); box-shadow: 0 0 12px rgba(209, 154, 42, .45); }
+.ot-vs { color: var(--tenue); }
+.ot-tavola { --lato: min(92vw, 30rem, calc(100vh - 19.5rem)); width: max(16rem, var(--lato)); aspect-ratio: 1; display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; padding: 6px;
+  background: #1a3d24; border-radius: 12px; box-shadow: inset 0 0 0 3px #5a3a1c, 0 0 0 6px #6d4622, 0 12px 26px rgba(0, 0, 0, .45); }
+.ot-cella { position: relative; display: grid; place-items: center; background: radial-gradient(circle at 50% 40%, #2f8a4c, #237040); border: 0; padding: 0; border-radius: 3px; }
+button.ot-cella { cursor: pointer; }
+button.ot-cella::after { content: ''; position: absolute; width: 22%; height: 22%; border-radius: 50%; background: rgba(0, 0, 0, .35); box-shadow: 0 0 0 2px rgba(255, 255, 255, .15); }
+button.ot-cella:hover::after, button.ot-cella:focus-visible::after { opacity: 0; }
+.ot-ped { width: 82%; height: 82%; border-radius: 50%; box-shadow: 0 3px 4px rgba(0, 0, 0, .5), inset 0 -2px 3px rgba(0, 0, 0, .25); }
+.ot-ped.nero { background: var(--ot-nero); }
+.ot-ped.bianco { background: var(--ot-bianco); }
+.ot-ped.mini { width: 1.15rem; height: 1.15rem; flex: none; }
+.ot-ped.fantasma { opacity: 0; transition: opacity .12s; }
+button.ot-cella:hover .ot-ped.fantasma, button.ot-cella:focus-visible .ot-ped.fantasma { opacity: .55; }
+.ot-ped.nuova { animation: ot-nuova .32s ease-out both; animation-delay: var(--t, 0ms); }
+@keyframes ot-nuova { from { transform: scale(1.6); opacity: 0; } to { transform: none; opacity: 1; } }
+/* la pedina girata: si schiaccia (di taglio), cambia colore e si riapre */
+.ot-ped.gira { animation: ot-gira .42s ease-in-out both; animation-delay: calc(var(--t, 0ms) + 120ms + var(--k, 1) * 70ms); }
+@keyframes ot-gira {
+  0% { transform: scaleX(1); background: var(--da); }
+  49% { transform: scaleX(.05) translateY(-3px); background: var(--da); }
+  51% { transform: scaleX(.05) translateY(-3px); }
+  100% { transform: scaleX(1); }
+}
+.ot-ultima { position: absolute; width: 14%; height: 14%; border-radius: 50%; background: #e2483b; box-shadow: 0 0 0 2px rgba(255, 255, 255, .6); pointer-events: none; }
+.ot-msg { font-size: 1.05rem; max-width: 30rem; }
+@media (prefers-reduced-motion: reduce) { .ot-ped.gira, .ot-ped.nuova { animation: none; } }
+@media (hover: none) { button.ot-cella:hover .ot-ped.fantasma { opacity: 0; } button.ot-cella:hover::after { opacity: 1; } }

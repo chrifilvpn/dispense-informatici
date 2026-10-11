@@ -1,0 +1,49 @@
+/* NONOGRAM */
+.ng { display: grid; justify-items: center; gap: .5rem; width: 100%; padding: .2rem 0 .6rem; }
+.ng-barra { display: flex; flex-wrap: wrap; gap: .3rem .9rem; justify-content: center; font-size: .92rem; color: var(--tenue); }
+.ng-barra b { color: var(--testo); font-variant-numeric: tabular-nums; }
+.ng-posto { max-width: 100%; }
+.ng-tavola { --c: 24px; --fz: max(10px, calc(var(--c) * .55)); display: grid; grid-template-columns: auto repeat(var(--lato), var(--c)); grid-template-rows: auto repeat(var(--lato), var(--c));
+  padding: 6px; border-radius: 10px; background: var(--carta); color: var(--inchiostro); box-shadow: 0 10px 24px rgba(0, 0, 0, .4); touch-action: none; user-select: none; -webkit-user-select: none; }
+.ng-angolo { border-right: 2px solid #3d3a33; border-bottom: 2px solid #3d3a33; }
+/* i numeri: in colonna sopra, in fila a sinistra */
+.ng-ic, .ng-ir { display: flex; font: 700 var(--fz) / 1.05 var(--sans); color: #2b2822; font-variant-numeric: tabular-nums; transition: color .2s, background .2s; }
+.ng-ic { flex-direction: column; justify-content: flex-end; align-items: center; padding: 2px 0 3px; gap: 1px; border-bottom: 2px solid #3d3a33; border-right: 1px solid #d6d0c0; }
+.ng-ir { justify-content: flex-end; align-items: center; padding: 0 4px 0 3px; gap: max(2px, calc(var(--fz) * .35)); border-right: 2px solid #3d3a33; border-bottom: 1px solid #d6d0c0; }
+.ng-ic:nth-child(2n), .ng-ir:nth-child(4n) { background: rgba(0, 0, 0, .03); }
+.ng-ic.fatta, .ng-ir.fatta { color: #b8b2a2; }
+.ng-ic.evid, .ng-ir.evid { background: rgba(209, 154, 42, .25); }
+.ng-ic.bordo-dx { border-right-color: #3d3a33; border-right-width: 2px; }
+.ng-ir.bordo-giu { border-bottom-color: #3d3a33; border-bottom-width: 2px; }
+/* le caselle */
+.ng-c { position: relative; border-right: 1px solid #cfc8b6; border-bottom: 1px solid #cfc8b6; background: #fffdf7; cursor: pointer; }
+.ng-c.bordo-dx { border-right: 2px solid #3d3a33; }
+.ng-c.bordo-giu { border-bottom: 2px solid #3d3a33; }
+.ng-c:hover { background: #fff3cf; }
+.ng-c.piena { background: var(--chi, #2b2f3a); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); }
+.ng-c.pop { animation: ng-colora .14s ease-out; }
+@keyframes ng-colora { from { transform: scale(.6); } }
+.ng-c.ng-croce::before, .ng-c.ng-croce::after { content: ''; position: absolute; left: 22%; right: 22%; top: 50%; height: 2px; margin-top: -1px; background: #8a8372; border-radius: 1px; transform: rotate(45deg); }
+.ng-c.ng-croce::after { transform: rotate(-45deg); }
+.ng-c.sbagliata { background: #ffe1dc; }
+.ng-c.sbagliata::before, .ng-c.sbagliata::after { background: #d63b2f; height: 3px; }
+.ng-c.anteprima { outline: 2px solid #d19a2a; outline-offset: -2px; z-index: 1; }
+.ng-c.anteprima.piena { background: #4a5368; }
+.ng-c.aiutata { animation: ng-aiuto 1s ease-in-out 3; }
+@keyframes ng-aiuto { 50% { box-shadow: inset 0 0 0 3px #ffd166, 0 0 10px #ffd166; } }
+.ng-c.altro { box-shadow: inset 0 0 0 2px var(--alt); }
+.ng-tavola.ng-in-croce .ng-c:hover:not(.piena) { background: #f1ece0; }
+/* a fine partita il disegno si colora in diagonale */
+.ng-tavola.finita .ng-c { cursor: default; }
+.ng-tavola.finita .ng-c.piena { background: #1f3d6b; }
+.ng-tavola.svela .ng-c.piena { animation: ng-svela .5s ease-out both; animation-delay: var(--d, 0ms); }
+.ng-tavola.finita .ng-c.sbagliata:not(.piena) { background: #fffdf7; }
+@keyframes ng-svela { from { transform: scale(0); border-radius: 50%; } }
+.ng-comandi { display: flex; flex-wrap: wrap; gap: .4rem; justify-content: center; }
+.ng-comandi small { opacity: .7; font-size: .75em; }
+.ng-modo.attivo { background: var(--avorio); color: var(--inchiostro); font-weight: 700; }
+.ng-aiuto-testo { margin: 0; font-size: .82rem; color: var(--tenue); text-align: center; }
+.ng-fine { font-size: 1.2rem; }
+.ng-record { max-width: 24rem; }
+@media (hover: none) { .ng-aiuto-testo { display: none; } .ng-c:hover { background: #fffdf7; } .ng-c.piena:hover { background: var(--chi, #2b2f3a); } }
+@media (prefers-reduced-motion: reduce) { .ng-c.pop, .ng-tavola.svela .ng-c.piena, .ng-c.aiutata { animation: none; } }
