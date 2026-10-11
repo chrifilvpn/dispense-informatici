@@ -99,6 +99,21 @@ function equita(mie, tavola, avversari, { daCompletare = 5, giri = 250, cartePer
   return vinte / giri;
 }
 
+// probabilità di vincere mostrata al giocatore (aiuto facoltativo nel browser): si ricalcola solo quando cambiano
+// le sue carte, la tavola o il numero di avversari ancora in mano
+function forzaMano(g, p, opz = {}) {
+  if (!g.inMano || !g.inMano[p] || !g.carte || !g.carte[p] || !g.carte[p].length || g.carte[p].some((c) => !c)) return null;
+  const avversari = g.inMano.filter((x, i) => x && i !== p).length;
+  if (!avversari) return null;
+  const tavola = opz.tavola || [];
+  const chiave = `${g.carte[p].map((c) => c.id || `${c.rango}${c.seme}`).join(',')}|${tavola.map((c) => c.id || `${c.rango}${c.seme}`).join(',')}|${avversari}`;
+  g._forza = g._forza || {};
+  if (!g._forza[p] || g._forza[p].chiave !== chiave) {
+    g._forza[p] = { chiave, v: Math.round(100 * equita(g.carte[p], tavola, avversari, { giri: 600, ...opz })), avversari };
+  }
+  return { percento: g._forza[p].v, avversari: g._forza[p].avversari };
+}
+
 // =================== PARTITA ===================
 class Poker extends Casino {
   constructor(o) {
@@ -332,4 +347,4 @@ function decidi(g, p, livello, eq) {
   return { tipo: 'lascia' };
 }
 
-module.exports = { Poker, valuta5, migliore, nomeMano, equita, decidi, CATEGORIE, MINIMO, v14 };
+module.exports = { Poker, valuta5, migliore, nomeMano, equita, forzaMano, decidi, CATEGORIE, MINIMO, v14 };

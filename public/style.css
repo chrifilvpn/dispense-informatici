@@ -1230,3 +1230,28 @@ body.spettatore #tavolo canvas { pointer-events: none; }
 .tt-campione { font-size: 1.15rem; font-weight: 700; margin: .5rem 0 .2rem; }
 .serata-punti { margin: .2rem 0 .4rem; padding-left: 1.5rem; }
 .serata-punti li span { display: inline-block; min-width: 55%; }
+/* poker: forza della mano */
+.pk-forza { display: flex; align-items: center; justify-content: center; gap: .45rem; margin: .25rem auto 0; font-size: .9rem; }
+.pk-forza-barra { width: 6.5rem; height: .5rem; border-radius: 99px; background: rgba(247, 240, 222, .18); overflow: hidden; }
+.pk-forza-barra i { display: block; height: 100%; border-radius: inherit; background: #d9534f; transition: width .4s; }
+.pk-forza.media .pk-forza-barra i { background: #e0a42c; }
+.pk-forza.alta .pk-forza-barra i { background: #3fae5a; }
+.pk-forza small { opacity: .75; }
+.pk-forza-x { border: 0; background: none; color: inherit; opacity: .55; cursor: pointer; font-size: .85rem; padding: .2rem; }
+/* tabelle di strategia (blackjack, baccarat) */
+.cs-tab-apri { margin: .3rem 0 0; text-align: center; }
+.cs-tabella { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: .6rem; background: rgba(0, 0, 0, .55); }
+.cs-tab-scheda { width: min(40rem, 100%); max-height: 92vh; overflow: auto; padding: .8rem .9rem; border-radius: 14px; background: #f7f0de; color: #1d1d1b; box-shadow: 0 14px 40px rgba(0, 0, 0, .5); text-align: left; }
+.cs-tab-scheda p { margin: .35rem 0; }
+.cs-tab-testa { display: flex; justify-content: space-between; align-items: center; gap: .5rem; font-size: 1.05rem; }
+.cs-tab-scorri { overflow-x: auto; }
+.bj-tab { border-collapse: collapse; margin: .3rem auto; font-size: .82rem; }
+.bj-tab th, .bj-tab td { padding: .18rem .3rem; text-align: center; min-width: 1.65rem; border: 1px solid rgba(0, 0, 0, .1); }
+.bj-tab tr.sez th { text-align: left; background: rgba(0, 0, 0, .06); font-size: .78rem; }
+.bj-tab th.qui, .bj-tab tr.qui th { background: #f2c14e; }
+.bj-tab td.cella-qui { outline: 3px solid #1d1d1b; outline-offset: -3px; font-weight: 800; }
+.t-H { background: #f4c7c3; } .t-S { background: #c9e7c4; } .t-D, .t-Ds { background: #bcd6f5; } .t-P { background: #f7e09a; }
+.cs-tab-leg span, .cs-tab-scheda p span[class^="t-"] { display: inline-block; padding: 0 .3rem; border-radius: 4px; font-weight: 700; }
+.bc-quote { width: 100%; border-collapse: collapse; margin: .5rem 0; font-size: .85rem; }
+.bc-quote th, .bc-quote td { padding: .25rem .35rem; border-bottom: 1px solid rgba(0, 0, 0, .12); text-align: left; }
+.cs-tab-scheda .piccolo { color: #55554f; opacity: 1; }

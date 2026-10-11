@@ -101,6 +101,13 @@ giochi/tris.js
 giochi/uno.js
 giochi/wanted.js
 giochi/wordle.js
+giochi2/capitali.js
+giochi2/geo-dati.js
+giochi2/geo-quiz.js
+giochi2/monumenti-dati.js
+giochi2/monumenti.js
+giochi2/sagome-dati.js
+giochi2/sagome.js
 guardia.js
 package-lock.json
 package.json
@@ -191,6 +198,7 @@ sfida.js
 sicurezza.js
 test/browser.js
 test/giochi2.js
+test/migliorie3.js
 test/nuovi.js
 test/serate.js
 test/simula.js

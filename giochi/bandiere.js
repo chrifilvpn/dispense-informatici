@@ -47,15 +47,21 @@ function scelte(giusta, mazzo) {
   return mescola([giusta, ...altre.slice(0, OPZIONI - 1).map((x) => x.i)]);
 }
 
+// La BANCA delle domande: le bandiere (qui) oppure altri quiz che usano lo stesso motore (capitali, sagome dei paesi,
+// monumenti: cartella giochi2). elementi[i] = { nome (la risposta), fama, svg?, W?, domanda? }; scelte(giusta, mazzo)
+// prepara le 4 risposte.
+const BANDIERE = { id: 'bandiere', elementi: PAESI, mazzi: MAZZI, scelte, chiaveMazzo: 'bandiere', domanda: 'Di che paese è questa bandiera?', cosa: 'Bandiera' };
+
 class Bandiere {
-  constructor({ n, opzioni = {}, bot = [] }) {
-    this.id = 'bandiere';
+  constructor({ n, opzioni = {}, bot = [] }, banca = BANDIERE) {
+    this.banca = banca;
+    this.id = banca.id;
     this.n = n;
-    this.mazzo = MAZZI[opzioni.bandiere] ? opzioni.bandiere : 'tutte';
+    this.mazzo = banca.mazzi[opzioni[banca.chiaveMazzo]] ? opzioni[banca.chiaveMazzo] : 'tutte';
     this.nDomande = [10, 20, 30].includes(Number(opzioni.domande)) ? Number(opzioni.domande) : 10;
     this.tempoMs = [6, 10, 15].includes(Number(opzioni.tempo)) ? Number(opzioni.tempo) * 1000 : 10000;
     this.botLiv = Array.from({ length: n }, (_, i) => bot[i] || null);
-    this.ordine = mescola([...MAZZI[this.mazzo]]).slice(0, this.nDomande);
+    this.ordine = mescola([...banca.mazzi[this.mazzo]]).slice(0, this.nDomande);
     this.punti = new Array(n).fill(0);
     this.giuste = new Array(n).fill(0);
     this.serie = new Array(n).fill(0);     // risposte giuste di fila
@@ -72,7 +78,7 @@ class Bandiere {
   prossima() {
     this.k++;
     this.giusta = this.ordine[this.k];
-    this.opzioni = scelte(this.giusta, MAZZI[this.mazzo]);
+    this.opzioni = this.banca.scelte(this.giusta, this.banca.mazzi[this.mazzo]);
     this.risposte = new Array(this.n).fill(null); // { scelta, ms, giusto, punti }
     this.inizio = Date.now();
     this.fine = this.inizio + this.tempoMs;
@@ -129,7 +135,7 @@ class Bandiere {
       const x = this.risposte[p];
       if (x && x.giusto) { this.punti[p] += x.punti; this.giuste[p]++; this.serie[p]++; this.migliore[p] = Math.max(this.migliore[p], this.serie[p]); } else { this.serie[p] = 0; this.sbagliate[p].push({ giusta: this.giusta, scelta: x && x.scelta >= 0 ? this.opzioni[x.scelta] : null }); }
     }
-    const nome = PAESI[this.giusta].nome;
+    const nome = this.banca.elementi[this.giusta].nome;
     const primi = this.risposte.map((x, i) => (x && x.giusto ? i : -1)).filter((i) => i >= 0).sort((a, b) => this.risposte[a].ms - this.risposte[b].ms);
     if (this.n > 1 && primi.length) this.annuncia(primi[0], `è il più veloce: ${nome}!`, `il più veloce: ${nome}! ⚡`);
     else this.annuncia(null, `Era: ${nome}`, `Era: ${nome}`);
@@ -158,12 +164,14 @@ class Bandiere {
 
   vista(p) {
     const svela = this.inAttesa || this.finita;
-    const band = PAESI[this.giusta];
+    const E = this.banca.elementi;
+    const band = E[this.giusta];
     const mia = this.risposte[p];
     return {
       gioco: this.id, n: this.n, domanda: this.k + 1, nDomande: this.nDomande, tempo: this.tempoMs, mazzo: this.mazzo,
-      bandiera: { svg: band.svg, w: band.W },
-      opzioni: this.opzioni.map((i) => PAESI[i].nome),
+      cosa: this.banca.cosa, testo: band.domanda || this.banca.domanda, icona: band.icona || null, indizio: svela && band.indizio ? band.indizio : null,
+      bandiera: band.svg ? { svg: band.svg, w: band.W || 300, h: band.H || 200, sagoma: !!band.sagoma } : null,
+      opzioni: this.opzioni.map((i) => E[i].nome),
       resta: svela ? 0 : Math.max(0, this.fine - Date.now()),
       mia: mia ? { scelta: mia.scelta, giusto: svela ? mia.giusto : null, punti: svela ? mia.punti : null } : null,
       // la risposta giusta solo dopo (o quando hai già risposto non si dice: si aspetta la fine della domanda)
@@ -171,7 +179,7 @@ class Bandiere {
       altri: this.risposte.map((x, i) => ({ risposto: x !== null, giusto: svela && x ? x.giusto : null, scelta: svela && x ? x.scelta : null, punti: this.punti[i], giuste: this.giuste[i], serie: this.serie[i] })),
       punti: this.punti, giuste: this.giuste, serie: this.serie[p], migliore: this.migliore[p],
       // a partita finita: le bandiere che hai sbagliato, con il nome giusto (e quello che avevi detto) per ripassarle
-      ripasso: this.finita ? this.sbagliate[p].map((x) => ({ svg: PAESI[x.giusta].svg, w: PAESI[x.giusta].W, nome: PAESI[x.giusta].nome, detto: x.scelta === null ? null : PAESI[x.scelta].nome })) : null,
+      ripasso: this.finita ? this.sbagliate[p].map((x) => ({ svg: E[x.giusta].svg || null, w: E[x.giusta].W || 300, h: E[x.giusta].H || 200, sagoma: !!E[x.giusta].sagoma, domanda: E[x.giusta].domanda || null, icona: E[x.giusta].icona || null, nome: E[x.giusta].nome, detto: x.scelta === null ? null : E[x.scelta].nome })) : null,
       turno: null, inAttesa: this.inAttesa, pausaMs: this.pausaMs, finita: this.finita, risultato: this.risultato, evento: this.evento,
     };
   }
@@ -187,7 +195,7 @@ const LIV = {
 const tempoBot = (l, tempo) => { const L = LIV[l] || LIV.medio; return Math.round(tempo * (L.da + Math.random() * (L.a - L.da))); };
 function bot(g, posto, livello) {
   const L = LIV[livello] || LIV.medio;
-  const sa = Math.random() < L.sa[PAESI[g.giusta].fama - 1];
+  const sa = Math.random() < L.sa[(g.banca.elementi[g.giusta].fama || 2) - 1];
   if (sa) return { tipo: 'risposta', scelta: g.opzioni.indexOf(g.giusta) };
   // non la sa: tira a indovinare (ma una volta su 4 ci prende lo stesso)
   return { tipo: 'risposta', scelta: Math.floor(Math.random() * g.opzioni.length) };
@@ -220,5 +228,6 @@ module.exports = {
   },
   crea: (o) => new Bandiere(o),
   bot,
+  Bandiere, mescola, OPZIONI,
   _test: { PAESI, MAZZI, scelte, somiglianza, famiglia, COLORI, LIV },
 };

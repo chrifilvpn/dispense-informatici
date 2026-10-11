@@ -55,9 +55,13 @@ function passo(b, p, dt, t, segs, bassi, cerchiMobili, opz = {}) {
     p.x += (p.vx * dt) / n; p.y += (p.vy * dt) / n;
     for (const sg of segs) collisioneSegmento(p, sg);
     if (!(p.aria > 0)) for (const sg of bassi) collisioneSegmento(p, sg);
+    // gli ostacoli rotondi spostano la pallina: se la spinta la porterebbe oltre un muro (un ostacolo mobile che la
+    // schiaccia contro il bordo), la pallina resta dov'era e cambia solo la velocità
+    const px = p.x, py = p.y;
     for (const [cx, cy, r] of b.respingenti || []) urtoCerchio(p, cx, cy, r, true);
     for (const [cx, cy, r] of b.rocce || []) urtoCerchio(p, cx, cy, r, false);
     for (const [cx, cy, r] of cerchiMobili) urtoCerchio(p, cx, cy, r, false);
+    if ((p.x !== px || p.y !== py) && segs.some((sg) => siTaglia(px, py, p.x, p.y, sg))) { p.x = px; p.y = py; }
     if (p.aria > 0) continue;
     // rampa: se ci passa abbastanza veloce nella sua direzione, salta
     for (const r of b.rampe || []) {
@@ -96,6 +100,13 @@ function urtoCerchio(p, cx, cy, r, respingente) {
     const v = Math.hypot(p.vx, p.vy) || 1, nuova = Math.max(v * SPINTA_RESP, V_MIN_RESP);
     p.vx = (p.vx / v) * nuova; p.vy = (p.vy / v) * nuova; p.respinta = true;
   }
+}
+// il tratto (ax,ay)-(bx,by) attraversa il muro?
+function siTaglia(ax, ay, bx, by, [x1, y1, x2, y2]) {
+  const d = (bx - ax) * (y2 - y1) - (by - ay) * (x2 - x1);
+  if (!d) return false;
+  const t = ((x1 - ax) * (y2 - y1) - (y1 - ay) * (x2 - x1)) / d, u = ((x1 - ax) * (by - ay) - (y1 - ay) * (bx - ax)) / d;
+  return t >= 0 && t <= 1 && u >= 0 && u <= 1;
 }
 function collisioneSegmento(p, [x1, y1, x2, y2]) {
   const dx = x2 - x1, dy = y2 - y1, l2 = dx * dx + dy * dy || 1;

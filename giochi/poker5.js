@@ -1,6 +1,6 @@
 // POKER A 5 CARTE CON CAMBIO (five card draw) no-limit, senza puntate obbligatorie.
 // Giro di puntate, cambio (da 0 a 5 carte), secondo giro di puntate, confronto.
-const { Poker, migliore, nomeMano, equita, decidi, valuta5, v14 } = require('./poker-motore');
+const { Poker, migliore, nomeMano, equita, forzaMano, decidi, valuta5, v14 } = require('./poker-motore');
 
 class Poker5 extends Poker {
   constructor(o) { super(o); this.id = 'poker5'; }
@@ -64,6 +64,7 @@ class Poker5 extends Poker {
     v.giro = this.giro;
     v.cambiate = this.cambiate;
     v.miaMano = this.carte && this.carte[p] && this.carte[p].length === 5 ? nomeMano(valuta5(this.carte[p])) : null;
+    v.forza = this.finita || this.fase !== 'giro' && this.fase !== 'cambio' ? null : forzaMano(this, p, { daCompletare: 0, cartePerMano: 5, conCambio: true });
     v.puoCambiare = this.fase === 'cambio' && this.turno === p;
     return v;
   }

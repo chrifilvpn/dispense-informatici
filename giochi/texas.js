@@ -1,5 +1,5 @@
 // TEXAS HOLD'EM no-limit, senza bui: 2 carte a testa, 5 carte comuni (flop, turn, river).
-const { Poker, migliore, nomeMano, equita, decidi, MINIMO } = require('./poker-motore');
+const { Poker, migliore, nomeMano, equita, forzaMano, decidi, MINIMO } = require('./poker-motore');
 
 const STRADE = ['preflop', 'flop', 'turn', 'river'];
 
@@ -55,6 +55,7 @@ class Texas extends Poker {
     v.tavola = this.tavola || [];
     v.strada = STRADE[this.strada || 0];
     v.miaMano = this.inMano && this.carte && this.carte[p] && this.carte[p].length ? nomeMano(migliore([...this.carte[p], ...(this.tavola || [])])) : null;
+    v.forza = this.finita || this.fase !== 'giro' && this.fase !== 'cambio' ? null : forzaMano(this, p, { tavola: this.tavola || [] });
     return v;
   }
 }

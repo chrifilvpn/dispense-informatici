@@ -3,7 +3,10 @@
   const { esc, primaVolta, suono } = window.Nuovi;
   let ctxB = null;
 
-  const puoRispondere = (p) => p && p.gioco === 'bandiere' && !p.finita && !p.inAttesa && !p.mia;
+  // lo stesso tavolo serve anche agli altri quiz con lo stesso motore (capitali, sagome dei paesi, monumenti)
+  const QUIZ = ['bandiere', 'capitali', 'sagome', 'monumenti'];
+  const puoRispondere = (p) => p && QUIZ.includes(p.gioco) && !p.finita && !p.inAttesa && !p.mia;
+  const figura = (b, cls = '') => (b ? `<svg class="${b.sagoma ? 'bd-sagoma' : ''} ${cls}" viewBox="0 0 ${b.w} ${b.h || 200}" role="img" aria-label="${b.sagoma ? 'Sagoma da indovinare' : 'Bandiera'}">${b.svg}</svg>` : '');
 
   function bottoni(ctx) {
     const p = ctx.partita;
@@ -26,15 +29,15 @@
       return p.mia.giusto ? `<p class="bd-msg si">✅ Giusto!${p.n > 1 ? ` +${p.mia.punti} punti` : ''}${p.serie > 1 ? ` · ${p.serie} di fila 🔥` : ''}</p>` : '<p class="bd-msg no">❌ Sbagliato</p>';
     }
     if (p.mia) return `<p class="bd-msg">Risposta data: ${p.n > 1 ? 'aspetta gli altri…' : 'vediamo…'}</p>`;
-    return '<p class="bd-msg">Di che paese è questa bandiera?</p>';
+    return '';
   }
 
   // a partita finita: le bandiere sbagliate da ripassare
   function ripasso(p) {
     if (!p.finita || !p.ripasso) return '';
-    if (!p.ripasso.length) return '<p class="bd-msg si">🏆 Nessun errore: le hai indovinate tutte!</p>';
-    return `<section class="bd-ripasso" aria-label="Bandiere da ripassare"><h3>📚 Da ripassare (${p.ripasso.length})</h3><div class="bd-rip-elenco">${p.ripasso.map((x) => `
-      <figure><svg viewBox="0 0 ${x.w} 200" aria-hidden="true">${x.svg}</svg><figcaption><b>${esc(x.nome)}</b>${x.detto ? `<small>avevi detto ${esc(x.detto)}</small>` : '<small>tempo scaduto</small>'}</figcaption></figure>`).join('')}</div></section>`;
+    if (!p.ripasso.length) return '<p class="bd-msg si">🏆 Nessun errore: tutte giuste!</p>';
+    return `<section class="bd-ripasso" aria-label="Da ripassare"><h3>📚 Da ripassare (${p.ripasso.length})</h3><div class="bd-rip-elenco">${p.ripasso.map((x) => `
+      <figure>${x.svg ? figura({ svg: x.svg, w: x.w, h: x.h, sagoma: x.sagoma }) : `<span class="bd-rip-icona">${esc(x.icona || '❓')}</span>`}<figcaption>${x.domanda ? `<small>${esc(x.domanda)}</small>` : ''}<b>${esc(x.nome)}</b>${x.detto ? `<small>avevi detto ${esc(x.detto)}</small>` : '<small>tempo scaduto</small>'}</figcaption></figure>`).join('')}</div></section>`;
   }
 
   const tavolo = {
@@ -45,9 +48,11 @@
       const frazione = p.tempo ? p.resta / p.tempo : 0;
       const tempo = `<div class="bd-tempo" aria-hidden="true"><i style="--da:${frazione.toFixed(3)};--d:${p.resta}ms" class="${p.resta < 3500 ? 'poco' : ''}"></i></div>`;
       return `<div class="bd">
-        <p class="pa-round">Bandiera ${p.domanda} di ${p.nDomande}${p.migliore > 1 ? ` · serie migliore: ${p.migliore}` : ''}</p>
+        <p class="pa-round">${esc(p.cosa || 'Bandiera')} ${p.domanda} di ${p.nDomande}${p.migliore > 1 ? ` · serie migliore: ${p.migliore}` : ''}</p>
         ${tempo}
-        <div class="bd-bandiera"><svg viewBox="0 0 ${p.bandiera.w} 200" role="img" aria-label="Bandiera da indovinare">${p.bandiera.svg}</svg></div>
+        ${p.bandiera ? `<div class="bd-bandiera ${p.bandiera.sagoma ? 'sagoma' : ''}">${figura(p.bandiera)}</div>` : `<div class="bd-icona" aria-hidden="true">${esc(p.icona || '❓')}</div>`}
+        <p class="bd-domanda">${esc(p.testo || 'Di che paese è questa bandiera?')}</p>
+        ${p.indizio ? `<p class="bd-indizio">${esc(p.indizio)}</p>` : ''}
         ${messaggio(ctx)}
         <div class="bd-scelte">${bottoni(ctx)}</div>
         ${ripasso(p)}
@@ -61,11 +66,11 @@
         else suono([[220, 0.12], [180, 0.18]], { tipo: 'sawtooth', volume: 0.04 });
       }
     },
-    statoAttesa: (ctx) => (ctx.partita.domanda >= ctx.partita.nDomande ? 'Ultima bandiera!' : 'Prossima bandiera…'),
+    statoAttesa: (ctx) => (ctx.partita.domanda >= ctx.partita.nDomande ? 'Ultima domanda!' : 'Prossima domanda…'),
     stato(ctx) {
       const p = ctx.partita;
       if (p.finita) return null;
-      return p.mia ? 'Risposta data' : 'Scegli il paese giusto';
+      return p.mia ? 'Risposta data' : 'Scegli la risposta giusta';
     },
     punteggio(ctx) {
       const p = ctx.partita;
@@ -87,12 +92,12 @@
   // tasti 1-4 per rispondere
   document.addEventListener('keydown', (e) => {
     const ctx = ctxB;
-    if (!ctx || !ctx.stato || !ctx.partita || ctx.partita.gioco !== 'bandiere') return;
+    if (!ctx || !ctx.stato || !ctx.partita || !QUIZ.includes(ctx.partita.gioco)) return;
     if (e.ctrlKey || e.metaKey || e.altKey || (e.target.closest && e.target.closest('input, textarea, select'))) return;
     if (window.Boss && Boss.attivo) return;
     const n = Number(e.key);
     if (n >= 1 && n <= ctx.partita.opzioni.length && puoRispondere(ctx.partita)) ctx.invia({ tipo: 'risposta', scelta: n - 1 });
   });
 
-  Object.assign(window.Tavoli, { bandiere: tavolo });
+  Object.assign(window.Tavoli, { bandiere: tavolo, capitali: tavolo, sagome: tavolo, monumenti: tavolo });
 })();

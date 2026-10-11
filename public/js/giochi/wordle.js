@@ -67,7 +67,7 @@
       if (p.mioFatto || p.finita) {
         const f = p.mioFatto;
         testa = `<p class="wd-esito ${f && f.vinto ? 'si' : 'no'}">${f && f.vinto ? `Indovinata in ${f.tentativi} ${f.tentativi === 1 ? 'tentativo' : 'tentativi'}!` : 'Niente da fare…'} La parola era <b>${esc((p.segreta || '').toUpperCase())}</b>${!p.finita ? '<small>Aspetta che finiscano gli altri.</small>' : ''}</p>`;
-      } else testa = `<p class="wd-info">${p.lunghezza} lettere · tentativo ${p.mie.length + 1} di ${p.tentativi}${p.n > 1 ? ' · stessa parola per tutti' : ''}</p>`;
+      } else testa = `<p class="wd-info">${p.lunghezza} lettere · tentativo ${p.mie.length + 1} di ${p.tentativi}${p.difficile ? ' · <b>difficile</b>' : ''}${p.n > 1 ? ' · stessa parola per tutti' : ''}</p>`;
       return `<div class="wd"><div class="wd-centro">${testa}${griglia(ctx)}${tastiera(ctx)}</div>${avversari(ctx)}</div>`;
     },
     stato(ctx) {

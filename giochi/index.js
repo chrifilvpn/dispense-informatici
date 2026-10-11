@@ -93,10 +93,10 @@ const GIOCHI = { briscola, scopa, scopone, rubamazzo, scala40, tris, forza4, bat
 const CATEGORIE = {
   carte: ['briscola', 'scopa', 'scopone', 'rubamazzo', 'scala40', 'peppa', 'fastwest', 'dubito', 'flip7', 'cirulla', 'solitario', 'uno', 'tressette', 'cucu', 'burraco', 'memory'],
   casino: ['blackjack', 'baccarat', 'higherlower', 'texas', 'poker5', 'roulette', 'settemezzo'],
-  strategia: ['tris', 'forza4', 'battaglia', 'dama', 'scacchi', 'campo', 'casellebombe', 'tesoro', 'coperti', 'interruttori', 'mappa', 'nascondino', 'shutbox', 'sblocca', 'sudoku', 'blockblast', 'otello', 'mastermind', 'nonogram', 'duemila', 'biglie'],
-  parole: ['impiccato', 'wordle', 'bandiere', 'differenze', 'angolo', 'numero', 'impostore', 'coccodrillo', 'disegna', 'mensola', 'connessioni', 'codenames', 'morra'],
+  strategia: ['tris', 'forza4', 'battaglia', 'dama', 'scacchi', 'campo', 'casellebombe', 'tesoro', 'coperti', 'interruttori', 'mappa', 'nascondino', 'shutbox', 'sblocca', 'sudoku', 'blockblast', 'otello', 'mastermind', 'nonogram', 'duemila'],
+  parole: ['impiccato', 'wordle', 'bandiere', 'capitali', 'sagome', 'monumenti', 'differenze', 'angolo', 'numero', 'impostore', 'coccodrillo', 'disegna', 'mensola', 'connessioni', 'codenames', 'morra'],
   azione: ['snake', 'tetris', 'airhockey', 'pallone', 'tasti', 'chirurgo', 'benchmark', 'putt', 'palloncini', 'gattotopi', 'colori', 'bumper', 'fuga', 'monete', 'arcobaleno', 'pioggia', 'paintball', 'piattaforme', 'massi', 'wanted', 'duello', 'strada', 'bersaglio', 'mangiatutto', 'tigerball', 'mind', 'bomberman', 'slither', 'corsa', 'calcetto', 'patata'],
-  squid: ['stella', 'fune', 'dalgona', 'buio', 'alieno', 'ponte', 'calamaro'],
+  squid: ['stella', 'fune', 'dalgona', 'buio', 'alieno', 'ponte', 'calamaro', 'biglie'],
 };
 for (const [cat, ids] of Object.entries(CATEGORIE)) for (const id of ids) if (GIOCHI[id]) GIOCHI[id].meta.categoria = cat;
 for (const g of Object.values(GIOCHI)) if (!g.meta.categoria) g.meta.categoria = 'altri';

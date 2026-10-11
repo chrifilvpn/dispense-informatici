@@ -920,6 +920,91 @@
     return `<div class="bj-mano ${attiva ? 'attiva' : ''}"><div class="cs-carte">${m.carte.map((c) => carta(ctx, c)).join('')}</div>
       <div class="bj-info"><span class="bj-tot">${m.carte.length ? tot : ''}</span>${gettone(m.puntata)}${m.raddoppiata ? '<small>×2</small>' : ''}${badge}</div></div>`;
   }
+  // TABELLE DI STRATEGIA (blackjack e baccarat): si aprono con 📋 e si chiudono con ✕. Nel blackjack la tabella è la
+  // strategia di base per 6 mazzi (la stessa del pulsante 💡) con evidenziata la situazione della mano in gioco.
+  const VAL_BJ = (c) => (!c ? 0 : c.rango === 1 ? 11 : Math.min(10, c.rango));
+  function cellaBJ(tipo, x, d) {
+    // tipo: 'dura' (x = totale), 'morbida' (x = totale con l'asso da 11), 'coppia' (x = valore della carta)
+    if (tipo === 'coppia') {
+      if (x === 11 || x === 8) return 'P';
+      if (x === 9) return [7, 10, 11].includes(d) ? 'S' : 'P';
+      if (x === 7 || x === 3 || x === 2) return d <= 7 ? 'P' : 'H';
+      if (x === 6) return d <= 6 ? 'P' : 'H';
+      if (x === 4) return d === 5 || d === 6 ? 'P' : 'H';
+      if (x === 5) return d <= 9 ? 'D' : 'H';
+      return 'S'; // 10-10
+    }
+    if (tipo === 'morbida') {
+      if (x >= 19) return 'S';
+      if (x === 18) return d >= 3 && d <= 6 ? 'Ds' : d >= 9 ? 'H' : 'S';
+      if (x === 17) return d >= 3 && d <= 6 ? 'D' : 'H';
+      if (x >= 15) return d >= 4 && d <= 6 ? 'D' : 'H';
+      return d >= 5 && d <= 6 ? 'D' : 'H';
+    }
+    if (x >= 17) return 'S';
+    if (x >= 13) return d <= 6 ? 'S' : 'H';
+    if (x === 12) return d >= 4 && d <= 6 ? 'S' : 'H';
+    if (x === 11) return d <= 10 ? 'D' : 'H';
+    if (x === 10) return d <= 9 ? 'D' : 'H';
+    if (x === 9) return d >= 3 && d <= 6 ? 'D' : 'H';
+    return 'H';
+  }
+  const SIGLE_BJ = { H: ['C', 'Carta'], S: ['S', 'Stai'], D: ['R', 'Raddoppia (se non puoi: carta)'], Ds: ['Rs', 'Raddoppia (se non puoi: stai)'], P: ['D', 'Dividi'] };
+  function tabellaBJ(p, io) {
+    // la situazione attuale (se tocca a me): riga e colonna da evidenziare
+    let qui = null;
+    const m = p.fase === 'turni' && p.turno === io && p.mani[io] && p.mani[io][p.manoAttiva];
+    if (m && p.banco.carte[0]) {
+      const d = VAL_BJ(p.banco.carte[0]);
+      const v = m.carte.map(VAL_BJ);
+      if (p.azioni && p.azioni.dividi && v.length === 2 && v[0] === v[1]) qui = { tipo: 'coppia', x: v[0], d };
+      else if (m.morbida && m.tot <= 20) qui = { tipo: 'morbida', x: m.tot, d };
+      else qui = { tipo: 'dura', x: Math.min(17, Math.max(8, m.tot)), d };
+    }
+    const colonne = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    const testa = `<tr><th></th>${colonne.map((d) => `<th class="${qui && qui.d === d ? 'qui' : ''}">${d === 11 ? 'A' : d}</th>`).join('')}</tr>`;
+    const riga = (tipo, x, nome) => `<tr class="${qui && qui.tipo === tipo && qui.x === x ? 'qui' : ''}"><th>${nome}</th>${colonne.map((d) => { const c = cellaBJ(tipo, x, d); return `<td class="t-${c} ${qui && qui.tipo === tipo && qui.x === x && qui.d === d ? 'cella-qui' : ''}">${SIGLE_BJ[c][0]}</td>`; }).join('')}</tr>`;
+    const dure = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17].map((x) => riga('dura', x, x === 8 ? '≤8' : x === 17 ? '17+' : x)).join('');
+    const morbide = [13, 14, 15, 16, 17, 18, 19, 20].map((x) => riga('morbida', x, `A+${x - 11}`)).join('');
+    const coppie = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((x) => riga('coppia', x, x === 11 ? 'A-A' : `${x}-${x}`)).join('');
+    return `<div class="cs-tabella" role="dialog" aria-label="Strategia di base del blackjack"><div class="cs-tab-scheda">
+      <div class="cs-tab-testa"><b>📋 Strategia di base</b><button type="button" class="bottone mini-bt" data-az="tabellaBJ">✕ Chiudi</button></div>
+      <p class="piccolo">Righe: le tue carte · colonne: la carta scoperta del banco. ${qui ? '<b>In giallo la tua mano adesso.</b>' : ''}</p>
+      <div class="cs-tab-scorri"><table class="bj-tab"><thead>${testa}</thead>
+        <tbody><tr class="sez"><th colspan="11">Totale "duro" (senza asso, o con l'asso che vale 1)</th></tr>${dure}
+        <tr class="sez"><th colspan="11">Totale "morbido" (con un asso che vale 11)</th></tr>${morbide}
+        <tr class="sez"><th colspan="11">Coppie (quando puoi dividere)</th></tr>${coppie}</tbody></table></div>
+      <p class="cs-tab-leg">${Object.entries(SIGLE_BJ).map(([k, [sig, nome]]) => `<span class="t-${k}">${sig}</span> ${nome}`).join(' · ')}</p>
+      <p class="piccolo">Vale per 6 mazzi, banco che sta su 17, raddoppio permesso dopo aver diviso. Seguendola sempre il banco ha un vantaggio di circa lo 0,5%: è il modo di giocare che perde meno, non un sistema per vincere.</p>
+    </div></div>`;
+  }
+  // baccarat: le regole fisse della terza carta e quanto conviene ogni puntata
+  function tabellaBC() {
+    const col = ['—', 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    // il banco pesca? (riga = punti del banco, colonna = terza carta del punto, "—" = il punto non ha pescato)
+    const pesca = (b, t) => {
+      if (t === '—') return b <= 5;
+      if (b <= 2) return true;
+      if (b === 3) return t !== 8;
+      if (b === 4) return t >= 2 && t <= 7;
+      if (b === 5) return t >= 4 && t <= 7;
+      if (b === 6) return t === 6 || t === 7;
+      return false;
+    };
+    const righe = [0, 1, 2, 3, 4, 5, 6, 7].map((b) => `<tr><th>${b <= 2 ? `${b}` : b}</th>${col.map((t) => `<td class="${pesca(b, t) ? 't-H' : 't-S'}">${pesca(b, t) ? 'P' : 'S'}</td>`).join('')}</tr>`).join('');
+    return `<div class="cs-tabella" role="dialog" aria-label="Tabella del baccarat"><div class="cs-tab-scheda">
+      <div class="cs-tab-testa"><b>📋 Tabella del baccarat</b><button type="button" class="bottone mini-bt" data-az="tabellaBC">✕ Chiudi</button></div>
+      <p>Al baccarat nessuno decide: le carte si pescano con regole fisse. <b>Punto</b>: pesca la terza carta con 0-5, sta con 6-7. Con 8 o 9 (naturale) nessuno pesca.</p>
+      <p class="piccolo"><b>Banco</b> (righe: i suoi punti · colonne: la terza carta del Punto, "—" se il Punto non ha pescato): <span class="t-H">P</span> pesca, <span class="t-S">S</span> sta.</p>
+      <div class="cs-tab-scorri"><table class="bj-tab"><thead><tr><th></th>${col.map((t) => `<th>${t}</th>`).join('')}</tr></thead><tbody>${righe}</tbody></table></div>
+      <table class="bc-quote"><thead><tr><th>Puntata</th><th>Esce</th><th>Paga</th><th>Vantaggio del casinò</th></tr></thead><tbody>
+        <tr><td>Banco</td><td>45,9%</td><td>1 a 1 −5%</td><td><b>1,06%</b> (la migliore)</td></tr>
+        <tr><td>Punto</td><td>44,6%</td><td>1 a 1</td><td>1,24%</td></tr>
+        <tr><td>Pareggio</td><td>9,5%</td><td>8 a 1</td><td>14,4% (la peggiore)</td></tr></tbody></table>
+      <p class="piccolo">Con un pareggio le puntate su Punto e Banco tornano indietro. Le mani passate non cambiano le probabilità delle prossime: la "strada" è solo un ricordo.</p>
+    </div></div>`;
+  }
+
   const blackjack = {
     libero: true,
     reset(ctx) { segnaRicevuto(ctx); if (ctx.ui.bjConsiglio === undefined) { try { ctx.ui.bjConsiglio = localStorage.getItem('if:bjConsiglio') === '1'; } catch { ctx.ui.bjConsiglio = false; } } },
@@ -953,7 +1038,8 @@
         <div class="bj-comandi"><button type="button" class="bottone primario-bt" data-az="punta" ${(ui.bj || 0) > 0 ? '' : 'disabled'}>Punta ${fmtFiche(Math.min(ui.bj || 0, p.fiche[io]))}</button>
         <button type="button" class="bottone" data-az="passa">Passo questa mano</button></div>`);
       const scarpa = `<p class="cs-scarpa">Scarpa: ${p.carteScarpa} carte${p.mescolata ? ' · <b>rimescolata</b>' : ''}</p>`;
-      return `<div class="cs bj">${banco}<div class="bj-giocatori">${giocatori}</div>${comandi}${punta}${scarpa}</div>`;
+      const tab = `<p class="cs-tab-apri"><button type="button" class="bottone mini-bt" data-az="tabellaBJ">📋 Tabella della strategia</button></p>`;
+      return `<div class="cs bj">${banco}<div class="bj-giocatori">${giocatori}</div>${comandi}${punta}${tab}${scarpa}${ui.tabBJ ? tabellaBJ(p, io) : ''}</div>`;
     },
     stato(ctx) {
       const p = ctx.partita;
@@ -967,6 +1053,7 @@
       if (clicFiche(ctx, el)) return;
       const az = el.dataset.az, p = ctx.partita;
       if (az === 'punta') { const v = Math.min(ctx.ui.bj || 0, p.fiche[ctx.mio]); if (v > 0) ctx.invia({ tipo: 'punta', importo: v }); return; }
+      if (az === 'tabellaBJ') { ctx.ui.tabBJ = !ctx.ui.tabBJ; return ctx.ridisegna(); }
       if (az === 'consiglio') { ctx.ui.bjConsiglio = !ctx.ui.bjConsiglio; try { localStorage.setItem('if:bjConsiglio', ctx.ui.bjConsiglio ? '1' : ''); } catch {} return ctx.ridisegna(); }
       if (['carta', 'stai', 'raddoppia', 'dividi'].includes(az)) { el.disabled = true; ctx.invia({ tipo: az }); }
     },
@@ -1014,7 +1101,8 @@
       const strada = `<div class="bc-strada" title="Ultime mani">${p.storia.map((x) => `<i class="${x}">${x === 'punto' ? 'P' : x === 'banco' ? 'B' : 'T'}</i>`).join('')}</div>`;
       return `<div class="cs bc"><div class="bc-carte">${lato('punto')}${lato('banco')}</div>${esito}
         <div class="bc-tavolo">${zone}</div>${pannello}<div class="bc-giocatori">${giocatori}</div>${strada}
-        <p class="cs-scarpa">8 mazzi · ${p.carteScarpa} carte${p.mescolata ? ' · <b>rimescolate</b>' : ''}</p></div>`;
+        <p class="cs-tab-apri"><button type="button" class="bottone mini-bt" data-az="tabellaBC">📋 Regole della terza carta e probabilità</button></p>
+        <p class="cs-scarpa">8 mazzi · ${p.carteScarpa} carte${p.mescolata ? ' · <b>rimescolate</b>' : ''}</p>${ui.tabBC ? tabellaBC() : ''}</div>`;
     },
     stato(ctx) { return ctx.partita.fase === 'puntate' ? 'Fate le vostre puntate' : null; },
     statoAttesa(ctx) { return ctx.partita.fase === 'carte' ? 'Si scoprono le carte…' : 'Pagamenti'; },
@@ -1022,6 +1110,7 @@
     clic(ctx, el) {
       if (clicFiche(ctx, el)) return;
       const ui = ctx.ui, p = ctx.partita, az = el.dataset.az;
+      if (az === 'tabellaBC') { ui.tabBC = !ui.tabBC; return ctx.ridisegna(); }
       if (az === 'gettone') { ui.gettoneBc = Number(el.dataset.v); return ctx.ridisegna(); }
       if (az === 'zona') {
         const tot = ui.bc.punto + ui.bc.banco + ui.bc.pareggio;
@@ -1081,6 +1170,17 @@
   };
 
   // ======================= POKER (Texas Hold'em e 5 carte) =======================
+  // FORZA DELLA MANO (aiuto facoltativo): probabilità di vincere stimata dal server con migliaia di mani a caso
+  const mostraForza = () => { try { return localStorage.getItem('if:pkForza') !== '0'; } catch { return true; } };
+  function forzaHtml(p) {
+    if (!p.forza) return '';
+    if (!mostraForza()) return '<p class="pk-forza spenta"><button type="button" class="bottone mini-bt" data-az="pk-forza">💪 Mostra la forza della mano</button></p>';
+    const x = p.forza.percento, col = x >= 60 ? 'alta' : x >= 35 ? 'media' : 'bassa';
+    return `<p class="pk-forza ${col}" title="Stima: quante volte vinceresti arrivando allo showdown contro ${p.forza.avversari} ${p.forza.avversari === 1 ? 'avversario' : 'avversari'} con carte a caso">
+      <span class="pk-forza-barra"><i style="width:${x}%"></i></span><b>${x}%</b> <small>di vincere contro ${p.forza.avversari}</small>
+      <button type="button" class="pk-forza-x" data-az="pk-forza" aria-label="Nascondi la forza della mano">✕</button></p>`;
+  }
+
   function tavoloPoker(ctx, centro, extraMio) {
     const p = ctx.partita, io = ctx.mio, ui = ctx.ui;
     const fine = p.fase === 'fine';
@@ -1115,7 +1215,7 @@
       const scelta = ui.scarti.includes(c.id);
       const inner = carta(ctx, c, `${scelta ? 'da-scartare' : ''} ${vincenti.has(c.id) ? 'vincente' : ''}`);
       return cambio ? `<button type="button" class="pk-carta-bt" data-az="scarta" data-id="${c.id}" aria-pressed="${scelta}">${inner}</button>` : inner;
-    }).join('')}</div>${p.miaMano && p.inMano[io] ? `<p class="pk-mia-mano">${esc(p.miaMano)}</p>` : ''}` : '';
+    }).join('')}</div>${p.miaMano && p.inMano[io] ? `<p class="pk-mia-mano">${esc(p.miaMano)}</p>` : ''}${forzaHtml(p)}` : '';
     // comandi
     let comandi = '';
     const az = p.azioni;
@@ -1159,6 +1259,7 @@
     if (az === 'lascia' || az === 'passa' || az === 'vedi') { el.disabled = true; return ctx.invia({ tipo: az }); }
     if (az === 'punta') { el.disabled = true; return ctx.invia({ tipo: 'punta', fino: ui.pk }); }
     if (az === 'pkRapido') { ui.pk = Number(el.dataset.v); return ctx.ridisegna(); }
+    if (az === 'pk-forza') { try { localStorage.setItem('if:pkForza', mostraForza() ? '0' : '1'); } catch { /* niente */ } return ctx.ridisegna(); }
     if (az === 'scarta') { const id = el.dataset.id; ui.scarti = ui.scarti.includes(id) ? ui.scarti.filter((x) => x !== id) : [...ui.scarti, id]; return ctx.ridisegna(); }
     if (az === 'cambia') { const c = ui.scarti; ui.scarti = []; return ctx.invia({ tipo: 'cambia', carte: c }); }
   };
