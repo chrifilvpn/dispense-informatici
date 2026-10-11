@@ -141,10 +141,12 @@ public/js/app.js
 public/js/boss-classe.js
 public/js/boss-contenuti/esercizi-informatica.js
 public/js/boss-contenuti/esercizi-inglese.js
+public/js/boss-contenuti/esercizi-matematica.js
 public/js/boss-contenuti/esercizi-sistemi.js
 public/js/boss-contenuti/esercizi-tpsit.js
 public/js/boss-contenuti/informatica.js
 public/js/boss-contenuti/inglese.js
+public/js/boss-contenuti/matematica.js
 public/js/boss-contenuti/sistemi.js
 public/js/boss-contenuti/tpsit.js
 public/js/boss-pagina.js

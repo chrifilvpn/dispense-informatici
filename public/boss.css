@@ -235,4 +235,37 @@ html.avvio-studio body > *:not(#studio):not(#studio-carica) { visibility: hidden
   /* sul telefono gli schemi larghi restano leggibili: si scorrono di lato dentro la figura */
   .st-schema:has(> svg.st-svg-largo) { overflow-x: auto; }
   .st-schema svg.st-svg-largo { min-width: 580px; max-height: none; }
+/* ===== Matematica: formule in HTML (frazioni, limiti, integrali, radici), riquadri di definizioni/teoremi/esempi ===== */
+.mt-f, .mt-b { font-family: 'Cambria Math', 'STIX Two Math', 'Latin Modern Math', 'Cambria', 'Times New Roman', serif; }
+.mt-f { font-size: 1.06em; white-space: nowrap; }
+.mt-b { display: block; margin: 12px 0 16px; padding: 10px 14px; text-align: center; overflow-x: auto; font-size: 1.12em; line-height: 2.3; background: #f7f9fc; border-radius: 6px; }
+.mt-b .mt-f { font-size: 1em; }
+.mt-fr { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 .12em; font-size: .9em; line-height: 1.25; }
+.mt-fr > span:first-child { border-bottom: 1px solid currentColor; padding: 0 .2em .06em; }
+.mt-fr > span:last-child { padding: .06em .2em 0; }
+.mt-fr.mt-bin > span:first-child { border-bottom: 0; }
+.mt-lim { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; line-height: 1.05; margin-right: .15em; }
+.mt-lim small { font-size: .62em; white-space: nowrap; }
+.mt-int { display: inline-flex; align-items: stretch; vertical-align: middle; margin-right: .1em; }
+.mt-int > i { font-style: normal; font-size: 1.55em; line-height: 1.1; }
+.mt-int > span { display: inline-flex; flex-direction: column; justify-content: space-between; font-size: .6em; line-height: 1.1; margin-left: -.05em; }
+.mt-int sup, .mt-int sub { vertical-align: baseline; font-size: 1em; line-height: 1.1; }
+.mt-rad { border-top: 1px solid currentColor; padding: 0 .1em; margin-left: -.06em; }
+.mt-piu { color: #2f8a5b; font-weight: 700; }
+.mt-meno { color: #c5483c; font-weight: 700; }
+.mt-box { margin: 18px 0; padding: 12px 16px; border: 1px solid #d5dfeb; border-left: 4px solid #1a5fb4; border-radius: 8px; background: #fafcff; min-width: 0; }
+.mt-box > b:first-child { display: block; margin-bottom: 4px; color: #16365f; }
+.mt-box p:last-child, .mt-box ul, .mt-box ol { margin-bottom: 0; }
+.mt-box ul { padding-left: 20px; }
+.mt-teo { border-left-color: #6a4fb3; background: #faf8fe; }
+.mt-es { border-left-color: #3f9b6b; background: #f6fbf8; }
+.mt-passi { padding-left: 22px; margin: 6px 0 12px; }
+.mt-passi li { margin-bottom: 6px; }
+.mt-box .st-fig { margin: 12px 0; }
+.mt-box .st-tabella { margin-bottom: 10px; }
+@media (max-width: 800px) {
+  .mt-f { white-space: normal; }
+  .mt-fr, .mt-lim, .mt-int, .mt-rad { white-space: nowrap; }
+  .mt-box { padding: 10px 12px; }
+  .mt-b { font-size: 1.02em; padding: 8px 10px; }
 }
