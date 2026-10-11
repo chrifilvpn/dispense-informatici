@@ -1,6 +1,6 @@
 // DISPENSE — domande di Informatica per esercitazioni e verifiche (formato in esercizi-sistemi.js).
 (() => {
-  const { S, VF, C, A, O } = window.BossAiuti.domande;
+  const { S, VF, C, A, K, O } = window.BossAiuti.domande;
   window.BossEsercizi = window.BossEsercizi || {};
   window.BossEsercizi.informatica = {
     htmlcss: [
@@ -68,6 +68,63 @@
       A('Abbina.', [['$_GET', 'parametri nell\'URL'], ['$_POST', 'dati del modulo'], ['$_SESSION', 'dati dell\'utente tra le pagine'], ['PDO', 'accesso al database']], 'Superglobali e PDO.'),
       S('Quale codice HTTP conviene inviare se manca un campo obbligatorio?', ['200', '301', '400', '500'], 2, '400 Bad Request.'),
       O('Descrivi come si gestisce un login con le sessioni.', 'Il server controlla utente e password (con password_verify su un hash salvato), poi con session_start salva l\'id dell\'utente in $_SESSION; le pagine protette controllano che la sessione contenga l\'utente.', ['session', 'password', 'hash']),
+    ],
+    sqlavanzato: [
+      S('Quale JOIN restituisce tutti gli studenti, anche quelli senza classe?', ['INNER JOIN classi', 'studenti LEFT JOIN classi', 'studenti RIGHT JOIN classi', 'CROSS JOIN classi'], 1, 'Il LEFT JOIN tiene tutte le righe della tabella di sinistra; dove manca la corrispondenza mette NULL.'),
+      S('Nel database di esempio (5 studenti, di cui uno senza classe), quante righe dà studenti INNER JOIN classi?', ['3', '4', '5', '15'], 1, 'Romano non ha classe e la 5C non ha studenti: restano 4 righe.'),
+      S('Quante righe produce un CROSS JOIN tra 3 classi e 5 studenti?', ['8', '5', '15', '3'], 2, 'Il prodotto cartesiano accoppia ogni riga con ogni riga: 3 × 5 = 15.'),
+      S('Quale clausola filtra i gruppi dopo il GROUP BY?', ['WHERE', 'HAVING', 'ORDER BY', 'LIMIT'], 1, 'WHERE filtra le righe prima del raggruppamento, HAVING i gruppi dopo.'),
+      VF('MySQL supporta direttamente FULL OUTER JOIN.', false, 'Si simula con l\'UNION di un LEFT JOIN e di un RIGHT JOIN.'),
+      VF('COUNT(colonna) non conta i valori NULL.', true, 'COUNT(*) conta tutte le righe, COUNT(colonna) solo i valori non NULL.'),
+      VF('Una subquery correlata usa una colonna della query esterna.', true, 'Per questo viene valutata per ogni riga della query esterna.'),
+      C('Per trovare gli studenti senza nessun voto si può usare WHERE NOT ___ (SELECT * FROM voti v WHERE v.matricola = s.matricola).', ['exists'], 'NOT EXISTS è vero quando la subquery non restituisce righe.'),
+      C('Un JOIN di una tabella con se stessa, usando due alias, si chiama ___ join.', ['self'], 'Per esempio per trovare le coppie di compagni della stessa classe.'),
+      A('Abbina la funzione di aggregazione al suo risultato.', [['COUNT', 'numero di righe'], ['AVG', 'media'], ['SUM', 'somma'], ['MAX', 'valore più grande']], 'Le funzioni di aggregazione principali.'),
+      K('Voti del database di esempio: 8, 7, 5, 6, 9, 8, 4, 6. Completa.', [['Media generale', ['6.625', '6,625']], ['Numero di voti insufficienti (< 6)', ['2']], ['Media di Bianchi (voti 5 e 6)', ['5.5', '5,5']]], '53 / 8 = 6,625; insufficienti: 5 e 4; Bianchi (5 + 6) / 2 = 5,5.'),
+      S('Qual è l\'ordine logico di esecuzione delle clausole?', ['SELECT, FROM, WHERE, GROUP BY', 'FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY', 'WHERE, FROM, SELECT, HAVING', 'GROUP BY, FROM, WHERE, SELECT'], 1, 'Prima si costruiscono e filtrano le righe, poi si raggruppa, si filtrano i gruppi, si calcolano le colonne e si ordina.'),
+      O('Perché la query «SELECT cognome, AVG(voto) FROM … GROUP BY id_classe» è sbagliata?', 'Perché in una query raggruppata la SELECT può contenere solo le colonne del GROUP BY e le funzioni di aggregazione: ogni gruppo (una classe) contiene molti cognomi e il DBMS non sa quale mostrare.', ['group by', 'aggregazione', 'gruppo', 'cognom']),
+    ],
+    transazioni: [
+      S('Quale istruzione rende definitive le modifiche di una transazione?', ['ROLLBACK', 'COMMIT', 'SAVEPOINT', 'START TRANSACTION'], 1, 'COMMIT conferma; ROLLBACK annulla.'),
+      S('Che cosa garantisce l\'atomicità?', ['Che le transazioni siano veloci', 'Che vengano eseguite tutte le operazioni o nessuna', 'Che i dati siano cifrati', 'Che ci sia un solo utente'], 1, 'La transazione è indivisibile: o tutto o niente.'),
+      S('Quale anomalia si ha leggendo un dato scritto da una transazione che poi fa ROLLBACK?', ['Lettura sporca', 'Aggiornamento perso', 'Righe fantasma', 'Deadlock'], 0, 'Dirty read: si è letto un valore che non è mai stato confermato.'),
+      S('Quale livello di isolamento è predefinito in MySQL (InnoDB)?', ['READ UNCOMMITTED', 'READ COMMITTED', 'REPEATABLE READ', 'SERIALIZABLE'], 2, 'InnoDB usa REPEATABLE READ.'),
+      VF('Più transazioni possono avere contemporaneamente un lock condiviso sullo stesso dato.', true, 'Il lock condiviso (in lettura) è compatibile con altri lock condivisi.'),
+      VF('Dopo il COMMIT, un blackout può cancellare le modifiche confermate.', false, 'È la durabilità: le modifiche confermate sono già scritte nel log.'),
+      VF('In caso di deadlock il DBMS annulla una delle transazioni coinvolte.', true, 'L\'applicazione deve poi ripeterla.'),
+      C('Per leggere una riga bloccandola in modo esclusivo fino alla fine della transazione si scrive SELECT … FOR ___.', ['update'], 'SELECT … FOR UPDATE evita l\'aggiornamento perso.'),
+      C('Il protocollo in cui una transazione prima acquisisce tutti i lock e poi li rilascia si chiama ___ (sigla).', ['2pl', 'two-phase locking'], 'Two-Phase Locking garantisce la serializzabilità.'),
+      A('Abbina la lettera di ACID alla proprietà.', [['A', 'Atomicità'], ['C', 'Consistenza'], ['I', 'Isolamento'], ['D', 'Durabilità']], 'Le quattro proprietà delle transazioni.'),
+      S('In PDO, quale metodo annulla la transazione in corso?', ['commit()', 'rollBack()', 'prepare()', 'exec()'], 1, 'beginTransaction(), commit() e rollBack().'),
+      O('Che cos\'è un deadlock e come si può ridurre il rischio?', 'È uno stallo: due transazioni aspettano ciascuna un lock tenuto dall\'altra e nessuna può proseguire. Si riduce accedendo ai dati sempre nello stesso ordine e tenendo le transazioni brevi; il DBMS comunque lo rileva e annulla una delle due.', ['lock', 'aspett', 'ordine', 'brevi']),
+    ],
+    nosql: [
+      S('In che formato sono di solito i documenti di un database documentale?', ['CSV', 'JSON', 'tabelle SQL', 'immagini'], 1, 'Documenti JSON (o BSON) raggruppati in collezioni.'),
+      S('Quale tipo di database NoSQL è più adatto a una rete di amicizie?', ['Chiave-valore', 'A grafo', 'A colonne', 'Documentale'], 1, 'Nodi (persone) e archi (amicizie) con le loro proprietà.'),
+      S('Quale tipo è più adatto per salvare le sessioni di un sito con scadenza automatica?', ['A grafo', 'Chiave-valore', 'Relazionale', 'A colonne'], 1, 'Chiave = id di sessione, valore = dati; tempo di vita con EX.'),
+      S('Che cosa afferma il teorema CAP?', ['Che i dati vanno sempre cifrati', 'Che con una partizione di rete bisogna scegliere tra consistenza e disponibilità', 'Che SQL è più veloce di NoSQL', 'Che servono almeno tre server'], 1, 'Consistency, Availability, Partition tolerance: non si possono avere tutte e tre.'),
+      VF('Nei database documentali documenti della stessa collezione possono avere campi diversi.', true, 'Lo schema è flessibile.'),
+      VF('La scalabilità orizzontale consiste nel comprare un server più potente.', false, 'Quella è la scalabilità verticale; l\'orizzontale aggiunge altri server.'),
+      VF('I database NoSQL hanno sostituito completamente i database relazionali.', false, 'Li affiancano: si parla di persistenza poliglotta.'),
+      C('La divisione dei dati di una collezione tra più server in base a una chiave si chiama ___.', ['sharding'], 'Ogni nodo (shard) contiene una parte dei dati.'),
+      C('Il modello di elaborazione distribuita con le fasi map e reduce si chiama ___.', ['mapreduce'], 'Map elabora in parallelo, reduce combina i risultati.'),
+      A('Abbina la V dei big data al suo significato.', [['Volume', 'quantità enorme di dati'], ['Velocità', 'dati prodotti in tempo reale'], ['Varietà', 'formati diversi'], ['Veridicità', 'qualità e affidabilità']], 'Le V dei big data.'),
+      S('Che cosa significa eventual consistency?', ['I dati non sono mai consistenti', 'Le copie dei dati diventano uguali dopo un certo tempo', 'Ogni scrittura blocca tutti i server', 'I dati sono sempre cifrati'], 1, 'Dopo un breve intervallo tutte le repliche convergono allo stesso valore.'),
+      O('Quando conviene annidare i dati in un documento e quando usare un riferimento?', 'Si annidano i dati che si leggono sempre insieme al documento e che non crescono senza limite; si usa un riferimento all\'_id di un altro documento quando i dati sono condivisi da molti documenti o crescono senza limite, per non duplicarli.', ['annida', 'insieme', 'riferimento', 'condivis']),
+    ],
+    gdpr: [
+      S('Qual è la difesa corretta contro la SQL injection in PHP?', ['Togliere a mano gli apostrofi', 'Le query preparate con PDO (prepare ed execute)', 'Nascondere il modulo', 'Usare GET invece di POST'], 1, 'Con le query preparate i valori non vengono mai interpretati come SQL.'),
+      S('Quale istruzione SQL assegna un permesso a un utente?', ['GRANT', 'REVOKE', 'COMMIT', 'ALTER'], 0, 'GRANT assegna, REVOKE toglie.'),
+      S('Entro quanto tempo il titolare deve notificare una violazione dei dati al Garante?', ['24 ore', '72 ore', '30 giorni', 'Non è obbligatorio'], 1, 'Entro 72 ore da quando ne è venuto a conoscenza.'),
+      S('Chi è il titolare del trattamento dei dati degli studenti?', ['Lo studente', 'La scuola', 'Il fornitore del registro elettronico', 'Il Garante'], 1, 'La scuola decide finalità e modi; il fornitore è responsabile del trattamento.'),
+      VF('Il principio di minimizzazione impone di raccogliere solo i dati necessari.', true, 'Art. 5 del GDPR.'),
+      VF('I dati pseudonimizzati non sono più dati personali.', false, 'Con la tabella di corrispondenza si può risalire alla persona: restano dati personali. Solo l\'anonimizzazione li rende non personali.'),
+      VF('Per il principio del privilegio minimo l\'applicazione web dovrebbe collegarsi al database come amministratore.', false, 'Deve avere solo i permessi che le servono.'),
+      C('La funzione PHP che salva una password come hash con salt è ___.', ['password_hash'], 'Per il controllo si usa password_verify.'),
+      C('Il diritto dell\'interessato a ottenere la cancellazione dei propri dati è detto anche diritto all\'___.', ['oblio'], 'Diritto alla cancellazione (art. 17).'),
+      A('Abbina il termine del GDPR al suo significato.', [['Interessato', 'persona a cui si riferiscono i dati'], ['Titolare', 'chi decide finalità e modi del trattamento'], ['Responsabile', 'chi tratta i dati per conto del titolare'], ['DPO', 'chi vigila sul rispetto del regolamento']], 'I ruoli del GDPR.'),
+      A('Abbina l\'istruzione alla sua categoria o funzione.', [['CREATE VIEW', 'mostra solo alcune colonne'], ['REVOKE', 'toglie un permesso'], ['CREATE ROLE', 'raggruppa permessi'], ['CREATE USER', 'nuovo account del DBMS']], 'Strumenti per il controllo degli accessi.'),
+      O('Spiega perché la query preparata impedisce la SQL injection.', 'Perché il testo del comando con i segnaposto viene inviato e compilato dal DBMS prima dei valori; i valori arrivano dopo, separati, e vengono trattati sempre come dati e mai come codice SQL, quindi non possono cambiare la struttura della query.', ['segnaposto', 'compil', 'valori', 'dati']),
     ],
   };
 })();
