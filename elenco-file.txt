@@ -6,7 +6,6 @@ elenco-file.txt
 esecuzione.js
 fantasia.js
 giochi/airhockey.js
-giochi/alieno-bot.js
 giochi/alieno-mappe/abissi.js
 giochi/alieno-mappe/base.js
 giochi/alieno-mappe/index.js
@@ -139,11 +138,15 @@ public/index.html
 public/js/app.js
 public/js/boss-contenuti/esercizi-informatica.js
 public/js/boss-contenuti/esercizi-inglese.js
+public/js/boss-contenuti/esercizi-italiano.js
 public/js/boss-contenuti/esercizi-sistemi.js
+public/js/boss-contenuti/esercizi-storia.js
 public/js/boss-contenuti/esercizi-tpsit.js
 public/js/boss-contenuti/informatica.js
 public/js/boss-contenuti/inglese.js
+public/js/boss-contenuti/italiano.js
 public/js/boss-contenuti/sistemi.js
+public/js/boss-contenuti/storia.js
 public/js/boss-contenuti/tpsit.js
 public/js/boss-pagina.js
 public/js/boss.js

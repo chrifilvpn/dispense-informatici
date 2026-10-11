@@ -2504,9 +2504,9 @@ function giocaTutta(M, n, livelli, opzioni = {}) {
   const { corretta, prepara, norm, subnetCasuale, ORDINE } = ctx.BossPagina._test;
   // le materie del menu: ognuna ha il suo file di contenuti e il suo file di esercizi (e lo script in index.html)
   const file = [...ORDINE];
-  const indice = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
+  const indiceHtml = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
   for (const f of file.concat(file.map((x) => `esercizi-${x}`))) {
-    assert.ok(indice.includes(`/js/boss-contenuti/${f}.js`), `index.html carica ${f}.js`);
+    assert.ok(indiceHtml.includes(`/js/boss-contenuti/${f}.js`), `index.html carica ${f}.js`);
     vm.runInContext(fs.readFileSync(path.join(cartella, 'boss-contenuti', `${f}.js`), 'utf8'), ctx);
   }
   assert.ok(['sistemi', 'tpsit', 'informatica', 'inglese', 'matematica', 'italiano', 'storia'].every((m) => file.includes(m)), 'le materie del menu');
