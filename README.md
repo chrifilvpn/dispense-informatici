@@ -18,7 +18,26 @@ Sito per giocare online con gli amici o contro il computer: **briscola, scopa, s
 
 Made by chry_pala. Altri giochi arriveranno uno alla volta.
 
-## Ultime migliorie
+## Novità di questa versione
+
+- **Home**: categorie (Carte, Casinò, Strategia, Parole e quiz, Azione, Squid Game), ⭐ preferiti e 🕑 giochi recenti (salvati nel browser), 📊 **Le mie statistiche** (partite giocate e vinte per gioco, con i record personali) e l'avviso «il sito si sta svegliando» quando il server gratuito di Render ci mette a ripartire.
+- **Spettatori in tutti i giochi**: chi entra con il codice in un tavolo pieno (o a partita iniziata) guarda la partita con gli occhi di un giocatore a scelta; durante la partita la sua chat la leggono solo gli altri spettatori (così non può suggerire); se si libera un posto può sedersi. **Reazioni rapide** (😀): emoji che volano sul tavolo di tutti.
+- **🗓️ Sfida del giorno** (in home): un Sudoku, un Wordle, un puzzle di Sblocca e un quiz di Bandiere uguali per tutti nella stessa giornata (il «caso» parte da un seme fatto con la data italiana), con la classifica di oggi; conta il primo tentativo.
+- **🏆 Torneo a eliminazione** (giochi da 2): chi è al tavolo e chi guarda si iscrive, i posti mancanti fino a 4 o 8 li prende il computer; tabellone a fine incontro e prossimo incontro automatico. **🎲 Serata a giochi misti**: chi apre il tavolo sceglie da 2 a 8 giochi, si giocano di fila e ogni gioco vinto vale 3 punti.
+- **18 giochi nuovi** (cartella `giochi2/`): Tressette, Cucù (Asso che corre), Burraco, Sette e mezzo, Memory, Reversi, Codice segreto, Nonogram, 2048, Connessioni, Nomi in codice, Bombe e mattoni, Serpentoni, Corsa di macchinine, Calcio balilla, Patata bollente, Biglie (pari o dispari) e Il gioco del calamaro; più tre quiz con il motore di Bandiere: **Indovina la capitale**, **Indovina il paese dalla sagoma** (contorni da Natural Earth, dati di pubblico dominio) e **Dove si trova il monumento**. Tutti con il computer a tre livelli e le regole in «Regole».
+- **Migliorie ai giochi**: forza della mano (probabilità di vincere) in Texas e Poker; Wordle con modalità difficile; tabella della strategia di base nel Blackjack (con la tua mano evidenziata) e tabella della terza carta e delle probabilità nel Baccarat; **Chi è l'Alieno con il computer** (si muove sulla mappa, fa i compiti, ricorda chi ha visto e dove, elimina solo senza testimoni, segnala i corpi, scrive in chat nelle riunioni, legge le accuse e vota) e scene di espulsione rifatte (astronauta grande, scritte leggibili su ogni sfondo); nel minigolf un ostacolo mobile non spinge più la pallina oltre il muro.
+- **Dispense**: nuove materie Matematica, Italiano e Storia; argomenti di quinta in più per Sistemi e Reti, TPSIT, Informatica e Inglese. **Pagina finta a scelta** (home → Modalità studio): dispense, **verifica in corso** (si apre su una verifica già cominciata con il tempo che scorre), **registro elettronico** o **classe virtuale** (generici, senza nomi o loghi di prodotti veri). Sul telefono si torna al gioco anche con **tre tocchi veloci nell'angolo in alto a destra** (oltre al logo premuto 3 secondi; si sceglie nelle impostazioni).
+- **Correzioni**: i computer nelle fasi in cui tutti muovono insieme non aspettano più all'infinito; niente più «Vince ?» quando una partita finisce senza vincitori.
+
+### Dati che durano (database: più avanti)
+Classifiche della sfida del giorno e record stanno in `archivio.js`: in memoria, copiati ogni 30 secondi in `.dati/archivio.json`. Sul tuo computer sopravvivono ai riavvii; su Render gratuito il disco si azzera quando il sito si riavvia, quindi le classifiche ripartono da zero. Quando vorrai tenerle davvero basterà collegare un database esterno dentro `archivio.js` (le funzioni `leggi`, `scrivi`, `aggiungiInClassifica`): il resto del sito non cambia. Statistiche, preferiti e recenti invece sono nel browser di ognuno.
+
+### Prove
+- `npm test`: regole e migliaia di partite tra computer per ogni gioco (compresi i nuovi in `test/giochi2/`).
+- `npm run test:browser` (serve Playwright con Chromium): apre il sito come telefono e come computer, gioca a caso ogni gioco per qualche secondo e segnala errori nella pagina o cose che escono dallo schermo. `npm run test:browser -- tris uno` prova solo alcuni giochi.
+- **Da provare tu**: i telefoni veri (soprattutto iPhone/Safari, che si comporta in modo diverso dal Chromium dei test) e il sito pubblicato su Render con più persone vere e connessioni lente. Io ho potuto provare solo dei telefoni simulati sul computer.
+
+## Migliorie precedenti
 
 - **Telefono**: i giochi d'azione adattano il campo all'altezza libera (joystick e pulsanti sempre in vista); in orizzontale joystick e pulsante vanno ai lati sopra il campo, che diventa grande (per i campi larghi compare l'invito a girare il telefono). Sistemati Wordle (tastiera intera), UNO (mano che si stringe, UNO! sopra le carte), Tetris (pulsanti in una riga), Poker, Texas e Baccarat (pulsanti per puntare in vista), Roulette (ruota più piccola, gettoni attaccati in basso), Attraversa la strada (frecce in vista), la barra di fine partita e la sala d'attesa. Il gioco sta subito sotto il punteggio. Durante la partita lo schermo non si spegne da solo.
 - **Record personale**: a fine partita, il miglior risultato di sempre in quel gioco (con quelle opzioni e quel numero di giocatori), salvato nel browser; "meno è meglio" per tiri, tempi e penalità.
@@ -89,6 +108,7 @@ Funziona in tutto il sito, anche dentro le partite e nelle pagine che verranno a
 - La scheda del browser mostra "Dispense di Informatica" con un'icona da documento, e l'indirizzo diventa `/dispense`. Non si aggiungono voci alla cronologia. Se ricarichi la pagina (mentre "studi" o no) riparti dalle dispense e uscendo torni alla partita.
 - Se premi Esc mentre succede qualcosa (una mossa, un'animazione), per un attimo compare un finto "Caricamento…" prima delle dispense.
 - **Finestra grigia**: se esci dalla finestra (cambio scheda, Alt+Tab, sul telefono un'altra app) per più di 2 secondi, al ritorno trovi le dispense. Si attiva, si spegne e si sceglie la soglia (da 0 a 5 secondi) nella home, sotto "Modalità studio"; un valore salvato più alto scende a 5. Con **0 (subito)** le dispense si aprono nell'istante in cui esci dalla finestra, così anche l'anteprima delle app aperte sul telefono mostra solo le dispense.
+- **Pagina finta a scelta** e **tre tocchi nell'angolo** sul telefono: vedi «Novità di questa versione».
 - **!prof**: scritto in chat apre le dispense a tutti i giocatori del tavolo. C'è anche il pulsante 🚨 tra i messaggi rapidi.
 
 ## Comandi della chat
@@ -336,6 +356,15 @@ public/              la pagina del sito
   js/app.js          ingresso, sala d'attesa, chat, partita
   js/giochi/         il tavolo dei giochi nuovi (un file per gioco) e comuni.js
   nuovi.css          stile dei giochi nuovi
+giochi2/             i giochi nuovi (si registrano da soli) e i dati dei quiz di geografia
+public/js/giochi2/   il loro disegno nel browser (uniti in /js/giochi2.js e /giochi2.css)
+giochi/alieno-bot.js i computer di Chi è l'Alieno
+public/js/boss-registro.js  boss-classe.js   pagine finte alternative (registro, classe virtuale)
+archivio.js          dati che durano (classifiche): in memoria + file, pronto per un database
+sfida.js             la sfida del giorno (seme con la data, classifica)
+tornei.js            torneo a eliminazione e serata a giochi misti
+test/browser.js      prova nel browser (telefono e computer) di tutti i giochi
+test/giochi2/        controlli dei giochi nuovi
 test/simula.js       controlli delle regole e migliaia di partite tra computer
 test/nuovi.js        controlli dei giochi nuovi
 esecuzione.js        riconosce il "67" in chat (esecuzione pubblica)
@@ -370,5 +399,5 @@ Per rilanciare i controlli: `npm test`.
 11. Una partita può leggere la chat con `leggiChat(posto, testo)`: restituisce `{ nascondi }` (il messaggio non si mostra), `{ privato: '…' }` (avviso solo a chi l'ha scritto, evento socket `avvisoPrivato`) e/o `{ cambiato }`. Può scrivere messaggi di sistema con `chatSistema` (stringhe; `@N` diventa il nome del posto N). Esempio: Disegna e indovina.
 12. `velocitaBot` nella partita (un numero tra 0 e 1, per esempio 0.5 in un gioco dove un turno è fatto di tante piccole mosse) fa aspettare meno il computer tra una mossa e l'altra. File condivisi tra server e browser (come putt-buche.js, strada-mondo.js e tigerball-livelli.js) vanno serviti con una riga `app.get('/js/…')` in server.js.
 13. I giochi con le fiche possono esporre `ficheInGioco(posto)`: se ci sono fiche ancora in gioco nella mano, il consiglio di !ricarica non compare.
-14. **Nessuna cartella deve superare i 100 file** (GitHub ne carica al massimo 100 per volta dal browser). Quando `giochi/` arriva a 100 file, i giochi nuovi vanno in `giochi2/` (poi `giochi3/` e così via): in `giochi/index.js` si registrano con `require('../giochi2/nome')`. Lo stesso vale per `public/js/giochi/` → `public/js/giochi2/` (con lo `<script>` in index.html che punta alla nuova cartella). Ogni cartella si carica su GitHub con un commit a parte. `npm test` controlla che nessuna cartella superi i 100 file.
+14. **Nessuna cartella deve superare i 100 file** (GitHub ne carica al massimo 100 per volta dal browser). I giochi nuovi vanno in `giochi2/` e si registrano **da soli**: ogni file di `giochi2/` che esporta `meta` e `crea` entra nell'elenco (i file di dati senza `meta` si ignorano). Nel browser ogni file di `public/js/giochi2/` (`.js` e `.css`) viene unito e servito come `/js/giochi2.js` e `/giochi2.css`, e i test in `test/giochi2/` si eseguono da soli: per aggiungere un gioco non serve toccare nessun file esistente. L'id va messo in una categoria in `giochi/index.js` (altrimenti finisce in «Altri»). Quando una cartella arriva a 100 file si passa a `giochi3/` (aggiungendo la cartella al caricamento automatico). `npm test` controlla che nessuna cartella superi i 100 file.
 15. Un gioco d'azione in tempo reale si fa estendendo `Arena` (giochi/arena.js): basta scrivere `iniziaRound`, `passo(dt)` (restituisce true a fine round), `pensa(p, livello)` per il computer, `fineRound` e `statoTick(posto)` (il posto serve ai giochi dove ognuno vede cose diverse, come la bambola che conta o il buio; anche `vistaExtra(posto)`). Un gioco d'azione può avere anche `azione(p, a)` per i pulsanti; nel browser `cfg.sopra(ctx, d)` restituisce uno strato HTML sopra il canvas (si ridisegna solo quando cambia), `cfg.dopoSopra` e `cfg.clic` gestiscono i suoi pulsanti `[data-az]`. `leggiChat` può restituire `soloPer: [posti]` per un messaggio visibile solo ad alcuni. Nel browser `Arena.tavolo({ id, disegna, istruzioni, hud, … })` pensa a canvas, comandi, interpolazione e conto alla rovescia.
