@@ -8,16 +8,7 @@
 // - Se esci dalla finestra per più di X secondi, al ritorno trovi le dispense.
 // - Mentre è attiva, i suoni del sito sono sospesi.
 window.Boss = (() => {
-  // le pagine finte tra cui scegliere (in Modalità studio): dispense, dispense con una verifica in corso,
-  // registro elettronico o classe virtuale (generici, senza nomi o loghi di prodotti veri)
-  const PAGINE = {
-    dispense: { modulo: () => window.BossPagina, titolo: 'Dispense di Informatica · Informatica Facile' },
-    verifica: { modulo: () => window.BossPagina, titolo: 'Verifica in corso · Informatica Facile', verifica: true },
-    registro: { modulo: () => window.BossRegistro, titolo: 'Registro elettronico · Area studenti' },
-    classe: { modulo: () => window.BossClasse, titolo: 'Classe virtuale · 5ªB Informatica' },
-  };
-  const paginaScelta = () => PAGINE[cfg.pagina] || PAGINE.dispense;
-  const moduloPagina = () => paginaScelta().modulo() || window.BossPagina;
+  const TITOLO_FINTO = 'Dispense di Informatica · Informatica Facile';
   const INDIRIZZO_FINTO = '/dispense';
   const FAVICON_FINTA = 'data:image/svg+xml,' + encodeURIComponent(
     "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M7 2h12l7 7v19a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z' fill='#1a5fb4'/><path d='M19 2v5a2 2 0 0 0 2 2h5z' fill='#8fb4e3'/><rect x='9' y='14' width='13' height='2' rx='1' fill='#fff'/><rect x='9' y='18' width='13' height='2' rx='1' fill='#fff'/><rect x='9' y='22' width='9' height='2' rx='1' fill='#fff'/></svg>");
@@ -27,24 +18,18 @@ window.Boss = (() => {
   // ---------- impostazioni (finestra grigia) ----------
   // la soglia va da 0 (subito: appena si esce dalla finestra) a 5 secondi (predefinito 2)
   const SECONDI_MIN = 0, SECONDI_MAX = 5, SECONDI_BASE = 2;
-  const cfg = { grigia: true, secondi: SECONDI_BASE, pagina: 'dispense', gesto: 'entrambi' };
+  const cfg = { grigia: true, secondi: SECONDI_BASE, gesto: 'entrambi' };
   try { Object.assign(cfg, JSON.parse(localStorage.getItem(CFG_CHIAVE) || '{}')); } catch {}
   const secondiValidi = (v) => {
     const n = v === '' || v == null ? NaN : Number(v);
     return Number.isFinite(n) ? Math.min(SECONDI_MAX, Math.max(SECONDI_MIN, Math.round(n))) : SECONDI_BASE;
   };
   cfg.secondi = secondiValidi(cfg.secondi); // chi aveva salvato un valore vecchio (per esempio 25) scende a 5
-  if (!['dispense', 'verifica', 'registro', 'classe'].includes(cfg.pagina)) cfg.pagina = 'dispense';
   if (!['logo', 'angolo', 'entrambi'].includes(cfg.gesto)) cfg.gesto = 'entrambi';
   function config(nuove) {
     if (nuove) {
       if ('grigia' in nuove) cfg.grigia = !!nuove.grigia;
       if ('secondi' in nuove) cfg.secondi = secondiValidi(nuove.secondi);
-      if ('pagina' in nuove && PAGINE[nuove.pagina] && nuove.pagina !== cfg.pagina) {
-        cfg.pagina = nuove.pagina;
-        // la pagina si ridisegna alla prossima apertura (se è chiusa, la si toglie subito)
-        if (copertura && !attivo) { copertura.remove(); caricamento.remove(); copertura = null; }
-      }
       if ('gesto' in nuove && ['logo', 'angolo', 'entrambi'].includes(nuove.gesto)) cfg.gesto = nuove.gesto;
       try { localStorage.setItem(CFG_CHIAVE, JSON.stringify(cfg)); } catch {}
     }
@@ -65,7 +50,7 @@ window.Boss = (() => {
   let titoloVero = tagTitolo ? tagTitolo.dataset.vero : descTitolo.get.call(document);
   Object.defineProperty(document, 'title', {
     configurable: true,
-    get() { return attivo ? paginaScelta().titolo : titoloVero; },
+    get() { return attivo ? TITOLO_FINTO : titoloVero; },
     set(v) { titoloVero = String(v); if (!attivo) descTitolo.set.call(document, titoloVero); },
   });
 
@@ -144,14 +129,13 @@ window.Boss = (() => {
     copertura = document.createElement('div');
     copertura.id = 'studio';
     copertura.hidden = true;
-    const P = moduloPagina();
-    copertura.innerHTML = P ? P.html() : '<h1>Dispense</h1>';
+    copertura.innerHTML = window.BossPagina ? window.BossPagina.html() : '<h1>Dispense</h1>';
     caricamento = document.createElement('div');
     caricamento.id = 'studio-carica';
     caricamento.hidden = true;
     caricamento.innerHTML = '<div class="studio-spinner" aria-hidden="true"></div><p>Caricamento…</p>';
     document.body.append(copertura, caricamento);
-    if (P) P.avvia(copertura);
+    if (window.BossPagina) window.BossPagina.avvia(copertura);
     ascoltaLogo();
   }
   function rendiInerte(si) {
@@ -192,10 +176,10 @@ window.Boss = (() => {
     attivo = true;
     urlVero = qui().startsWith(INDIRIZZO_FINTO) ? (urlVero || leggiUrlSalvato()) : qui();
     salvaUrl();
-    descTitolo.set.call(document, paginaScelta().titolo);
+    descTitolo.set.call(document, TITOLO_FINTO);
     cambiaFavicon(true);
     cambiaColoreBarra(true);
-    replaceVero(history.state, '', INDIRIZZO_FINTO + (moduloPagina() ? moduloPagina().query() : ''));
+    replaceVero(history.state, '', INDIRIZZO_FINTO + (window.BossPagina ? window.BossPagina.query() : ''));
     zittisci(true);
     rendiInerte(true);
     document.documentElement.classList.add('in-studio');
@@ -206,8 +190,7 @@ window.Boss = (() => {
       copertura.hidden = false;
       document.documentElement.classList.remove('avvio-studio');
       inCorso = false;
-      const P = moduloPagina();
-      if (P) P.mostrata(copertura, { verifica: !!paginaScelta().verifica });
+      if (window.BossPagina) window.BossPagina.mostrata(copertura);
     };
     if (!subito && succedeQualcosa()) {
       // copertura immediata con un finto caricamento, poi le dispense
@@ -308,7 +291,6 @@ window.Boss = (() => {
       disattiva();
     }
   }
-  let ascoltaFinestra = false;
   function ascoltaLogo() {
     copertura.addEventListener('pointerdown', (e) => {
       if (cfg.gesto !== 'logo') {
@@ -327,8 +309,6 @@ window.Boss = (() => {
       if (suLogo) e.preventDefault();
       eventoLogo({ tipo: 'giu', suLogo, x: e.clientX, y: e.clientY });
     });
-    if (ascoltaFinestra) { copertura.addEventListener('contextmenu', (e) => { if (e.target.closest && e.target.closest('.st-logo')) e.preventDefault(); }); return; }
-    ascoltaFinestra = true; // gli ascoltatori sulla finestra servono una volta sola (la pagina finta si può rifare)
     window.addEventListener('pointermove', (e) => { if (pressione) eventoLogo({ tipo: 'muovi', x: e.clientX, y: e.clientY }); }, true);
     for (const t of ['pointerup', 'pointercancel']) window.addEventListener(t, () => { if (pressione) eventoLogo({ tipo: 'su' }); }, true);
     // niente menu del tasto destro o del dito lungo sul logo

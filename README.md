@@ -26,7 +26,7 @@ Made by chry_pala. Altri giochi arriveranno uno alla volta.
 - **🏆 Torneo a eliminazione** (giochi da 2): chi è al tavolo e chi guarda si iscrive, i posti mancanti fino a 4 o 8 li prende il computer; tabellone a fine incontro e prossimo incontro automatico. **🎲 Serata a giochi misti**: chi apre il tavolo sceglie da 2 a 8 giochi, si giocano di fila e ogni gioco vinto vale 3 punti.
 - **18 giochi nuovi** (cartella `giochi2/`): Tressette, Cucù (Asso che corre), Burraco, Sette e mezzo, Memory, Reversi, Codice segreto, Nonogram, 2048, Connessioni, Nomi in codice, Bombe e mattoni, Serpentoni, Corsa di macchinine, Calcio balilla, Patata bollente, Biglie (pari o dispari) e Il gioco del calamaro; più tre quiz con il motore di Bandiere: **Indovina la capitale**, **Indovina il paese dalla sagoma** (contorni da Natural Earth, dati di pubblico dominio) e **Dove si trova il monumento**. Tutti con il computer a tre livelli e le regole in «Regole».
 - **Migliorie ai giochi**: forza della mano (probabilità di vincere) in Texas e Poker; Wordle con modalità difficile; tabella della strategia di base nel Blackjack (con la tua mano evidenziata) e tabella della terza carta e delle probabilità nel Baccarat; **Chi è l'Alieno con il computer** (si muove sulla mappa, fa i compiti, ricorda chi ha visto e dove, elimina solo senza testimoni, segnala i corpi, scrive in chat nelle riunioni, legge le accuse e vota) e scene di espulsione rifatte (astronauta grande, scritte leggibili su ogni sfondo); nel minigolf un ostacolo mobile non spinge più la pallina oltre il muro.
-- **Dispense**: nuove materie Matematica, Italiano e Storia; argomenti di quinta in più per Sistemi e Reti, TPSIT, Informatica e Inglese. **Pagina finta a scelta** (home → Modalità studio): dispense, **verifica in corso** (si apre su una verifica già cominciata con il tempo che scorre), **registro elettronico** o **classe virtuale** (generici, senza nomi o loghi di prodotti veri). Sul telefono si torna al gioco anche con **tre tocchi veloci nell'angolo in alto a destra** (oltre al logo premuto 3 secondi; si sceglie nelle impostazioni).
+- **Dispense**: nuove materie Matematica, Italiano e Storia; argomenti di quinta in più per Sistemi e Reti, TPSIT, Informatica e Inglese. Sul telefono si torna al gioco anche con **tre tocchi veloci nell'angolo in alto a destra** (oltre al logo premuto 3 secondi; si sceglie nelle impostazioni).
 - **Correzioni**: i computer nelle fasi in cui tutti muovono insieme non aspettano più all'infinito; niente più «Vince ?» quando una partita finisce senza vincitori.
 
 ### Dati che durano (database: più avanti)
@@ -108,7 +108,7 @@ Funziona in tutto il sito, anche dentro le partite e nelle pagine che verranno a
 - La scheda del browser mostra "Dispense di Informatica" con un'icona da documento, e l'indirizzo diventa `/dispense`. Non si aggiungono voci alla cronologia. Se ricarichi la pagina (mentre "studi" o no) riparti dalle dispense e uscendo torni alla partita.
 - Se premi Esc mentre succede qualcosa (una mossa, un'animazione), per un attimo compare un finto "Caricamento…" prima delle dispense.
 - **Finestra grigia**: se esci dalla finestra (cambio scheda, Alt+Tab, sul telefono un'altra app) per più di 2 secondi, al ritorno trovi le dispense. Si attiva, si spegne e si sceglie la soglia (da 0 a 5 secondi) nella home, sotto "Modalità studio"; un valore salvato più alto scende a 5. Con **0 (subito)** le dispense si aprono nell'istante in cui esci dalla finestra, così anche l'anteprima delle app aperte sul telefono mostra solo le dispense.
-- **Pagina finta a scelta** e **tre tocchi nell'angolo** sul telefono: vedi «Novità di questa versione».
+- **Tre tocchi veloci nell'angolo in alto a destra** sul telefono riportano al gioco (oltre al logo premuto 3 secondi; si sceglie nelle impostazioni).
 - **!prof**: scritto in chat apre le dispense a tutti i giocatori del tavolo. C'è anche il pulsante 🚨 tra i messaggi rapidi.
 
 ## Comandi della chat
@@ -359,7 +359,6 @@ public/              la pagina del sito
 giochi2/             i giochi nuovi (si registrano da soli) e i dati dei quiz di geografia
 public/js/giochi2/   il loro disegno nel browser (uniti in /js/giochi2.js e /giochi2.css)
 giochi/alieno-bot.js i computer di Chi è l'Alieno
-public/js/boss-registro.js  boss-classe.js   pagine finte alternative (registro, classe virtuale)
 archivio.js          dati che durano (classifiche): in memoria + file, pronto per un database
 sfida.js             la sfida del giorno (seme con la data, classifica)
 tornei.js            torneo a eliminazione e serata a giochi misti

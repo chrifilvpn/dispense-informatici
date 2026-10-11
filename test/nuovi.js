@@ -2571,7 +2571,7 @@ function giocaTutta(M, n, livelli, opzioni = {}) {
   assert.ok(!/data-torna|Torna al gioco/.test(pag), 'nessun pulsante per tornare al gioco nelle dispense');
   // apertura dentro un capitolo (mai un indice), menu con la sola materia corrente, ultimo capitolo ricordato
   assert.ok(/const st = \{ vista: 'argomento'/.test(pag) && /materia\('sistemi'\)/.test(pag), 'prima apertura: un capitolo a caso di Sistemi e Reti');
-  assert.ok(/function mostrata\(_el, opz = \{\}\) \{[\s\S]*?\n    \/\/ a ogni apertura si riapre l'ultimo capitolo visitato[^\n]*\n    if \(st\.capitolo && root\) vai\('argomento', st\.capitolo\.m, st\.capitolo\.a\);/.test(pag), 'a ogni apertura si riapre l\'ultimo capitolo (tranne con la pagina finta «verifica in corso»)');
+  assert.ok(/function mostrata\(\) \{\n    \/\/ a ogni apertura si riapre l'ultimo capitolo visitato[^\n]*\n    if \(st\.capitolo && root\) vai\('argomento', st\.capitolo\.m, st\.capitolo\.a\);/.test(pag), 'a ogni apertura si riapre l\'ultimo capitolo');
   assert.ok(/if \(vista === 'argomento' && st\.m && st\.a\) \{ st\.capitolo = /.test(pag) && /if \(vista === 'materia'\) \{ vista = 'argomento'; a = capitoloDi\(m\); \}/.test(pag), 'la posizione si aggiorna a ogni capitolo; la materia porta dentro un capitolo');
   assert.ok(/function menu\(\) \{\n    const m = materia\(/.test(pag) && /data-cambia-m/.test(pag), 'menu laterale della sola materia; la materia si cambia dalle briciole');
   assert.ok(/if \(st\.vista === 'argomento'\) \{ al0\.m = st\.m; al0\.a = st\.a;/.test(pag), 'esercitazioni e verifiche partono dalla materia e dal capitolo che si stava leggendo');

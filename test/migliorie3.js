@@ -89,7 +89,7 @@ const { GIOCHI } = require('../giochi');
 }
 
 {
-  // pagine finte alternative e tre tocchi nell'angolo per tornare al gioco dal telefono
+  // tre tocchi nell'angolo per tornare al gioco dal telefono
   const fs = require('fs'), path = require('path'), vm = require('vm');
   const js = path.join(__dirname, '..', 'public', 'js');
   const boss = fs.readFileSync(path.join(js, 'boss.js'), 'utf8');
@@ -99,16 +99,5 @@ const { GIOCHI } = require('../giochi');
   assert.ok(prova([[0, 390, 10], [400, 380, 20], [900, 395, 5]]), 'tre tocchi veloci nell\'angolo: si esce');
   assert.ok(!prova([[0, 390, 10], [400, 380, 20], [2000, 395, 5]]), 'troppo lenti: no');
   assert.ok(!prova([[0, 390, 10], [400, 200, 300], [700, 395, 5]]), 'un tocco fuori dall\'angolo azzera');
-  const indice = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
-  for (const f of ['boss-registro.js', 'boss-classe.js']) {
-    assert.ok(indice.includes(`/js/${f}`), `index.html carica ${f}`);
-    const ctx = { window: {}, Date, Math, Number, String }; vm.createContext(ctx);
-    vm.runInContext(fs.readFileSync(path.join(js, f), 'utf8'), ctx);
-    const P = ctx.window.BossRegistro || ctx.window.BossClasse;
-    const h = P.html();
-    assert.ok(h.includes('st-logo') && P.titolo && typeof P.avvia === 'function', `${f}: ha il logo (pressione lunga) e il titolo della scheda`);
-    // niente nomi di prodotti veri
-    for (const marchio of ['Classroom', 'ClasseViva', 'Spaggiari', 'Argo', 'Axios', 'Teams', 'Google', 'Moodle']) assert.ok(!fs.readFileSync(path.join(js, f), 'utf8').includes(marchio), `${f}: niente marchi (${marchio})`);
-  }
-  console.log('✓ Pagine finte: registro elettronico e classe virtuale generici, verifica in corso; tre tocchi nell\'angolo per tornare al gioco');
+  console.log('✓ Dispense: tre tocchi nell\'angolo per tornare al gioco dal telefono');
 }
