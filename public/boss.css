@@ -270,3 +270,11 @@ html.avvio-studio body > *:not(#studio):not(#studio-carica) { visibility: hidden
   .mt-box { padding: 10px 12px; }
   .mt-b { font-size: 1.02em; padding: 8px 10px; }
 }
+/* ===== Italiano e Storia: citazioni, fonti e schemi alti (linee del tempo, mappe, cartine) ===== */
+.st-cit { margin: 16px 0 18px; padding: 12px 18px; border-left: 4px solid #7a5cc4; background: #f7f4fd; border-radius: 0 8px 8px 0; font-family: Georgia, 'Times New Roman', serif; font-size: 16px; line-height: 1.6; color: #2a2340; overflow-wrap: anywhere; }
+.st-cit cite { display: block; margin-top: 8px; font-family: inherit; font-size: 13px; font-style: normal; color: #6b7a8c; }
+.st-cit cite::before { content: '— '; }
+.st-cit.st-fonte { border-left-color: #c98e10; background: #fffaf0; color: #3a2f12; }
+.st-articolo h3 { margin: 22px 0 8px; font-size: 17px; color: #16365f; font-weight: 650; }
+.st-schema svg.st-alto { max-height: none; max-width: 600px; margin: 0 auto; }
+@media (max-width: 600px) { .st-schema svg.st-alto { padding: 4px; } .st-cit { padding: 10px 12px; font-size: 15px; } }
