@@ -301,7 +301,7 @@ class Duello extends Arena {
     if (isola && liv !== 'facile') {
       const centro = (isola.x0 + isola.x1) / 2, largo = isola.x1 - isola.x0;
       if (largo < 60 && !isola.base) return { x: 0, y: 1 }; // la piattaforma sta sparendo: si scende
-      if (!isola.mx && (e.x < isola.x0 + margine * 0.7 || e.x > isola.x1 - margine * 0.7)) return { x: Math.sign(centro - e.x), y: 0 };
+      if ((!isola.mx || liv === 'difficile') && (e.x < isola.x0 + margine * 0.7 || e.x > isola.x1 - margine * 0.7)) return { x: Math.sign(centro - e.x), y: 0 }; // sulle nuvole che si muovono ci pensa solo il difficile
     }
     // lava che sale: il medio e il difficile vanno in alto per tempo
     if (this.lava !== null && liv !== 'facile' && isola && isola.y > this.lava - (liv === 'difficile' ? 110 : 70)) m.meta = { x: (this.isole.filter((q) => this.sicura(q) && q.y < isola.y - 40).sort((a, b) => Math.abs((a.x0 + a.x1) / 2 - e.x) - Math.abs((b.x0 + b.x1) / 2 - e.x))[0] || { x0: 500, x1: 500 }).x0 + 40, y: 0, fuga: true }, m.fino = t + 0.8;
