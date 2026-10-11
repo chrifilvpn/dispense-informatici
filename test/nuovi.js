@@ -897,7 +897,7 @@ function giocaTutta(M, n, livelli, opzioni = {}) {
 // ======================= CHI È L'ALIENO =======================
 {
   const M = GIOCHI.alieno, { maxAlieni } = M._test;
-  assert.ok(M.meta.soloPersone && M.meta.giocatori[0] === 4 && M.meta.giocatori.at(-1) === 10);
+  assert.ok(!M.meta.soloPersone && M.meta.giocatori[0] === 4 && M.meta.giocatori.at(-1) === 10, 'da 4 a 10, anche con il computer');
   assert.deepStrictEqual([4, 6, 7, 8, 9, 10].map(maxAlieni), [1, 1, 2, 2, 3, 3], 'massimo di Alieni per numero di giocatori');
   const parti = (g) => { let ora = Date.now(); while (g.fase !== 'gioco') { ora += 50; g.fineFase = ora; g.tick(ora); } return ora; };
   // troppi Alieni per 5 giocatori: si riduce e si avvisa in chat
@@ -960,7 +960,7 @@ function giocaTutta(M, n, livelli, opzioni = {}) {
   // chi esce da più di un minuto: i suoi compiti non contano
   const z = M.crea({ n: 4, opzioni: {}, bot: [] }); parti(z);
   const zu = z.e.find((e) => !e.alieno).id; z.esce(zu); z.tempoRound += 61; assert.ok(!z.conta(zu), 'compiti di chi è uscito da un minuto non contano');
-  console.log('✓ Chi è l\'Alieno: solo persone, Alieni ridotti al massimo con avviso, ruoli segreti, eliminazione con attesa, fantasmi invisibili con chat tra loro, muri che coprono, segnalazione, riunione, voto segreto, pareggio, espulsione, compiti con tempo minimo, vittorie');
+  console.log('✓ Chi è l\'Alieno: anche con il computer, Alieni ridotti al massimo con avviso, ruoli segreti, eliminazione con attesa, fantasmi invisibili con chat tra loro, muri che coprono, segnalazione, riunione, voto segreto, pareggio, espulsione, compiti con tempo minimo, vittorie');
 }
 
 // ======================= SHUT THE BOX =======================
@@ -1145,7 +1145,7 @@ function giocaTutta(M, n, livelli, opzioni = {}) {
   const vd = { facile: 0, medio: 0, difficile: 0 }, cadute = { medio: 0, difficile: 0 };
   const D = M._test.Duello, pc0 = D.prototype.perdiCuore; let livC = null;
   D.prototype.perdiCuore = function (p, perche) { if (livC && this.e[p].stordito <= 0 && this.tempoRound < 60 && cadute[livC[p]] !== undefined) cadute[livC[p]]++; return pc0.call(this, p, perche); };
-  for (const mappa of Object.keys(MAPPE)) for (let k = 0; k < 36; k++) {
+  for (const mappa of Object.keys(MAPPE)) for (let k = 0; k < 72; k++) { // tante partite: le cadute variano molto
     livC = ['facile', 'medio', 'difficile'].map((_, i) => ['facile', 'medio', 'difficile'][(i + k) % 3]);
     const x = M.crea({ n: 3, opzioni: { round: 1, mappa }, bot: livC }); let ora = Date.now(), passi = 0;
     while (!x.finita) { ora += 33; if (x.fase === 'via' || x.fase === 'pausaRound') x.fineFase = Math.min(x.fineFase, ora); x.tick(ora); assert.ok(passi++ < 20000, 'il round finisce'); }
@@ -2501,10 +2501,15 @@ function giocaTutta(M, n, livelli, opzioni = {}) {
   const ctx = { console, Math, Date, String, Number, Array, Object, JSON };
   ctx.window = ctx; vm.createContext(ctx);
   vm.runInContext(fs.readFileSync(path.join(cartella, 'boss-pagina.js'), 'utf8'), ctx);
-  const file = ['sistemi', 'tpsit', 'informatica', 'inglese'];
-  for (const f of file.concat(file.map((x) => `esercizi-${x}`))) vm.runInContext(fs.readFileSync(path.join(cartella, 'boss-contenuti', `${f}.js`), 'utf8'), ctx);
   const { corretta, prepara, norm, subnetCasuale, ORDINE } = ctx.BossPagina._test;
-  assert.strictEqual(JSON.stringify(ORDINE), JSON.stringify(file), 'le quattro materie del menu');
+  // le materie del menu: ognuna ha il suo file di contenuti e il suo file di esercizi (e lo script in index.html)
+  const file = [...ORDINE];
+  const indice = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
+  for (const f of file.concat(file.map((x) => `esercizi-${x}`))) {
+    assert.ok(indice.includes(`/js/boss-contenuti/${f}.js`), `index.html carica ${f}.js`);
+    vm.runInContext(fs.readFileSync(path.join(cartella, 'boss-contenuti', `${f}.js`), 'utf8'), ctx);
+  }
+  assert.ok(['sistemi', 'tpsit', 'informatica', 'inglese', 'matematica', 'italiano', 'storia'].every((m) => file.includes(m)), 'le materie del menu');
   let argomenti = 0, domande = 0;
   for (const m of file) {
     const M = ctx.BossContenuti[m], E = ctx.BossEsercizi[m];
