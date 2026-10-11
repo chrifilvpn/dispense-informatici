@@ -71,7 +71,7 @@ input::placeholder { color: rgba(243, 236, 217, .4); }
 .home, .attesa { max-width: 44rem; margin: 0 auto; padding: 2.25rem 1.2rem 3rem; }
 /* la home si allarga: i giochi stanno in file da 5-6, così la pagina non diventa lunghissima */
 .home { max-width: 84rem; }
-.home > .testata, .home > .impostazioni, .home > .blocco:not(:first-of-type) { max-width: 46rem; margin-left: auto; margin-right: auto; }
+.home > .testata, .home > .impostazioni, .home > .blocco:not(.blocco-largo) { max-width: 46rem; margin-left: auto; margin-right: auto; }
 .home > .campo { margin-left: auto; margin-right: auto; }
 .home > .testata { text-align: center; }
 .home > .testata .sottotitolo { margin-left: auto; margin-right: auto; }
@@ -98,7 +98,7 @@ input::placeholder { color: rgba(243, 236, 217, .4); }
 .filtro-tipo button[aria-pressed="true"] { background: rgba(209, 154, 42, .25); color: var(--avorio); }
 .g-tag { font-size: .72rem; color: var(--tenue); }
 .elenco-giochi { display: grid; grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr)); gap: .6rem; }
-@media (min-width: 1100px) { .elenco-giochi { grid-template-columns: repeat(auto-fill, minmax(12.4rem, 1fr)); } .gioco-tessera { padding: .8rem .9rem; } .g-desc { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; } }
+@media (min-width: 1100px) { .elenco-giochi { grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); } .gioco-tessera { padding: .8rem .9rem; } .g-desc { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; } }
 .gioco-tessera {
   cursor: pointer; text-align: left; display: grid; gap: .3rem; align-content: start;
   padding: 1rem; border-radius: 12px; border: 1.5px solid rgba(247, 240, 222, .18);
