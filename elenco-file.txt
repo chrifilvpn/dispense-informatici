@@ -190,6 +190,7 @@ server.js
 sfida.js
 sicurezza.js
 test/browser.js
+test/giochi2.js
 test/nuovi.js
 test/serate.js
 test/simula.js

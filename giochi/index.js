@@ -76,6 +76,19 @@ const ponte = require('./ponte');
 
 const GIOCHI = { briscola, scopa, scopone, rubamazzo, scala40, tris, forza4, battaglia, dama, scacchi, impiccato, morra, numero, blackjack, baccarat, higherlower, texas, poker5, uno, campo, impostore, coccodrillo, blockblast, peppa, fastwest, wordle, angolo, sudoku, snake, tetris, airhockey, pallone, interruttori, casellebombe, tesoro, coperti, dubito, nascondino, mappa, tasti, mensola, mind, flip7, cirulla, solitario, chirurgo, benchmark, disegna, putt, palloncini, gattotopi, colori, bumper, differenze, fuga, monete, arcobaleno, pioggia, paintball, piattaforme, massi, stella, fune, dalgona, buio, alieno, shutbox, sblocca, wanted, duello, strada, bersaglio, mangiatutto, tigerball, roulette, bandiere, ponte };
 
+// GIOCHI NUOVI (cartella giochi2): ogni file che esporta meta e crea si registra da solo, senza toccare questo
+// elenco (i file di dati senza meta, es. tressette-dati.js, si ignorano)
+{
+  const fs = require('fs');
+  const path = require('path');
+  const cartella = path.join(__dirname, '..', 'giochi2');
+  const files = fs.existsSync(cartella) ? fs.readdirSync(cartella).filter((f) => f.endsWith('.js')).sort() : [];
+  for (const f of files) {
+    const m = require(path.join(cartella, f));
+    if (m && m.meta && typeof m.crea === 'function' && !GIOCHI[m.meta.id]) GIOCHI[m.meta.id] = m;
+  }
+}
+
 // CATEGORIE della home (un gioco nuovo che non è in elenco finisce in "Altri")
 const CATEGORIE = {
   carte: ['briscola', 'scopa', 'scopone', 'rubamazzo', 'scala40', 'peppa', 'fastwest', 'dubito', 'flip7', 'cirulla', 'solitario', 'uno', 'tressette', 'cucu', 'burraco', 'memory'],

@@ -536,3 +536,4 @@ for (const [id, mod] of Object.entries(GIOCHI)) {
 // ---- giochi nuovi: impostore, coccodrillo, block blast, peppa tencia, fast west ----
 require('./nuovi');
 require('./serate');
+require('./giochi2');
