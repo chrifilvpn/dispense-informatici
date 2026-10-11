@@ -235,6 +235,7 @@ html.avvio-studio body > *:not(#studio):not(#studio-carica) { visibility: hidden
   /* sul telefono gli schemi larghi restano leggibili: si scorrono di lato dentro la figura */
   .st-schema:has(> svg.st-svg-largo) { overflow-x: auto; }
   .st-schema svg.st-svg-largo { min-width: 580px; max-height: none; }
+}
 /* ===== Matematica: formule in HTML (frazioni, limiti, integrali, radici), riquadri di definizioni/teoremi/esempi ===== */
 .mt-f, .mt-b { font-family: 'Cambria Math', 'STIX Two Math', 'Latin Modern Math', 'Cambria', 'Times New Roman', serif; }
 .mt-f { font-size: 1.06em; white-space: nowrap; }
