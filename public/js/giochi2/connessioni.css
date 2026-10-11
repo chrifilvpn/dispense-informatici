@@ -1,0 +1,75 @@
+/* CONNESSIONI: 4×4 tessere color carta sul panno verde; i gruppi trovati sono fasce colorate (giallo, verde, blu, viola) */
+/* i colori servono anche fuori dal tavolo (i quadratini accanto ai nomi degli altri) */
+.cn, .cn-mini { --cn-giallo: #f2d46b; --cn-verde: #a3c55f; --cn-blu: #a9c2ee; --cn-viola: #bf8fd0; }
+.cn {
+  --cn-tessera: #efe7d3; --cn-sel: #4f5b55; --cn-larga: min(34rem, calc(100vw - 1.5rem));
+  display: flex; flex-wrap: wrap; gap: 1.2rem 1.6rem; justify-content: center; align-items: flex-start; width: 100%;
+}
+.cn-centro { display: grid; justify-items: center; gap: .65rem; width: var(--cn-larga); }
+.cn-info { margin: 0; color: var(--tenue); font-size: .92rem; text-align: center; }
+.cn-esito { margin: 0; display: grid; justify-items: center; gap: .1rem; font: 400 1.2rem var(--serif); text-align: center; }
+.cn-esito.si { color: var(--oro); }
+.cn-esito small { font: .85rem var(--sans); color: var(--tenue); }
+
+.cn-griglia { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; width: 100%; }
+.cn-tessera {
+  --fs: min(1.05rem, calc((var(--cn-larga) / 4 - 18px) / (var(--l) * .64)));
+  aspect-ratio: 1.25; min-height: 3.6rem; border: 0; border-radius: 9px; padding: 4px; cursor: pointer;
+  background: var(--cn-tessera); color: var(--inchiostro); font: 800 var(--fs) / 1.12 var(--sans); letter-spacing: .01em;
+  display: grid; place-items: center; text-align: center; overflow: hidden; hyphens: manual; overflow-wrap: normal;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .25); transition: transform .12s, background .15s, color .15s; -webkit-tap-highlight-color: transparent;
+}
+.cn-tessera span { display: block; max-width: 100%; }
+@media (hover: hover) { .cn-tessera:hover:not(:disabled):not(.sel) { background: #f8f2e2; } }
+.cn-tessera.sel { background: var(--cn-sel); color: #fbf8f0; transform: scale(.96); }
+.cn-tessera:disabled { cursor: default; opacity: .85; }
+.cn-tessera:focus-visible { outline: 3px solid var(--oro); outline-offset: 2px; }
+.cn-tessera.scossa { animation: cn-scossa .45s; }
+@keyframes cn-scossa { 20%, 60% { translate: -5px 0; } 40%, 80% { translate: 5px 0; } }
+
+.cn-gruppo {
+  grid-column: 1 / -1; min-height: 3.6rem; border-radius: 9px; padding: .45rem .6rem; color: #1c1a16;
+  display: grid; align-content: center; justify-items: center; gap: .1rem; text-align: center;
+}
+.cn-gruppo b { font: 800 .98rem var(--sans); text-transform: uppercase; letter-spacing: .03em; }
+.cn-gruppo span { font-size: .88rem; font-weight: 600; }
+.cn-gruppo small { font-size: .76rem; opacity: .78; font-style: italic; }
+.cn-gruppo.trovato { animation: cn-sale .55s ease-out both; animation-delay: var(--t, 0ms); }
+.cn-gruppo.mancato { opacity: .78; outline: 2px dashed rgba(28, 26, 22, .35); outline-offset: -5px; }
+@keyframes cn-sale { from { transform: translateY(18px) scale(.97); opacity: .2; } to { transform: none; opacity: 1; } }
+.cn-giallo { background: var(--cn-giallo); } .cn-verde { background: var(--cn-verde); } .cn-blu { background: var(--cn-blu); } .cn-viola { background: var(--cn-viola); }
+
+.cn-errori { margin: .1rem 0 0; display: flex; align-items: center; gap: .55rem; font-size: .9rem; color: var(--tenue); }
+.cn-errori span { display: flex; gap: 6px; }
+.cn-errori i { width: 13px; height: 13px; border-radius: 50%; background: rgba(247, 240, 222, .16); transition: background .3s; }
+.cn-errori i.pieno { background: var(--avorio); }
+
+.cn-comandi { display: flex; gap: .5rem; justify-content: center; flex-wrap: wrap; width: 100%; }
+.cn-comandi .bottone { padding: .62rem .95rem; border-radius: 999px; }
+.cn-comandi .primario-bt { min-width: 8.5rem; }
+.cn-comandi small { font-weight: 500; opacity: .75; }
+.cn-arrendi { margin: 0; }
+.cn-link { background: none; border: 0; color: var(--tenue); text-decoration: underline; cursor: pointer; font-size: .85rem; padding: .3rem; }
+
+.cn-prove { display: grid; gap: 3px; justify-items: center; margin-top: .2rem; }
+.cn-prove div { display: flex; gap: 3px; }
+.cn-q { width: 16px; height: 16px; border-radius: 3px; }
+
+.cn-mini { display: inline-flex; gap: 3px; vertical-align: middle; }
+.cn-mini i { width: 12px; height: 10px; border-radius: 3px; background: rgba(247, 240, 222, .14); }
+.cn-mini i.cn-giallo { background: var(--cn-giallo); } .cn-mini i.cn-verde { background: var(--cn-verde); }
+.cn-mini i.cn-blu { background: var(--cn-blu); } .cn-mini i.cn-viola { background: var(--cn-viola); }
+
+@media (max-width: 700px) {
+  .cn { gap: .9rem; }
+  .cn-griglia { gap: 6px; }
+  .cn-centro { gap: .5rem; }
+  .cn-tessera { aspect-ratio: auto; height: clamp(3.3rem, 9.6vh, 4.6rem); min-height: 0; border-radius: 8px; }
+  .cn-gruppo { min-height: clamp(3.3rem, 9.6vh, 4.6rem); padding: .3rem .45rem; gap: 0; }
+  .cn-comandi { gap: .35rem; flex-wrap: nowrap; }
+  .cn-comandi .bottone { padding: .55rem .75rem; font-size: .92rem; }
+  .cn-comandi .primario-bt { min-width: 0; flex: 1; }
+  .cn-gruppo b { font-size: .9rem; }
+  .cn-gruppo span { font-size: .8rem; }
+}
+@media (prefers-reduced-motion: reduce) { .cn-tessera.scossa, .cn-gruppo.trovato { animation: none; } }

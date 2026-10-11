@@ -106,6 +106,10 @@ giochi2/burraco-regole.js
 giochi2/burraco.js
 giochi2/calamaro.js
 giochi2/capitali.js
+giochi2/codenames-dati.js
+giochi2/codenames.js
+giochi2/connessioni-dati.js
+giochi2/connessioni.js
 giochi2/cucu.js
 giochi2/duemila.js
 giochi2/geo-dati.js
@@ -208,6 +212,10 @@ public/js/giochi2/biglie.js
 public/js/giochi2/burraco.css
 public/js/giochi2/burraco.js
 public/js/giochi2/calamaro.js
+public/js/giochi2/codenames.css
+public/js/giochi2/codenames.js
+public/js/giochi2/connessioni.css
+public/js/giochi2/connessioni.js
 public/js/giochi2/cucu.css
 public/js/giochi2/cucu.js
 public/js/giochi2/duemila.css
@@ -237,6 +245,8 @@ test/giochi2.js
 test/giochi2/biglie.js
 test/giochi2/burraco.js
 test/giochi2/calamaro.js
+test/giochi2/codenames.js
+test/giochi2/connessioni.js
 test/giochi2/cucu.js
 test/giochi2/duemila.js
 test/giochi2/mastermind.js
