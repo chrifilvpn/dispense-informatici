@@ -182,7 +182,8 @@ function aggiorna(s) {
     for (const m of g.chatDa.splice(0)) {
       const x = s.posti[m.posto];
       if (!x) continue;
-      s.chat.push({ id: ++s.nChat, posto: m.posto, nome: x.nome, testo: censura(String(m.testo).slice(0, 160)), ora: Date.now() });
+      const testo = String(m.testo).replace(/@(\d+)/g, (_m, k) => (s.posti[k] ? s.posti[k].nome : '?'));
+      s.chat.push({ id: ++s.nChat, posto: m.posto, nome: x.nome, testo: censura(testo.slice(0, 160)), ora: Date.now() });
       if (s.chat.length > 80) s.chat.shift();
     }
   }
@@ -222,10 +223,13 @@ function gestisciTick(s) {
 
 function pianifica(s) {
   clearTimeout(s.timer);
-  (s.timerSim || []).forEach(clearTimeout);
-  s.timerSim = [];
   clearTimeout(s.timerTempo);
   const g = s.partita;
+  // timer di chi deve agire nelle fasi "tutti insieme": restano validi finché quel posto è atteso nella stessa
+  // partita (così le mosse degli altri non fanno ripartire l'attesa e i computer lenti agiscono comunque)
+  s.timerSim = s.timerSim || new Map();
+  const attesiOra = g && !g.finita && g.turno == null && g.attesi && !g.inAttesa && !inEsecuzione(s) && !inPausa(s) ? new Set(g.attesi()) : new Set();
+  for (const [posto, x] of s.timerSim) if (x.partita !== g || !attesiOra.has(posto)) { clearTimeout(x.id); s.timerSim.delete(posto); }
   if (!g || g.finita) return;
   // esecuzione pubblica in corso: tutto fermo, si riprende da soli alla fine
   if (inEsecuzione(s)) { s.timer = setTimeout(() => aggiorna(s), s.esecuzioneFino - Date.now() + 30); return; }
@@ -243,18 +247,20 @@ function pianifica(s) {
   // Fasi in cui tutti agiscono insieme (es. schieramento della battaglia navale): g.attesi() dice chi manca.
   if (g.turno == null && g.attesi && !g.inAttesa) {
     for (const posto of g.attesi()) {
+      if (s.timerSim.has(posto)) continue; // c'è già un'attesa in corso per lui
       const gio = s.posti[posto];
       let attesa = null;
       if (gio.bot) attesa = ATTESA_BOT_MS * (g.velocitaBot || 1) * (1 + Math.random() * 2);
       else if (!gio.connesso || gio.autoplay || gio.nascosto) attesa = SOSTITUZIONE_MS;
       if (attesa == null) continue;
-      s.timerSim.push(setTimeout(() => {
+      s.timerSim.set(posto, { partita, id: setTimeout(() => {
+        s.timerSim.delete(posto);
         if (s.partita !== partita || partita.finita || !partita.attesi().includes(posto)) return;
         if (!gio.bot && gio.connesso && !gio.autoplay && !gio.nascosto) return;
         if (senzaBot(s) || (!gio.bot && GIOCHI[s.gioco].meta.saltaAssenti)) { if (partita.salta) { partita.salta(posto); aggiorna(s); } return; }
         if (!gio.bot) messaggioSistema(s, `${gio.nome} non risponde: il computer ha agito per lui`);
         mossaComputer(s, posto, gio.bot || 'medio');
-      }, attesa));
+      }, attesa) });
     }
     return;
   }
@@ -440,6 +446,7 @@ function iniziaPartita(s) {
     if (s.sfida.registrata) s.sfida = { ...s.sfida, prova: true, registrata: false };
     s.partita = sfida.creaConSeme(mod, dati, sfida.hash(`${s.sfida.data}:${s.gioco}`));
   } else s.partita = mod.crea(dati);
+  s.partita.nomiGiocatori = s.posti.map((g) => (g ? g.nome : '')); // per i giochi che leggono i nomi in chat (Chi è l'Alieno)
   s.primo = (s.primo + 1) % s.posti.length;
   s.posti.forEach((g) => g && (g.autoplay = false));
 }

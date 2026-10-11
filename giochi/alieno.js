@@ -14,6 +14,7 @@ const cooldown = (n) => (n >= 7 ? 20 : 25);
 
 // ---------------- le mappe (una per file in giochi/alieno-mappe/) ----------------
 const { MAPPE, ELENCO } = require('./alieno-mappe');
+const { Menti } = require('./alieno-bot'); // i computer
 const MIN_TEMPO = { semplice: 2, medio: 5, elaborato: 7 }; // secondi minimi per compito (la consegna: per ogni postazione)
 const COMPITI_MIX = { semplice: 2, medio: 2, elaborato: 1 }; // 5 compiti a testa, di livelli diversi, senza doppioni
 const FINE = 7; // secondi della schermata finale prima dei risultati
@@ -29,6 +30,7 @@ class Alieno extends Arena {
     const voluti = [1, 2, 3].includes(Number(o.opzioni && o.opzioni.alieni)) ? Number(o.opzioni.alieni) : 1;
     this.nAlieni = Math.min(voluti, maxAlieni(o.n));
     this.chatSistema = [];
+    this.chatDa = []; // le frasi dei computer nelle riunioni (il server le scrive in chat a loro nome)
     if (this.nAlieni < voluti) this.chatSistema.push(`👽 Con ${o.n} giocatori gli Alieni possono essere al massimo ${this.nAlieni}: si gioca con ${this.nAlieni}.`);
     this.uscitoDa = new Array(o.n).fill(null);
     // la mappa: quella scelta nella sala, oppure una a caso
@@ -60,6 +62,7 @@ class Alieno extends Arena {
     this.fase2 = 'libero';
     this.riunione = null; this.espulsione = null; this.vittoria = null;
     this.pulsanteDa = ATTESA_PULSANTE;
+    this.menti = new Menti(this, { T, COLS, RIGHE, MIN: MIN_TEMPO, RAGGI: { compito: RAGGIO_COMPITO, segnala: RAGGIO_SEGNALA, uccidi: RAGGIO_UCCIDI, pulsante: RAGGIO_PULSANTE } });
     this.annuncia(null, `🚀 Si parte! A bordo ${this.nAlieni === 1 ? 'c\'è 1 Alieno' : `ci sono ${this.nAlieni} Alieni`}`, `🚀 Si parte! A bordo ${this.nAlieni === 1 ? 'c\'è 1 Alieno' : `ci sono ${this.nAlieni} Alieni`}`, true);
   }
   // 5 compiti: 2 semplici, 2 medi e 1 elaborato, tutti di tipo diverso e in postazioni diverse (niente doppioni)
@@ -83,7 +86,13 @@ class Alieno extends Arena {
   stazione(id) { return this.M.stazioni.find((s) => s.id === Number(id)); }
   esce(p) { super.esce(p); if (this.uscitoDa[p] === null) this.uscitoDa[p] = this.tempoRound || 0; }
   rientra(p) { super.rientra(p); this.uscitoDa[p] = null; }
-  pensa() { return {}; } // nessun computer: chi è fuori resta fermo
+  // i computer (vedi alieno-bot.js): ricordano cosa vedono e decidono dove andare e cosa fare
+  pensa(p) {
+    if (!this.menti || this.fase2 === 'fine') return {};
+    this.menti.dt = this.tickMs / 1000;
+    this.menti.osserva(p, this.tempoRound);
+    return this.menti.pensa(p) || {};
+  }
   // ---- compiti ----
   conta(p) { const e = this.e[p]; return !e.alieno && !(this.uscitoDa[p] !== null && this.tempoRound - this.uscitoDa[p] > ASSENTE_MAX); }
   progresso() {
@@ -127,10 +136,15 @@ class Alieno extends Arena {
       }
       this.pulsanteDa = Math.max(0, this.pulsanteDa - dt);
     } else if (this.fase2 === 'discussione' && t >= this.riunione.fine) { this.riunione.fase = 'voto'; this.fase2 = 'voto'; this.riunione.fine = t + VOTO; this.cambiato = true; }
-    else if (this.fase2 === 'voto' && (t >= this.riunione.fine || this.vivi().every((e) => this.riunione.voti[e.id] !== undefined || this.bot[e.id]))) this.chiudiVoto();
+    else if (this.fase2 === 'voto' && (t >= this.riunione.fine || this.vivi().every((e) => this.riunione.voti[e.id] !== undefined))) this.chiudiVoto();
     else if (this.fase2 === 'espulsione' && t >= this.espulsione.fine) {
       this.fase2 = 'libero'; this.espulsione = null; this.cambiato = true;
       if (this.controllaVittoria()) return false;
+    }
+    // nelle riunioni i computer parlano (una frase per volta)
+    if ((this.fase2 === 'discussione' || this.fase2 === 'voto') && this.menti) {
+      const frasi = this.menti.chiacchiera(t);
+      if (frasi.length) { this.chatDa.push(...frasi); this.cambiato = true; }
     }
     if (this.fase2 === 'libero' && this.controllaVittoria()) return false;
     return false;
@@ -142,6 +156,7 @@ class Alieno extends Arena {
     this.riunione = { tipo, da, corpo, fase: 'discussione', fine: t + DISCUSSIONE, voti: {}, n: (this.riunione ? this.riunione.n : 0) + 1 };
     for (const e of this.e) e.compito = null;
     this.cambiato = true;
+    if (this.menti) this.menti.riunione(tipo, da, corpo);
     this.annuncia(da, tipo === 'corpo' ? `ha trovato il corpo di @! Riunione d'emergenza 📣` : 'ha chiamato una riunione d\'emergenza 🚨', tipo === 'corpo' ? 'hai segnalato un corpo: riunione! 📣' : 'hai chiamato una riunione 🚨', true, corpo !== undefined ? { bersaglio: corpo, testoTe: 'hanno trovato il tuo corpo' } : {});
   }
   chiudiVoto() {
@@ -163,6 +178,7 @@ class Alieno extends Arena {
     for (const e of this.e) { if (e.vivo) { e.x = pos[e.id].x; e.y = pos[e.id].y; } e.compito = null; e.prontoUccidi = Math.max(e.prontoUccidi, 12); }
     this.corpi = [];
     this.pulsanteDa = ATTESA_PULSANTE;
+    if (this.menti) this.menti.dopoVoto(espulso);
     this.annuncia(espulso, espulso === null ? 'Nessuno è stato espulso' : alieno ? 'è stato espulso nello spazio: ERA un Alieno! 👽' : 'è stato espulso nello spazio… e NON era un Alieno 😢', espulso === null ? 'Nessuno è stato espulso' : 'sei stato espulso nello spazio', true);
     this.chatSistema.push(espulso === null ? `🗳️ Nessuno espulso${primi.length > 1 && max > 0 ? ' (pareggio)' : ''}. Alieni rimasti: ${rimasti}` : `🗳️ @${espulso} è stato espulso: ${alieno ? 'ERA un Alieno' : 'NON era un Alieno'}. Alieni rimasti: ${rimasti}`);
   }
@@ -191,6 +207,7 @@ class Alieno extends Arena {
       this.corpi.push({ di: bers.id, x: bers.x, y: bers.y, t });
       e.prontoUccidi = cooldown(this.n);
       this.cambiato = true;
+      if (this.menti) this.menti.eliminazione(p, bers); // i computer che vedono la scena lo sanno
       // niente annuncio: gli altri non devono sapere che qualcuno è stato eliminato (lo scopre chi trova il corpo)
       this.controllaVittoria();
       return { ok: true };
@@ -241,8 +258,22 @@ class Alieno extends Arena {
     if (this.finita || this.fase !== 'gioco') return {};
     const e = this.e[p];
     if (!e.vivo) return { soloPer: this.e.filter((o) => !o.vivo).map((o) => o.id) };
-    if (this.fase2 === 'discussione' || this.fase2 === 'voto' || this.fase2 === 'fine') return {};
+    if (this.fase2 === 'discussione' || this.fase2 === 'voto') { this.sentiAccuse(p, testo); return {}; }
+    if (this.fase2 === 'fine') return {};
     return { nascondi: true, privato: '🤫 Fuori dalle riunioni non si parla: premi il pulsante in Sala comune o segnala un corpo' };
+  }
+  // i computer leggono la chat delle riunioni: chi viene nominato da una persona diventa più sospetto
+  sentiAccuse(p, testo) {
+    if (!this.menti || !Array.isArray(this.nomiGiocatori)) return;
+    const t = ` ${String(testo).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ')} `;
+    const forte = /visto|uccid|elimin|ammazz|e lui|e stato|alieno|impostor/.test(t);
+    const salva = /innocente|non e lui|era con me|stava con me/.test(t);
+    this.nomiGiocatori.forEach((n, i) => {
+      const nome = String(n || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+      if (i === p || !nome || !this.e[i] || !this.e[i].vivo || !t.includes(` ${nome} `)) return;
+      if (salva) { for (const m of this.menti.m) if (m.sosp[i]) m.sosp[i] *= 0.6; return; }
+      this.menti.accusa(p, i, forte ? 2 : 1);
+    });
   }
   fineRound() {}
   chiudi() {
@@ -289,7 +320,6 @@ module.exports = {
     nome: 'Chi è l\'Alieno',
     tipo: 'tabellone',
     tempoReale: true,
-    soloPersone: true,
     giocatori: [4, 5, 6, 7, 8, 9, 10],
     descrizione: 'Un equipaggio di astronauti e, nascosti tra loro, degli Alieni identici agli altri. Fate i compiti, trovate i corpi, discutete e votate chi espellere nello spazio.',
     alias: ['alieno', 'alieni', 'chi è l\'alieno', 'among us', 'impostore spaziale', 'astronauti', 'spazio'],
@@ -299,7 +329,7 @@ module.exports = {
       { id: 'mappa', nome: 'Mappa', valori: ['casuale', ...ELENCO], etichette: ['🎲 Casuale', ...ELENCO.map((id) => `${MAPPE[id].emoji} ${MAPPE[id].nome}`)], predefinito: 'casuale', anteprime: Object.fromEntries(ELENCO.map((id) => [id, MAPPE[id].anteprima])) },
     ],
     regole: [
-      'Si gioca solo tra persone, da 4 a 10. All\'inizio, in segreto, uno o più giocatori diventano Alieni: hanno lo stesso identico aspetto degli altri. Gli Alieni sanno chi sono gli altri Alieni.',
+      'Da 4 a 10 giocatori, anche con il computer. All\'inizio, in segreto, uno o più giocatori diventano Alieni: hanno lo stesso identico aspetto degli altri. Gli Alieni sanno chi sono gli altri Alieni.',
       'Numero di Alieni: lo sceglie chi apre il tavolo (1, 2 o 3). Al massimo 1 fino a 6 giocatori, 2 con 7 o 8, 3 con 9 o 10: se ne hai scelti troppi si gioca con il massimo possibile e compare un avviso in chat.',
       'Mappe (le sceglie chi apre il tavolo, con l\'anteprima, oppure "Casuale"): 🚀 Base spaziale, 🌋 Isola vulcanica (sentieri, ponti di corda sulla lava, capanne, fumarole), 🌿 Pianeta pianta (fiori giganti, liane, funghi luminosi, radici), 🐙 Stazione sottomarina (cupole, oblò, serbatoi) e ❄️ Base polare (hangar, igloo, radar, carotaggi). Ogni mappa ha 10 stanze collegate da passaggi che si diramano, i suoi colori, i suoi compiti a tema e la sua scena di espulsione; le regole sono uguali per tutte. Ti muovi con WASD o le frecce (sul telefono col joystick). Vedi solo intorno a te: i muri fermano lo sguardo. In basso a destra c\'è la mappa con i tuoi compiti.',
       'Compiti: ognuno ne ha 5, senza doppioni: 2 semplici, 2 medi e 1 elaborato. Avvicinati alla postazione e premi E (o 🛠️); mentre fai un compito sei fermo. Semplici (2-4 s): premere al momento giusto, tenere premuto finché la barra è piena, far scorrere una tessera fino in fondo, abbassare una leva. Medi (5-10 s): collegare i fili dello stesso colore, ripetere una sequenza di luci, cliccare i numeri in ordine dopo averli visti, accendere gli interruttori in ordine, tenere un cursore nella zona giusta, mettere gli oggetti in ordine di grandezza, ruotare un pannello finché la freccia è dritta. Elaborati: consegna in due postazioni di stanze diverse (prendi qualcosa in una e portalo nell\'altra), calibrazione con tre cursori, piccolo labirinto da attraversare. Tutti si fanno col mouse, con la tastiera o col dito.',
@@ -310,7 +340,8 @@ module.exports = {
       'Fuori dalle riunioni i vivi non possono scrivere in chat. Chi è eliminato diventa un fantasma: nessun vivo lo vede, passa attraverso i muri, vede tutta la base, può ancora fare i suoi compiti (aiuta l\'equipaggio) e scrive in chat solo agli altri fantasmi.',
       'Vince l\'equipaggio se finisce tutti i compiti (conta la barra in alto) o se espelle tutti gli Alieni. Vincono gli Alieni appena sono tanti quanti gli umani vivi.',
       'A fine partita tutto si ferma per qualche secondo e compare il riepilogo: chi ha vinto, tutti i giocatori con il loro astronauta, i ruoli svelati uno alla volta (gli Alieni si illuminano di viola), chi è stato eliminato o espulso, e quanti compiti sono stati fatti. Poi si passa ai risultati.',
-      'Chi esce dalla partita resta fermo dove si trova (nessuno gioca al suo posto); se resta fuori più di un minuto i suoi compiti non contano più, così la partita non si blocca.',
+      'Il computer: si muove sulla mappa per la strada più corta, fa i compiti, ricorda chi ha visto e dove, segnala i corpi e nelle riunioni scrive in chat (cosa ha visto, chi sospetta) e vota. Legge anche la chat: chi viene accusato diventa più sospetto. Da Alieno finge i compiti, elimina solo quando nessuno lo vede, scappa e mente nelle riunioni. Il facile è distratto e imprudente, il medio è attento, il difficile osserva tutto e a volte segnala lui stesso il corpo per sembrare innocente.',
+      'Chi esce dalla partita viene sostituito dal computer; se resta fuori più di un minuto i suoi compiti non contano più, così la partita non si blocca.',
     ],
   },
   crea: (o) => new Alieno(o),

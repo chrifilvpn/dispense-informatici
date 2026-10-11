@@ -553,19 +553,35 @@
     for (const s of stelle) { g.fillStyle = '#fff'; g.fillRect((s.x + e * s.v) % W, s.y, s.r, s.r); }
     if (esp.chi !== null) {
       const x = -60 + (W + 120) * Math.min(1, e / 4.2), y = H / 2 + Math.sin(e * 1.5) * 40;
-      g.save(); g.translate(x, y); g.rotate(e * 2.4); astronauta(g, 0, 0, COL[esp.chi % COL.length], 1, e, { fermo: true }); g.restore();
+      g.save(); g.translate(x, y); g.rotate(e * 2.4); g.scale(2.6, 2.6); astronauta(g, 0, 0, COL[esp.chi % COL.length], 1, e, { fermo: true }); g.restore();
     }
     scritteEspulsione(g, W, H, esp, ctx);
   }
   // la scritta uguale per tutte le mappe: "ERA / NON era un Alieno" e poi gli Alieni rimasti
   function scritteEspulsione(g, W, H, esp, ctx) {
     const e = esp.e;
-    g.textAlign = 'center'; g.fillStyle = '#fff'; g.strokeStyle = 'rgba(0,0,0,.7)'; g.lineWidth = 5;
     const nome = esp.chi === null ? '' : esp.chi === ctx.mio ? 'Tu' : ctx.nome(esp.chi);
-    const testo = esp.chi === null ? (esp.pari ? 'Pareggio: nessuno viene espulso' : 'Nessuno viene espulso') : `${nome} ${esp.alieno ? 'ERA un Alieno' : 'NON era un Alieno'}`;
-    const n = Math.min(testo.length, Math.floor(Math.max(0, e - 0.6) * 22));
-    g.font = '700 34px system-ui'; g.strokeText(testo.slice(0, n), W / 2, H / 2 - 110); g.fillText(testo.slice(0, n), W / 2, H / 2 - 110);
-    if (e > 2.8) { g.globalAlpha = Math.min(1, (e - 2.8) / 0.5); g.font = '600 22px system-ui'; g.fillStyle = '#ffd36b'; g.strokeText(`Alieni rimasti: ${esp.rimasti}`, W / 2, H / 2 + 130); g.fillText(`Alieni rimasti: ${esp.rimasti}`, W / 2, H / 2 + 130); g.globalAlpha = 1; }
+    const testo = esp.chi === null ? (esp.pari ? 'Pareggio: nessuno viene espulso' : 'Nessuno viene espulso') : `${nome} ${esp.chi === ctx.mio ? (esp.alieno ? 'eri un Alieno' : 'NON eri un Alieno') : esp.alieno ? 'ERA un Alieno' : 'NON era un Alieno'}`;
+    const n = Math.min(testo.length, Math.floor(Math.max(0, e - 0.5) * 24));
+    g.save(); g.textAlign = 'center'; g.textBaseline = 'middle';
+    // una fascia scura dietro la scritta: si legge su ogni sfondo (anche sul ghiaccio)
+    if (n > 0) {
+      g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(0, H * 0.13, W, 84);
+      g.font = '800 46px system-ui'; g.lineWidth = 6; g.strokeStyle = 'rgba(0,0,0,.8)';
+      g.fillStyle = esp.chi === null ? '#fff' : esp.alieno ? '#c9a6ff' : '#fff';
+      g.strokeText(testo.slice(0, n), W / 2, H * 0.13 + 42); g.fillText(testo.slice(0, n), W / 2, H * 0.13 + 42);
+    }
+    if (esp.chi === null && e > 0.3) { g.globalAlpha = Math.min(1, e - 0.3); g.font = '120px system-ui'; g.fillText('🤷', W / 2, H * 0.58); g.globalAlpha = 1; }
+    // poi quanti Alieni restano, in una targhetta
+    if (e > 2.8) {
+      g.globalAlpha = Math.min(1, (e - 2.8) / 0.5);
+      const t2 = esp.rimasti === 0 ? 'Non resta nessun Alieno!' : `Alieni rimasti: ${esp.rimasti}`;
+      g.font = '700 32px system-ui'; const w = g.measureText(t2).width + 50;
+      g.fillStyle = 'rgba(0,0,0,.7)'; g.beginPath(); g.roundRect ? g.roundRect(W / 2 - w / 2, H * 0.8 - 30, w, 60, 30) : g.rect(W / 2 - w / 2, H * 0.8 - 30, w, 60); g.fill();
+      g.fillStyle = '#ffd36b'; g.fillText(t2, W / 2, H * 0.8);
+      g.globalAlpha = 1;
+    }
+    g.restore();
   }
   // tasti: E usa, Q elimina, R segnala; spazio per il compito "al momento giusto" e per caricare
   document.addEventListener('keydown', (ev) => {

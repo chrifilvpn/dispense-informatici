@@ -127,7 +127,7 @@ window.AlienoTemi = (() => {
       // il vulcano
       g.fillStyle = '#2a1a16'; g.beginPath(); g.moveTo(W * 0.18, H); g.lineTo(W * 0.44, H * 0.52); g.lineTo(W * 0.56, H * 0.52); g.lineTo(W * 0.82, H); g.closePath(); g.fill();
       g.fillStyle = '#ff7a1a'; g.beginPath(); g.ellipse(W / 2, H * 0.52, W * 0.06, 10, 0, 0, Math.PI * 2); g.fill();
-      if (chi !== null && e < 2.2) { const k = e / 2.2, x = W * 0.08 + (W / 2 - W * 0.08) * k, y = H * 0.25 - Math.sin(k * Math.PI) * 120 + k * H * 0.27; g.save(); g.translate(x, y); g.rotate(e * 5); astronauta(g, 0, 0, colore, 1, e, { fermo: true }); g.restore(); }
+      if (chi !== null && e < 2.2) { const k = e / 2.2, x = W * 0.08 + (W / 2 - W * 0.08) * k, y = H * 0.25 - Math.sin(k * Math.PI) * 120 + k * H * 0.27; g.save(); g.translate(x, y); g.rotate(e * 5); g.scale(2.6, 2.6); astronauta(g, 0, 0, colore, 1, e, { fermo: true }); g.restore(); }
       if (e > 2.1) for (let k = 0; k < 40; k++) { const a = -Math.PI / 2 + (rnd(k) - 0.5) * 1.6, v = 120 + rnd(k + 1) * 260, tt = Math.min(2.2, e - 2.1); const x = W / 2 + Math.cos(a) * v * tt, y = H * 0.52 + Math.sin(a) * v * tt + 180 * tt * tt; g.fillStyle = `rgba(255,${120 + rnd(k) * 100},20,${Math.max(0, 1 - tt / 2.2)})`; g.beginPath(); g.arc(x, y, 4 + rnd(k + 2) * 6, 0, Math.PI * 2); g.fill(); }
       if (e > 2.1) { const a = Math.max(0, 1 - (e - 2.1) / 1.5); g.fillStyle = `rgba(255,220,120,${a * 0.5})`; g.fillRect(0, 0, W, H); }
     } else if (t === 'giungla') {
@@ -153,7 +153,7 @@ window.AlienoTemi = (() => {
       if (chi !== null && e < T_CHIUSA + 0.05) {
         const k = Math.min(1, e / T_ARRIVO), mx = cx - 92, my = py + dondola;
         const x = -60 + (mx + 60) * k, y = H * 0.3 + (my - H * 0.3) * k - Math.sin(k * Math.PI) * 90;
-        g.save(); g.translate(x, y); g.rotate(e * 4); g.scale(1 - k * 0.25, 1 - k * 0.25); astronauta(g, 0, 0, colore, 1, e, { fermo: true }); g.restore();
+        g.save(); g.translate(x, y); g.rotate(e * 4); g.scale(1 - k * 0.25, 1 - k * 0.25); g.scale(2.6, 2.6); astronauta(g, 0, 0, colore, 1, e, { fermo: true }); g.restore();
       }
       // le due fauci: fuori verdi a macchie, dentro rosse, denti bianchi sul labbro
       const fauce = (verso) => {
@@ -183,11 +183,11 @@ window.AlienoTemi = (() => {
       // la creatura degli abissi con la sua lucina, che arriva e apre la bocca
       const cx = -300 + Math.min(1, e / 2.3) * (W * 0.55 + 300), cy = H * 0.58, bocca = e < 2.3 ? 0.35 : Math.max(0.02, 0.35 - (e - 2.3) * 1.2);
       g.fillStyle = '#16283a'; g.beginPath(); g.ellipse(cx, cy, 230, 130, 0, bocca, Math.PI * 2 - bocca); g.lineTo(cx, cy); g.closePath(); g.fill();
-      g.fillStyle = '#e8f6ff'; for (let k = 0; k < 6; k++) { const a = bocca * (1 - k / 6); g.beginPath(); g.moveTo(cx + Math.cos(a) * 200, cy + Math.sin(a) * 110); g.lineTo(cx + Math.cos(a) * 170, cy + Math.sin(a) * 90 + 12); g.lineTo(cx + Math.cos(a) * 185, cy + Math.sin(a) * 90 - 5); g.fill(); g.beginPath(); g.moveTo(cx + Math.cos(-a) * 200, cy + Math.sin(-a) * 110); g.lineTo(cx + Math.cos(-a) * 170, cy + Math.sin(-a) * 90 - 12); g.lineTo(cx + Math.cos(-a) * 185, cy - Math.sin(a) * 90 + 5); g.fill(); }
+      g.fillStyle = '#e8f6ff'; if (bocca > 0.1) for (let k = 0; k < 6; k++) { const a = bocca * (1 - k / 6); g.beginPath(); g.moveTo(cx + Math.cos(a) * 200, cy + Math.sin(a) * 110); g.lineTo(cx + Math.cos(a) * 170, cy + Math.sin(a) * 90 + 12); g.lineTo(cx + Math.cos(a) * 185, cy + Math.sin(a) * 90 - 5); g.fill(); g.beginPath(); g.moveTo(cx + Math.cos(-a) * 200, cy + Math.sin(-a) * 110); g.lineTo(cx + Math.cos(-a) * 170, cy + Math.sin(-a) * 90 - 12); g.lineTo(cx + Math.cos(-a) * 185, cy - Math.sin(a) * 90 + 5); g.fill(); }
       g.fillStyle = '#ffe07a'; g.beginPath(); g.arc(cx + 60, cy - 70, 7, 0, Math.PI * 2); g.fill(); luce(g, cx + 60, cy - 70, 60, 'rgba(255,230,120,.4)');
       g.strokeStyle = '#16283a'; g.lineWidth = 4; g.beginPath(); g.moveTo(cx + 20, cy - 110); g.quadraticCurveTo(cx + 60, cy - 150, cx + 60, cy - 76); g.stroke();
       g.fillStyle = '#fff'; g.beginPath(); g.arc(cx + 70, cy - 40, 10, 0, Math.PI * 2); g.fill(); g.fillStyle = '#111'; g.beginPath(); g.arc(cx + 73, cy - 40, 5, 0, Math.PI * 2); g.fill();
-      if (chi !== null && e < 2.6) { const x = W * 0.72, y = -40 + Math.min(1, e / 2.4) * (cy + 40); g.save(); g.translate(x, y); g.rotate(Math.sin(e * 2) * 0.5); astronauta(g, 0, 0, colore, -1, e, { fermo: true }); g.restore(); }
+      if (chi !== null && e < 2.6) { const x = W * 0.72, y = -40 + Math.min(1, e / 2.4) * (cy + 40); g.save(); g.translate(x, y); g.rotate(Math.sin(e * 2) * 0.5); g.scale(2.6, 2.6); astronauta(g, 0, 0, colore, -1, e, { fermo: true }); g.restore(); }
     } else if (t === 'neve') {
       g.fillStyle = '#dcebf5'; g.fillRect(0, 0, W, H);
       g.fillStyle = '#bcd6e8'; g.fillRect(0, H * 0.6, W, H * 0.4);
@@ -196,7 +196,7 @@ window.AlienoTemi = (() => {
       g.fillStyle = '#1c3550'; g.beginPath(); g.moveTo(W * 0.62 - lar, H * 0.6); for (let k = 0; k <= 6; k++) g.lineTo(W * 0.62 - lar * (1 - k / 6) * 0.6 + (k % 2 ? 8 : -8), H * 0.6 + k * 40); g.lineTo(W * 0.62 + lar * 0.2, H); for (let k = 6; k >= 0; k--) g.lineTo(W * 0.62 + lar * (1 - k / 6) * 0.6 + (k % 2 ? -6 : 6), H * 0.6 + k * 40); g.lineTo(W * 0.62 + lar, H * 0.6); g.closePath(); g.fill();
       if (chi !== null && e < 2.6) {
         const k = Math.min(1, e / 1.8), x = -40 + (W * 0.62 + 40) * k, cade = Math.max(0, e - 1.8), y = H * 0.6 - 26 + cade * cade * 500;
-        g.save(); g.beginPath(); g.rect(0, 0, W, H * 0.6 + (x > W * 0.62 - lar ? 0 : H)); if (cade > 0) g.clip(); g.translate(x, y); g.rotate(cade * 3); astronauta(g, 0, 0, colore, 1, e, { fermo: true }); g.restore();
+        g.save(); g.beginPath(); g.rect(0, 0, W, H * 0.6 + (x > W * 0.62 - lar ? 0 : H)); if (cade > 0) g.clip(); g.translate(x, y); g.rotate(cade * 3); g.scale(2.6, 2.6); astronauta(g, 0, 0, colore, 1, e, { fermo: true }); g.restore();
       }
       if (e > 1.8 && e < 3) for (let k = 0; k < 18; k++) { g.fillStyle = `rgba(255,255,255,${1 - (e - 1.8)})`; g.beginPath(); g.arc(W * 0.62 + (rnd(k) - 0.5) * 120 * (e - 1.6), H * 0.6 - rnd(k + 1) * 60 * (e - 1.6), 5, 0, Math.PI * 2); g.fill(); }
       for (let k = 0; k < 80; k++) { g.fillStyle = 'rgba(255,255,255,.9)'; g.beginPath(); g.arc((rnd(k) * W + e * 20) % W, (rnd(k + 1) * H + e * 60 * (0.5 + rnd(k + 2))) % H, 2, 0, Math.PI * 2); g.fill(); }

@@ -962,7 +962,7 @@
     const presto = !ui._fineSubito && Date.now() - ui._fineDal < RITARDO_FINE;
     if (presto) {
       const vinto = r.vincitori.includes(stato.mioPosto);
-      const breve = r.titolo ? r.titolo : r.pareggio ? 'Pareggio' : vinto && !stato.spettatore ? (p.aSquadre ? 'Avete vinto!' : 'Hai vinto!') : `Vince ${r.vincitori.map((i) => nomeDi(i)).join(' e ')}`;
+      const breve = r.titolo ? r.titolo : r.pareggio ? 'Pareggio' : vinto && !stato.spettatore ? (p.aSquadre ? 'Avete vinto!' : 'Hai vinto!') : r.vincitori.length ? `Vince ${r.vincitori.map((i) => nomeDi(i)).join(' e ')}` : 'Fine';
       $('#fine-barra').innerHTML = `<span>🏁 Partita finita · <b>${esc(breve)}</b></span><button type="button" class="bottone mini-bt" data-vedi-fine>Vedi i risultati</button><button type="button" class="bottone mini-bt" data-lobby>🏠 Torna alla lobby</button>`;
       $('#fine-barra').hidden = false;
       $('#fine').hidden = true;
@@ -977,6 +977,7 @@
     if (r.titolo) titolo = r.titolo; // es. Fast West: "Vince il west" quando cadono tutti
     else if (r.pareggio) titolo = 'Pareggio';
     else if (hoVinto && !stato.spettatore) titolo = p.aSquadre ? 'Avete vinto!' : 'Hai vinto!';
+    else if (!r.vincitori.length) titolo = 'Partita finita'; // nessun vincitore (es. Wordle da soli, parola non trovata)
     else titolo = `Vince ${nomi(r.vincitori)}`;
     const alContrario = r.etichetta === 'penalità' || r.crescente;
     const ordinate = [...r.fazioni].sort((a, b) => (alContrario ? a.punti - b.punti : b.punti - a.punti));

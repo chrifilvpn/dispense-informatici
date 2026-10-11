@@ -1738,3 +1738,13 @@ button.rl-c:hover:not(:disabled) { box-shadow: inset 0 0 0 2px var(--oro); }
 .bd-rip-elenco figure svg.bd-sagoma { background: none; box-shadow: none; }
 .bd-domanda { margin: .45rem auto .1rem; max-width: 34rem; text-align: center; font-weight: 700; font-size: clamp(1.05rem, 2.6vh, 1.3rem); }
 .bd-msg:empty { display: none; }
+/* riunione di Chi è l'Alieno sui telefoni (poco spazio in altezza o in larghezza): tutto più compatto */
+@media (max-height: 520px), (max-width: 520px) {
+  .al-riunione { padding: .55rem .6rem; gap: .35rem; border-width: 2px; }
+  .al-riunione h3 { font-size: 1rem; }
+  .al-riunione .al-fase { margin: 0; font-size: .82rem; }
+  .al-candidati { grid-template-columns: repeat(auto-fill, minmax(7.6rem, 1fr)); gap: .3rem; }
+  .al-cand { padding: .22rem .4rem; font-size: .85rem; }
+  .al-cand i { width: 1.1rem; height: 1.1rem; }
+  .al-riunione .bottone { padding: .35rem .8rem; }
+}
