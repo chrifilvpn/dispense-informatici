@@ -21,7 +21,7 @@ const sicurezza = require('./sicurezza');
 const { FantasIA, domandaDa, NOME: NOME_IA } = require('./fantasia'); // la mini IA della chat (Gemini)
 const { eComandoAdmin } = require('./admin'); // comando segreto dell'amministratore (vedi admin.js) // difese: intestazioni, limiti, pulizia dei dati (vedi sicurezza.js)
 // limiti per indirizzo larghi: a scuola tutta la classe esce su internet con lo stesso indirizzo
-const MAX_TAVOLI = 1000, MAX_TAVOLI_PER_IP = 60, MAX_CONNESSIONI_PER_IP = 150;
+const MAX_TAVOLI = 1000, MAX_TAVOLI_PER_IP = Number(process.env.MAX_TAVOLI_PER_IP) || 60, MAX_CONNESSIONI_PER_IP = Number(process.env.MAX_CONNESSIONI_PER_IP) || 150;
 
 const app = express();
 const server = http.createServer(app);
@@ -108,9 +108,39 @@ function invia(s) {
       votoFine: s.votoFine ? { tipo: s.votoFine.tipo, da: s.votoFine.da, si: s.votoFine.si, no: s.votoFine.no, servono: s.votoFine.servono, votanti: s.votoFine.votanti, resta: Math.max(0, s.votoFine.scade - Date.now()) } : null,
       esecuzione: inEsecuzione(s) ? s.esecuzioneFino - Date.now() : 0,
       partita: s.partita ? s.partita.vista(posto) : null,
-      chat: s.chat.filter((m) => !m.per || m.per.includes(posto)).slice(-40), // m.per: messaggio visibile solo ad alcuni (es. i fantasmi di Chi è l'Alieno)
+      chat: s.chat.filter((m) => !m.spett && (!m.per || m.per.includes(posto))).slice(-40), // m.per: messaggio visibile solo ad alcuni (es. i fantasmi di Chi è l'Alieno)
     });
   });
+  inviaSpettatori(s);
+}
+
+// SPETTATORI: chi entra in un tavolo pieno (o a partita iniziata) guarda la partita "dagli occhi" di un giocatore che
+// sceglie lui (vede quello che vede quel giocatore). Non può fare mosse; la sua chat durante la partita la leggono
+// solo gli altri spettatori (così non suggerisce). Se si libera un posto può sedersi.
+const MAX_SPETTATORI = 30;
+function seguibile(s, posto) { return Number.isInteger(posto) && posto >= 0 && posto < s.posti.length && !!s.posti[posto]; }
+function inviaSpettatori(s) {
+  if (!s.spettatori || !s.spettatori.size) return;
+  const liberi = postiLiberiPerSpettatori(s);
+  for (const [sid, sp] of s.spettatori) {
+    if (!seguibile(s, sp.segue)) sp.segue = s.posti.findIndex((x) => x && !x.bot) >= 0 ? s.posti.findIndex((x) => x && !x.bot) : s.posti.findIndex(Boolean);
+    const posto = Math.max(0, sp.segue);
+    io.to(sid).emit('stato', {
+      codice: s.codice, gioco: s.gioco, opzioni: s.opzioni, numPosti: s.posti.length,
+      mioPosto: posto, spettatore: true, segue: posto, mioNome: sp.nome, postiLiberi: liberi,
+      sonoHost: false,
+      giocatori: s.posti.map((x, i) => (x ? { nome: x.nome, connesso: x.connesso, bot: x.bot || null, autoplay: !!x.autoplay, nascosto: !!x.nascosto, uscito: !!x.uscito, inSala: !!x.inSala, fiche: x.fiche, vittorie: s.vittorie[i] } : null)),
+      spettatori: [...s.spettatori.values()].map((x) => x.nome),
+      inPausa: inPausa(s), ricaricaConsigliata: false, votoFine: null,
+      esecuzione: inEsecuzione(s) ? s.esecuzioneFino - Date.now() : 0,
+      partita: s.partita ? s.partita.vista(posto) : null,
+      chat: s.chat.filter((m) => !m.per || m.per.includes(posto)).slice(-40),
+    });
+  }
+}
+// i posti che uno spettatore può prendere: vuoti in sala, oppure (a partita iniziata) quelli di chi è uscito
+function postiLiberiPerSpettatori(s) {
+  return s.posti.map((g, i) => (s.partita && !s.partita.finita ? (g && !g.inSala && ((g.bot && g.sostituto) || g.uscito) ? i : -1) : (!g ? i : -1))).filter((i) => i >= 0);
 }
 
 function aggiorna(s) {
@@ -163,6 +193,7 @@ function gestisciTick(s) {
     let cambiato = false;
     try { cambiato = g.tick(Date.now()); } catch (e) { console.warn(`[${s.gioco}] errore nel tick: ${e.message}`); }
     s.posti.forEach((x, posto) => { if (x && !x.bot && x.socketId) io.to(x.socketId).volatile.emit('tick', g.vistaTick(posto)); });
+    if (s.spettatori) for (const [sid, sp] of s.spettatori) if (seguibile(s, sp.segue)) io.to(sid).volatile.emit('tick', g.vistaTick(sp.segue));
     if (cambiato || g.finita) aggiorna(s);
   }, g.tickMs || 50);
 }
@@ -385,11 +416,16 @@ function iniziaPartita(s) {
   s.posti.forEach((g) => g && (g.autoplay = false));
 }
 
+function chiudiStanza(s) {
+  clearTimeout(s.timer);
+  stanze.delete(s.codice);
+  if (s.spettatori) for (const sid of s.spettatori.keys()) io.to(sid).emit('tavoloChiuso');
+}
 function controllaVuota(s) {
   clearTimeout(s.timerChiusura);
-  if (!umani(s).length) { clearTimeout(s.timer); stanze.delete(s.codice); return; }
+  if (!umani(s).length) { chiudiStanza(s); return; }
   if (umani(s).some((g) => g.connesso)) return;
-  s.timerChiusura = setTimeout(() => { clearTimeout(s.timer); stanze.delete(s.codice); }, VITA_STANZA_VUOTA_MS);
+  s.timerChiusura = setTimeout(() => chiudiStanza(s), VITA_STANZA_VUOTA_MS);
 }
 
 // troppe connessioni dallo stesso indirizzo: si rifiutano le nuove
@@ -610,17 +646,20 @@ io.on('connection', (socket) => {
       if (s.partita) {
         // a partita iniziata si può prendere solo il posto di chi è uscito (ora giocato dal computer)
         i = s.posti.findIndex((g) => g && !g.inSala && ((g.bot && g.sostituto) || g.uscito));
-        if (i === -1) return errore('La partita è già iniziata e non ci sono posti liberi');
+        if (i === -1) return guarda(s, id, nome); // nessun posto: si guarda la partita da spettatore
         messaggioSistema(s, `${nome} prende il posto di ${s.posti[i].nome}`);
       } else {
         i = s.posti.findIndex((g) => !g);
         if (i === -1) i = s.posti.map((g) => !!(g && g.bot && !g.inSala)).lastIndexOf(true);
-        if (i === -1) return errore('Il tavolo è pieno');
+        if (i === -1) return guarda(s, id, nome);
       }
       if (s.posti[i] && s.posti[i].uscito && s.partita && s.partita.rientra) s.partita.rientra(i);
+      // nei giochi in tempo reale il computer che teneva il posto smette di giocare: ora comanda la persona
+      if (s.partita && Array.isArray(s.partita.bot)) s.partita.bot[i] = null;
       s.posti[i] = { id, nome, socketId: null, connesso: false, bot: null, fiche: FICHE_INIZIALI };
       if (!s.partita) messaggioSistema(s, `${nome} si è seduto al tavolo`);
     }
+    if (s.spettatori) s.spettatori.delete(socket.id);
     const g = s.posti[i];
     if (g.socketId && g.socketId !== socket.id) io.to(g.socketId).emit('errore', 'Ti sei collegato da un\'altra finestra');
     g.socketId = socket.id;
@@ -636,6 +675,55 @@ io.on('connection', (socket) => {
     clearTimeout(s.timerChiusura);
     aggiorna(s);
   }
+
+  function guarda(s, id, nome) {
+    s.spettatori = s.spettatori || new Map();
+    if (!s.spettatori.has(socket.id) && s.spettatori.size >= MAX_SPETTATORI) return errore('Il tavolo è pieno e ci sono già troppi spettatori');
+    if (stanza && stanza !== s) esci();
+    const prima = s.spettatori.get(socket.id);
+    const primoUmano = s.posti.findIndex((x) => x && !x.bot);
+    s.spettatori.set(socket.id, { id, nome, segue: prima ? prima.segue : Math.max(0, primoUmano) });
+    stanza = s;
+    mioId = id;
+    presenza.stanza = s.codice; presenza.id = presenza.id || id; presenza.nome = nome; aggiornaAdmin();
+    socket.join(s.codice);
+    if (!prima) { messaggioSistema(s, `👀 ${nome} guarda la partita`); aggiorna(s); } else inviaSpettatori(s);
+  }
+  const sonoSpettatore = () => !!(stanza && stanza.spettatori && stanza.spettatori.has(socket.id));
+  // lo spettatore sceglie quale giocatore seguire
+  socket.on('segui', ({ posto } = {}) => {
+    if (!sonoSpettatore() || !seguibile(stanza, Number(posto))) return;
+    stanza.spettatori.get(socket.id).segue = Number(posto);
+    inviaSpettatori(stanza);
+  });
+  // lo spettatore prende un posto libero (in sala) o quello di chi è uscito (a partita iniziata)
+  socket.on('prendiPosto', ({ posto } = {}) => {
+    const s = stanza;
+    if (!sonoSpettatore()) return;
+    posto = Number(posto);
+    if (!postiLiberiPerSpettatori(s).includes(posto)) return errore('Quel posto non è più libero');
+    const sp = s.spettatori.get(socket.id);
+    const vecchio = s.posti[posto];
+    if (vecchio && vecchio.uscito && s.partita && s.partita.rientra) s.partita.rientra(posto);
+    if (vecchio && s.partita) messaggioSistema(s, `${sp.nome} prende il posto di ${vecchio.nome}`);
+    else messaggioSistema(s, `${sp.nome} si è seduto al tavolo`);
+    s.posti[posto] = { id: sp.id, nome: sp.nome, socketId: null, connesso: false, bot: null, fiche: FICHE_INIZIALI };
+    if (s.partita && Array.isArray(s.partita.bot)) s.partita.bot[posto] = null;
+    s.spettatori.delete(socket.id);
+    siediti(s, sp.id, sp.nome);
+  });
+  // REAZIONI RAPIDE: un'emoji che vola sul tavolo di tutti (giocatori e spettatori)
+  const REAZIONI = ['👍', '😂', '😮', '😡', '👏', '🔥', '😭', 'GG'];
+  let ultimaReazione = 0;
+  socket.on('reazione', (r) => {
+    const s = stanza;
+    if (!s || !REAZIONI.includes(r) || Date.now() - ultimaReazione < 800) return;
+    ultimaReazione = Date.now();
+    const i = mioPosto();
+    const nome = i >= 0 ? s.posti[i].nome : sonoSpettatore() ? s.spettatori.get(socket.id).nome : null;
+    if (!nome) return;
+    io.to(s.codice).emit('reazione', { r, nome, posto: i, spettatore: i < 0 });
+  });
 
   socket.on('creaStanza', ({ nome, id, gioco, posti, opzioni, controComputer } = {}) => {
     id = pulisciId(id);
@@ -825,7 +913,7 @@ io.on('connection', (socket) => {
   socket.on('tornaInSala', () => {
     const s = stanza;
     // a partita finita chiunque può riportare il tavolo nella lobby; durante la partita solo chi l'ha aperto
-    if (!s || (!sonoHost() && !(s.partita && s.partita.finita))) return;
+    if (!s || mioPosto() === -1 || (!sonoHost() && !(s.partita && s.partita.finita))) return;
     if (s.partita && !s.partita.finita) messaggioSistema(s, 'La partita è stata interrotta');
     clearTimeout(s.timer);
     s.partita = null;
@@ -840,6 +928,16 @@ io.on('connection', (socket) => {
     const s = stanza;
     const i = mioPosto();
     testo = String(testo || '').trim().slice(0, 160);
+    if (s && i === -1 && testo && sonoSpettatore()) {
+      // chat degli spettatori: durante la partita la leggono solo gli altri spettatori, a tavolo fermo tutti
+      const sp = s.spettatori.get(socket.id);
+      const t = censura(testo);
+      if (!t) return;
+      s.chat.push({ id: ++s.nChat, posto: -2, nome: `👀 ${sp.nome}`, testo: t, ora: Date.now(), ...(s.partita && !s.partita.finita ? { spett: true } : {}) });
+      if (s.chat.length > 80) s.chat.shift();
+      invia(s);
+      return;
+    }
     if (!s || i === -1 || !testo) return;
     const parola = testo.toLowerCase().split(/\s+/)[0];
     const comando = COMANDI[parola];
@@ -915,7 +1013,10 @@ io.on('connection', (socket) => {
     stanza = null;
     presenza.stanza = null; aggiornaAdmin();
     socket.leave(s.codice);
-    if (i === -1) return;
+    if (i === -1) {
+      if (s.spettatori && s.spettatori.delete(socket.id) && stanze.has(s.codice)) inviaSpettatori(s);
+      return;
+    }
     const g = s.posti[i];
     if (s.partita && !s.partita.finita && senzaBot(s)) {
       // nessun computer: il posto resta vuoto e la partita va avanti senza di lui
@@ -944,6 +1045,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     const s = stanza;
     if (!s) return;
+    if (s.spettatori && s.spettatori.delete(socket.id)) { if (stanze.has(s.codice)) inviaSpettatori(s); return; }
     const g = s.posti.find((x) => x && x.id === mioId);
     if (!g || g.socketId !== socket.id) return;
     g.connesso = false;

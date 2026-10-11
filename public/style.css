@@ -1155,3 +1155,40 @@ button.bc-zona { cursor: pointer; } button.bc-zona:hover:not(:disabled) { backgr
   .bc-lato { min-width: 0; flex: 1; padding: .35rem .5rem .5rem; }
   .bc-zona { min-height: 4.5rem; padding: .4rem; }
 }
+
+/* categorie, preferiti, statistiche, sito che si sveglia */
+.filtro-cat { flex-basis: 100%; display: flex; gap: .35rem; overflow-x: auto; padding-bottom: .2rem; scrollbar-width: thin; }
+.filtro-cat button { flex: none; padding: .32rem .7rem; font: inherit; font-size: .84rem; color: inherit; background: rgba(247, 240, 222, .06); border: 1.5px solid rgba(247, 240, 222, .2); border-radius: 999px; cursor: pointer; white-space: nowrap; }
+.filtro-cat button[aria-pressed="true"] { background: rgba(209, 154, 42, .3); border-color: var(--oro, #d19a2a); color: var(--avorio); }
+.filtro-cat small { opacity: .7; }
+.gioco-tessera { position: relative; }
+.g-stella { position: absolute; top: .25rem; right: .35rem; font-size: 1.15rem; line-height: 1; padding: .2rem; opacity: .45; cursor: pointer; z-index: 1; }
+.g-stella:hover, .g-stella.si { opacity: 1; color: #f2c14e; }
+.gioco-tessera .g-nome { padding-right: 1.4rem; }
+.sveglia { margin: .6rem 0; padding: .7rem .9rem; border-radius: 10px; background: rgba(209, 154, 42, .15); border: 1px solid rgba(209, 154, 42, .45); animation: sveglia-pulsa 1.6s ease-in-out infinite; }
+@keyframes sveglia-pulsa { 50% { opacity: .65; } }
+.scheda-statistiche { max-width: 34rem; width: calc(100% - 2rem); max-height: 85vh; overflow: auto; }
+.stat-totale { font-size: 1.1rem; margin: .3rem 0 .7rem; }
+.stat-tabella { overflow-x: auto; }
+.stat-tabella table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.stat-tabella th, .stat-tabella td { padding: .35rem .4rem; text-align: right; border-bottom: 1px solid rgba(247, 240, 222, .12); }
+.stat-tabella th:first-child, .stat-tabella td:first-child { text-align: left; }
+.stat-rec { display: block; opacity: .7; font-size: .78rem; }
+.scheda-statistiche .bottone { margin-top: .7rem; }
+
+/* spettatori e reazioni rapide */
+body.spettatore #tavolo, body.spettatore #mano, body.spettatore #azioni { pointer-events: none; }
+body.spettatore #tavolo canvas { pointer-events: none; }
+.barra-spett { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .4rem .6rem; margin: .3rem auto; padding: .4rem .7rem; max-width: 46rem; border-radius: 10px; background: rgba(47, 127, 216, .18); border: 1px solid rgba(47, 127, 216, .5); font-size: .9rem; }
+.barra-spett select { font: inherit; padding: .2rem .4rem; border-radius: 6px; max-width: 12rem; }
+.messaggi li.spett b { color: #8fc1ff; }
+.reazioni { position: fixed; z-index: 40; top: 3.4rem; right: .6rem; display: grid; grid-template-columns: repeat(4, 2.6rem); gap: .3rem; padding: .45rem; border-radius: 12px; background: rgba(10, 25, 20, .94); border: 1px solid rgba(247, 240, 222, .25); box-shadow: 0 8px 24px rgba(0, 0, 0, .4); }
+.reazioni button { height: 2.6rem; font-size: 1.35rem; border: 0; border-radius: 8px; background: rgba(247, 240, 222, .08); color: inherit; cursor: pointer; }
+.reazioni button:hover { background: rgba(247, 240, 222, .2); }
+.voli { position: fixed; inset: 0; pointer-events: none; z-index: 45; overflow: hidden; }
+.volo { position: absolute; bottom: 12%; display: flex; flex-direction: column; align-items: center; animation: volo-su 2.6s ease-out forwards; }
+.volo-r { font-size: 2.4rem; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .5)); }
+.volo.testo .volo-r { font-size: 1.6rem; font-weight: 800; color: #f2c14e; }
+.volo-n { font-size: .75rem; padding: .05rem .4rem; border-radius: 6px; background: rgba(0, 0, 0, .55); color: #fff; white-space: nowrap; }
+@keyframes volo-su { 0% { transform: translateY(0) scale(.6); opacity: 0; } 12% { transform: translateY(-20px) scale(1.15); opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-46vh) scale(1); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .volo { animation-duration: 1.4s; } }

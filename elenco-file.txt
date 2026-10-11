@@ -1,5 +1,6 @@
 README.md
 admin.js
+archivio.js
 censura.js
 elenco-file.txt
 esecuzione.js
@@ -187,6 +188,7 @@ public/nuovi.css
 public/style.css
 server.js
 sicurezza.js
+test/browser.js
 test/nuovi.js
 test/simula.js
 verifica.js

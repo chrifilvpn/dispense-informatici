@@ -76,6 +76,18 @@ const ponte = require('./ponte');
 
 const GIOCHI = { briscola, scopa, scopone, rubamazzo, scala40, tris, forza4, battaglia, dama, scacchi, impiccato, morra, numero, blackjack, baccarat, higherlower, texas, poker5, uno, campo, impostore, coccodrillo, blockblast, peppa, fastwest, wordle, angolo, sudoku, snake, tetris, airhockey, pallone, interruttori, casellebombe, tesoro, coperti, dubito, nascondino, mappa, tasti, mensola, mind, flip7, cirulla, solitario, chirurgo, benchmark, disegna, putt, palloncini, gattotopi, colori, bumper, differenze, fuga, monete, arcobaleno, pioggia, paintball, piattaforme, massi, stella, fune, dalgona, buio, alieno, shutbox, sblocca, wanted, duello, strada, bersaglio, mangiatutto, tigerball, roulette, bandiere, ponte };
 
+// CATEGORIE della home (un gioco nuovo che non è in elenco finisce in "Altri")
+const CATEGORIE = {
+  carte: ['briscola', 'scopa', 'scopone', 'rubamazzo', 'scala40', 'peppa', 'fastwest', 'dubito', 'flip7', 'cirulla', 'solitario', 'uno', 'tressette', 'cucu', 'burraco', 'memory'],
+  casino: ['blackjack', 'baccarat', 'higherlower', 'texas', 'poker5', 'roulette', 'settemezzo'],
+  strategia: ['tris', 'forza4', 'battaglia', 'dama', 'scacchi', 'campo', 'casellebombe', 'tesoro', 'coperti', 'interruttori', 'mappa', 'nascondino', 'shutbox', 'sblocca', 'sudoku', 'blockblast', 'otello', 'mastermind', 'nonogram', 'duemila', 'biglie'],
+  parole: ['impiccato', 'wordle', 'bandiere', 'differenze', 'angolo', 'numero', 'impostore', 'coccodrillo', 'disegna', 'mensola', 'connessioni', 'codenames', 'morra'],
+  azione: ['snake', 'tetris', 'airhockey', 'pallone', 'tasti', 'chirurgo', 'benchmark', 'putt', 'palloncini', 'gattotopi', 'colori', 'bumper', 'fuga', 'monete', 'arcobaleno', 'pioggia', 'paintball', 'piattaforme', 'massi', 'wanted', 'duello', 'strada', 'bersaglio', 'mangiatutto', 'tigerball', 'mind', 'bomberman', 'slither', 'corsa', 'calcetto', 'patata'],
+  squid: ['stella', 'fune', 'dalgona', 'buio', 'alieno', 'ponte', 'calamaro'],
+};
+for (const [cat, ids] of Object.entries(CATEGORIE)) for (const id of ids) if (GIOCHI[id]) GIOCHI[id].meta.categoria = cat;
+for (const g of Object.values(GIOCHI)) if (!g.meta.categoria) g.meta.categoria = 'altri';
+
 // Tiene solo le opzioni previste, con valori ammessi
 function pulisciOpzioni(id, opzioni = {}) {
   const out = {};

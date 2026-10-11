@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node verifica.js && node server.js",
     "test": "node test/simula.js",
-    "verifica": "node verifica.js"
+    "verifica": "node verifica.js",
+    "test:browser": "node test/browser.js"
   },
   "engines": {
     "node": ">=18"

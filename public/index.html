@@ -37,6 +37,7 @@
       <div class="saluto" id="saluto">
         <span>Ciao, <b id="nome-mostrato"></b>!</span>
         <input id="nome" type="hidden">
+        <button type="button" class="bottone mini-bt" id="apri-statistiche">📊 Le mie statistiche</button>
       </div>
 
       <section class="blocco">
@@ -54,7 +55,9 @@
             <button type="button" data-tipo="persone" aria-pressed="false">👥 Solo persone</button>
           </div>
           <button type="button" class="bottone mini-bt" id="filtro-azzera" hidden>✕ Togli i filtri</button>
+          <div class="filtro-cat" id="filtro-cat" role="group" aria-label="Categoria"></div>
         </div>
+        <p id="sveglia" class="sveglia" hidden role="status">😴 Il sito si sta svegliando: se nessuno lo usava da un po' ci mette fino a un minuto. Aspetta qui, si apre da solo.</p>
         <p id="filtro-vuoto" class="piccolo" hidden>Nessun gioco con questi filtri.</p>
         <div id="elenco-giochi" class="elenco-giochi"></div>
       </section>
@@ -113,6 +116,7 @@
       <div id="codice-grande" class="codice-grande"></div>
       <button id="copia-link" class="bottone">Copia il link da mandare</button>
 
+      <p id="spett-sala" class="avviso-in-sala" hidden></p>
       <p id="avviso-in-sala" class="avviso-in-sala" hidden>🚪 Sei tornato al tavolo: gli altri stanno finendo la partita. Quando finisce, si riparte tutti insieme da qui.</p>
       <div class="sala-gioco">
         <div id="sala-gioco-nome" class="sala-gioco-nome"></div>
@@ -150,12 +154,16 @@
         <button id="termina-voto" class="bottone piccolo-bt" title="Proponi di terminare la partita: decide la maggioranza" aria-label="Termina la partita a votazione"><span class="solo-stretto" aria-hidden="true">🗳️</span><span class="solo-largo">Termina</span></button>
         <button class="bottone piccolo-bt" data-regole-di="" aria-label="Regole"><span class="solo-largo">Regole</span><span class="solo-stretto" aria-hidden="true">📖</span></button>
         <button id="apri-globale-tavolo" class="bottone piccolo-bt" type="button" title="Chat globale" aria-label="Chat globale">🌍<span id="globale-non-letti-tavolo" class="pallino" hidden></span></button>
+        <button id="apri-reazioni" class="bottone piccolo-bt icona-bt" type="button" title="Reazioni rapide" aria-label="Reazioni rapide" aria-expanded="false">😀</button>
         <button id="apri-chat" class="bottone piccolo-bt" aria-label="Chat"><span class="solo-largo">Chat</span><span class="solo-stretto" aria-hidden="true">💬</span><span id="non-letti" class="pallino" hidden></span></button>
       </div>
     </header>
     <div id="punteggio" class="punteggio" hidden></div>
     <div id="pausa-studio" class="pausa-studio" hidden></div>
     <div id="voto-fine" class="voto-fine" hidden role="status"></div>
+    <div id="barra-spett" class="barra-spett" hidden role="status"></div>
+    <div id="reazioni" class="reazioni" hidden role="group" aria-label="Reazioni rapide"></div>
+    <div id="voli" class="voli" aria-hidden="true"></div>
 
     <div class="tavolo" id="tavolo">
       <div class="posto-altro pos-alto" data-slot="2"></div>
@@ -191,6 +199,16 @@
       <h2 id="regole-titolo"></h2>
       <ol id="regole-testo" class="regole-testo"></ol>
       <button id="chiudi-regole" class="bottone primario">Ho capito</button>
+    </div>
+  </div>
+
+  <!-- le mie statistiche (salvate nel browser) -->
+  <div id="statistiche" class="velo" hidden>
+    <div class="scheda scheda-statistiche">
+      <h2>📊 Le mie statistiche</h2>
+      <div id="statistiche-testo"></div>
+      <button type="button" class="bottone leggero mini-bt" id="statistiche-azzera">Azzera le statistiche</button>
+      <button type="button" class="bottone primario" id="chiudi-statistiche">Chiudi</button>
     </div>
   </div>
 

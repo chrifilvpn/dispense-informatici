@@ -167,7 +167,26 @@
   }
 
   // filtri della home: per nome, per numero di giocatori, col computer o solo tra persone
-  const filtro = { nome: '', giocatori: mem.get('fGioc', ''), tipo: mem.get('fTipo', '') };
+  const filtro = { nome: '', giocatori: mem.get('fGioc', ''), tipo: mem.get('fTipo', ''), cat: mem.get('fCat', '') };
+  // preferiti (⭐) e giochi fatti di recente: salvati nel browser
+  const leggiJson = (k, d) => { try { return JSON.parse(mem.get(k, '')) ?? d; } catch { return d; } };
+  let preferiti = new Set(leggiJson('preferiti', []));
+  let recenti = leggiJson('recenti', []);
+  function segnaRecente(id) {
+    recenti = [id, ...recenti.filter((x) => x !== id)].slice(0, 8);
+    mem.set('recenti', JSON.stringify(recenti));
+  }
+  const CATEGORIE = [['', 'Tutti'], ['pref', '⭐ Preferiti'], ['recenti', '🕑 Recenti'], ['carte', '🃏 Carte'], ['casino', '🎰 Casinò'], ['strategia', '♟️ Strategia'], ['parole', '🔤 Parole e quiz'], ['azione', '⚡ Azione'], ['squid', '🦑 Squid Game']];
+  function disegnaCategorie() {
+    $('#filtro-cat').innerHTML = CATEGORIE.map(([k, t]) => `<button type="button" data-cat="${k}" aria-pressed="${filtro.cat === k}">${t}${k === 'pref' && preferiti.size ? ` <small>${preferiti.size}</small>` : ''}</button>`).join('');
+  }
+  disegnaCategorie();
+  $('#filtro-cat').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-cat]');
+    if (!b) return;
+    filtro.cat = b.dataset.cat; mem.set('fCat', filtro.cat);
+    disegnaCategorie(); disegnaGiochi();
+  });
   const semplice = (t) => String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
   function passaFiltro(g) {
     if (filtro.nome) {
@@ -180,6 +199,9 @@
     }
     if (filtro.tipo === 'bot' && g.soloPersone) return false;
     if (filtro.tipo === 'persone' && !g.soloPersone) return false;
+    if (filtro.cat === 'pref' && !preferiti.has(g.id)) return false;
+    if (filtro.cat === 'recenti' && !recenti.includes(g.id)) return false;
+    if (filtro.cat && !['pref', 'recenti'].includes(filtro.cat) && g.categoria !== filtro.cat) return false;
     return true;
   }
   $('#filtro-giocatori').value = filtro.giocatori;
@@ -194,7 +216,7 @@
     disegnaGiochi();
   });
   $('#filtro-azzera').addEventListener('click', () => {
-    Object.assign(filtro, { nome: '', giocatori: '', tipo: '' }); mem.set('fGioc', ''); mem.set('fTipo', '');
+    Object.assign(filtro, { nome: '', giocatori: '', tipo: '', cat: '' }); mem.set('fGioc', ''); mem.set('fTipo', ''); mem.set('fCat', ''); disegnaCategorie();
     $('#filtro-nome').value = ''; $('#filtro-giocatori').value = '';
     for (const x of $$('#filtro-tipo button')) x.setAttribute('aria-pressed', String(x.dataset.tipo === ''));
     disegnaGiochi();
@@ -206,9 +228,10 @@
     if (filtro.nome) {
       const c = semplice(filtro.nome), voto = (g) => (semplice(g.nome).startsWith(c) ? 0 : semplice(g.nome).includes(c) ? 1 : 2);
       visibili.sort((a, b) => voto(a) - voto(b));
-    }
+    } else if (filtro.cat === 'recenti') visibili.sort((a, b) => recenti.indexOf(a.id) - recenti.indexOf(b.id));
     $('#filtro-vuoto').hidden = visibili.length > 0;
-    $('#filtro-azzera').hidden = !(filtro.nome || filtro.giocatori || filtro.tipo);
+    $('#filtro-vuoto').textContent = filtro.cat === 'pref' && !preferiti.size ? 'Nessun preferito: tocca la ☆ di un gioco per aggiungerlo.' : filtro.cat === 'recenti' && !recenti.length ? 'Non hai ancora giocato a niente da questo browser.' : 'Nessun gioco con questi filtri.';
+    $('#filtro-azzera').hidden = !(filtro.nome || filtro.giocatori || filtro.tipo || filtro.cat);
     // se il filtro fissa i giocatori, il numero scelto lo segue
     if (filtro.giocatori && !filtro.nome) {
       const m = meta(scelto.gioco), n = Number(filtro.giocatori);
@@ -216,6 +239,7 @@
     }
     $('#elenco-giochi').innerHTML = visibili.map((g) => `
       <button type="button" class="gioco-tessera" data-gioco="${g.id}" aria-pressed="${g.id === scelto.gioco}">
+        <span class="g-stella ${preferiti.has(g.id) ? 'si' : ''}" data-preferito="${g.id}" role="switch" aria-checked="${preferiti.has(g.id)}" aria-label="Preferito" title="${preferiti.has(g.id) ? 'Togli dai preferiti' : 'Aggiungi ai preferiti'}">${preferiti.has(g.id) ? '★' : '☆'}</span>
         <span class="g-nome">${esc(g.nome)}</span>
         <span class="g-desc">${esc(g.descrizione)}</span>
         <span class="g-gioc">${g.giocatori.length === 1 ? `${g.giocatori[0]} giocatori` : `da ${g.giocatori[0]} a ${g.giocatori[g.giocatori.length - 1]} giocatori`}</span>
@@ -266,6 +290,15 @@
   }
 
   $('#elenco-giochi').addEventListener('click', (e) => {
+    const stella = e.target.closest('[data-preferito]');
+    if (stella) {
+      e.stopPropagation();
+      const id = stella.dataset.preferito;
+      if (preferiti.has(id)) preferiti.delete(id); else preferiti.add(id);
+      mem.set('preferiti', JSON.stringify([...preferiti]));
+      disegnaCategorie(); disegnaGiochi();
+      return;
+    }
     const t = e.target.closest('[data-gioco]');
     if (!t) return;
     scelto.gioco = t.dataset.gioco;
@@ -312,6 +345,7 @@
   function crea(controComputer) {
     const n = nome();
     if (!n) return;
+    segnaRecente(scelto.gioco);
     socket.emit('creaStanza', { nome: n, id: mioId, gioco: scelto.gioco, posti: scelto.posti, opzioni: scelto.opzioni, controComputer: controComputer ? scelto.livello : null });
   }
   $('#gioca-solo').addEventListener('click', () => crea(true));
@@ -346,7 +380,10 @@
     if (stato) $('#avviso').hidden = true;
   });
   socket.on('disconnect', () => avviso('Connessione persa, mi ricollego…', 60000));
+  // il sito gratuito su Render si addormenta: se l'elenco dei giochi tarda, si spiega che si sta svegliando
+  const tSveglia = setTimeout(() => { if (!giochi.length) $('#sveglia').hidden = false; }, 2500);
   socket.on('giochi', (g) => {
+    clearTimeout(tSveglia); $('#sveglia').hidden = true;
     giochi = g;
     // un gioco salvato nel browser che non esiste più (un gioco tolto dal sito): si torna alla scopa
     if (!giochi.some((x) => x.id === scelto.gioco)) { scelto.gioco = 'scopa'; scelto.opzioni = {}; mem.set('gioco', 'scopa'); }
@@ -374,7 +411,7 @@
     mem.set('tavolo', s.codice);
     if (primo) { $('#avviso').hidden = true; history.replaceState(null, '', `?tavolo=${s.codice}`); }
     const firma = s.partita ? `${s.codice}:${s.gioco}:${s.partita.gioco}` : null;
-    if (firma !== firmaPartita) { ui = {}; firmaPartita = firma; }
+    if (firma !== firmaPartita) { ui = {}; firmaPartita = firma; if (s.partita && !s.spettatore) segnaRecente(s.partita.gioco); }
     if (s.partita && !s.partita.finita && ui._fineDal) { ui._fineDal = null; ui._fineSubito = false; ui._record = null; } // rivincita: si riparte
     disegnaTutto();
     gestisciChat();
@@ -482,8 +519,8 @@
   let tVoto = null;
   function disegnaVoto() {
     const v = stato && stato.partita && !stato.partita.finita ? stato.votoFine : null;
-    $('#termina-voto').hidden = !(stato && stato.partita && !stato.partita.finita);
-    $('#torna-tavolo').hidden = !(stato && stato.partita && !stato.partita.finita);
+    $('#termina-voto').hidden = !(stato && stato.partita && !stato.partita.finita && !stato.spettatore);
+    $('#torna-tavolo').hidden = !(stato && stato.partita && !stato.partita.finita && !stato.spettatore);
     const box = $('#voto-fine');
     clearInterval(tVoto);
     if (!v) { box.hidden = true; return; }
@@ -507,6 +544,7 @@
 
   function disegnaTutto() {
     if (!stato || !giochi.length) return;
+    disegnaSpettatore();
     // chi è tornato al tavolo aspetta nella sala finché la partita degli altri finisce
     const io = stato.giocatori && stato.giocatori[stato.mioPosto];
     const inSala = !!(stato.partita && !stato.partita.finita && io && io.inSala);
@@ -536,7 +574,11 @@
     }
 
     $('#lista-posti').innerHTML = stato.giocatori.map((g, i) => {
-      const io = i === stato.mioPosto;
+      const io = i === stato.mioPosto && !stato.spettatore;
+      if (stato.spettatore) {
+        return g ? `<li><span>${esc(g.nome)} ${g.bot ? '<span class="distintivo">computer</span>' : ''}</span></li>`
+          : `<li class="vuoto"><span>Posto libero</span><span class="posto-az"><button class="bottone mini-bt" data-prendi="${i}">Siediti qui</button></span></li>`;
+      }
       const coppia = giocaInCoppia() ? `<span class="squadra">coppia ${i % 2 === 0 ? 'A' : 'B'}</span>` : '';
       if (!g) {
         return `<li class="vuoto"><span>Posto libero</span>${coppia}
@@ -567,6 +609,54 @@
     if (b.dataset.bot) socket.emit('aggiungiBot', { posto: Number(b.dataset.posto), livello: b.dataset.bot });
     if (b.dataset.togli) socket.emit('togliPosto', { posto: Number(b.dataset.togli) });
     if (b.dataset.cambia) socket.emit('cambiaPosto', { posto: Number(b.dataset.cambia) });
+    if (b.dataset.prendi) socket.emit('prendiPosto', { posto: Number(b.dataset.prendi) });
+  });
+
+  // =================== SPETTATORI ===================
+  // chi entra in un tavolo pieno guarda con gli occhi di un giocatore (lo sceglie qui); non può muovere
+  function disegnaSpettatore() {
+    const sp = !!stato.spettatore;
+    document.body.classList.toggle('spettatore', sp);
+    $('#testo-chat').placeholder = sp && stato.partita && !stato.partita.finita ? 'Scrivi agli altri spettatori (i giocatori non leggono)' : 'Scrivi agli altri';
+    const barra = $('#barra-spett'), sala = $('#spett-sala');
+    if (!sp) { barra.hidden = true; sala.hidden = true; return; }
+    const opzioni = stato.giocatori.map((g, i) => (g ? `<option value="${i}" ${i === stato.segue ? 'selected' : ''}>${esc(g.nome)}${g.bot ? ' (PC)' : ''}</option>` : '')).join('');
+    const liberi = (stato.postiLiberi || []).map((i) => `<button type="button" class="bottone mini-bt" data-prendi-posto="${i}">🪑 Gioca al posto di ${esc((stato.giocatori[i] || {}).nome || `posto ${i + 1}`)}</button>`).join('');
+    const quanti = (stato.spettatori || []).length;
+    barra.innerHTML = `<span>👀 Stai guardando con gli occhi di</span><select data-segui aria-label="Giocatore da seguire">${opzioni}</select><span class="piccolo">${quanti} ${quanti === 1 ? 'spettatore' : 'spettatori'}</span>${liberi}`;
+    barra.hidden = !stato.partita;
+    sala.innerHTML = `👀 Sei spettatore: il tavolo è pieno. ${(stato.postiLiberi || []).length ? 'Si è liberato un posto: premi «Siediti qui».' : 'Se si libera un posto potrai sederti.'}`;
+    sala.hidden = !!stato.partita;
+    $('#inizia').hidden = true;
+  }
+  for (const el of [$('#barra-spett')]) {
+    el.addEventListener('change', (e) => { if (e.target.matches('[data-segui]')) { ui = {}; socket.emit('segui', { posto: Number(e.target.value) }); } });
+    el.addEventListener('click', (e) => { const b = e.target.closest('[data-prendi-posto]'); if (b) socket.emit('prendiPosto', { posto: Number(b.dataset.prendiPosto) }); });
+  }
+  socket.on('tavoloChiuso', () => { tornaHome(); avviso('Il tavolo che guardavi è stato chiuso'); });
+
+  // =================== REAZIONI RAPIDE ===================
+  const REAZIONI = ['👍', '😂', '😮', '😡', '👏', '🔥', '😭', 'GG'];
+  $('#reazioni').innerHTML = REAZIONI.map((r) => `<button type="button" data-reazione="${r}">${r}</button>`).join('');
+  $('#apri-reazioni').addEventListener('click', () => {
+    const r = $('#reazioni'); r.hidden = !r.hidden; $('#apri-reazioni').setAttribute('aria-expanded', String(!r.hidden));
+  });
+  $('#reazioni').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-reazione]'); if (!b) return;
+    socket.emit('reazione', b.dataset.reazione);
+    $('#reazioni').hidden = true; $('#apri-reazioni').setAttribute('aria-expanded', 'false');
+  });
+  socket.on('reazione', ({ r, nome, posto, spettatore } = {}) => {
+    if (!REAZIONI.includes(r)) return;
+    const voli = $('#voli');
+    if (voli.childElementCount > 12) voli.firstElementChild.remove();
+    const el = document.createElement('div');
+    el.className = `volo ${r === 'GG' ? 'testo' : ''}`;
+    el.style.left = `${8 + Math.random() * 78}%`;
+    const chi = posto === stato?.mioPosto && !stato?.spettatore ? 'Tu' : `${spettatore ? '👀 ' : ''}${nome}`;
+    el.innerHTML = `<span class="volo-r">${esc(r)}</span><span class="volo-n">${esc(chi)}</span>`;
+    voli.append(el);
+    setTimeout(() => el.remove(), 2600);
   });
   $('#sala-select').addEventListener('change', (e) => socket.emit('impostaGioco', { gioco: e.target.value, opzioni: {} }));
   $('#sala-opzioni').addEventListener('change', () => {
@@ -589,7 +679,7 @@
     if (n === 3) return [0, 1, 3][rel];
     return rel;
   }
-  const nomeDi = (posto) => (posto === stato.mioPosto ? 'Tu' : (stato.giocatori[posto] && stato.giocatori[posto].nome) || '?');
+  const nomeDi = (posto) => (posto === stato.mioPosto && !stato.spettatore ? 'Tu' : (stato.giocatori[posto] && stato.giocatori[posto].nome) || '?');
 
   const ctx = {
     get stato() { return stato; },
@@ -598,7 +688,7 @@
     get ui() { return ui; },
     nome: nomeDi,
     slot,
-    invia(azione) { socket.emit('azione', azione); },
+    invia(azione) { if (!stato.spettatore) socket.emit('azione', azione); },
     chat(testo) { socket.emit('chat', testo); }, // per i pulsanti che mandano un comando (es. !ricarica)
     emetti(evento, dati) { socket.emit(evento, dati); },
     ridisegna() { disegnaGioco(); },
@@ -651,7 +741,8 @@
     $('#barra-titolo').textContent = m ? m.nome : '';
     const st = $('#stato-turno');
     st.textContent = statoTurno(p, T);
-    const mioTurno = p.turno === stato.mioPosto && !p.inAttesa && !p.finita;
+    const mioTurno = p.turno === stato.mioPosto && !p.inAttesa && !p.finita && !stato.spettatore;
+    if (stato.spettatore) st.textContent = st.textContent.replace(/^Tocca a te/, `Tocca a ${nomeDi(stato.mioPosto)}`);
     st.classList.toggle('mio', mioTurno);
     if (mioTurno && !eraMioTurno) { bip(); if (navigator.vibrate) navigator.vibrate(40); }
     eraMioTurno = mioTurno;
@@ -765,8 +856,9 @@
   let tFine = null;
   function disegnaFine(p) {
     $('#tavolo').classList.toggle('finita', !!p.finita);
-    if (!p.finita) { $('#fine').hidden = true; $('#fine-barra').hidden = true; return; }
+    if (!p.finita) { ui._inCorso = true; $('#fine').hidden = true; $('#fine-barra').hidden = true; return; }
     const r = p.risultato;
+    contaStatistica(p, r);
     if (!ui._fineDal) {
       ui._fineDal = Date.now();
       clearTimeout(tFine);
@@ -775,7 +867,7 @@
     const presto = !ui._fineSubito && Date.now() - ui._fineDal < RITARDO_FINE;
     if (presto) {
       const vinto = r.vincitori.includes(stato.mioPosto);
-      const breve = r.titolo ? r.titolo : r.pareggio ? 'Pareggio' : vinto ? (p.aSquadre ? 'Avete vinto!' : 'Hai vinto!') : `Vince ${r.vincitori.map((i) => nomeDi(i)).join(' e ')}`;
+      const breve = r.titolo ? r.titolo : r.pareggio ? 'Pareggio' : vinto && !stato.spettatore ? (p.aSquadre ? 'Avete vinto!' : 'Hai vinto!') : `Vince ${r.vincitori.map((i) => nomeDi(i)).join(' e ')}`;
       $('#fine-barra').innerHTML = `<span>🏁 Partita finita · <b>${esc(breve)}</b></span><button type="button" class="bottone mini-bt" data-vedi-fine>Vedi i risultati</button><button type="button" class="bottone mini-bt" data-lobby>🏠 Torna alla lobby</button>`;
       $('#fine-barra').hidden = false;
       $('#fine').hidden = true;
@@ -789,7 +881,7 @@
     let titolo;
     if (r.titolo) titolo = r.titolo; // es. Fast West: "Vince il west" quando cadono tutti
     else if (r.pareggio) titolo = 'Pareggio';
-    else if (hoVinto) titolo = p.aSquadre ? 'Avete vinto!' : 'Hai vinto!';
+    else if (hoVinto && !stato.spettatore) titolo = p.aSquadre ? 'Avete vinto!' : 'Hai vinto!';
     else titolo = `Vince ${nomi(r.vincitori)}`;
     const alContrario = r.etichetta === 'penalità' || r.crescente;
     const ordinate = [...r.fazioni].sort((a, b) => (alContrario ? a.punti - b.punti : b.punti - a.punti));
@@ -803,16 +895,16 @@
       ${rec}
       <p class="piccolo">Partite vinte a questo tavolo</p>
       <div class="vittorie">${vittorie}</div>
-      ${stato.sonoHost
+      ${stato.spettatore ? '<p class="piccolo">👀 Stai guardando: la rivincita la avvia chi ha aperto il tavolo.</p><button class="bottone leggero" data-fine="esci">Smetti di guardare</button>' : stato.sonoHost
         ? `<button class="bottone primario" data-fine="rivincita">Rivincita</button>${sceltaAltroGioco()}<button class="bottone" data-fine="sala">🏠 Torna alla lobby</button>`
         : '<p class="piccolo">La rivincita la avvia chi ha aperto il tavolo.</p><button class="bottone primario" data-fine="sala">🏠 Torna alla lobby</button>'}
-      <button class="bottone leggero" data-fine="esci">Torna all'ingresso</button>`;
+      ${stato.spettatore ? '' : '<button class="bottone leggero" data-fine="esci">Torna all\'ingresso</button>'}`;
   }
   // RECORD PERSONALE: il miglior risultato di sempre in questo gioco, con queste opzioni e questo numero di giocatori
   // (salvato nel browser). Si aggiorna una volta sola per partita; "meno è meglio" vale per tiri, tempi, penalità…
   function recordPersonale(p, r, alContrario) {
     const mia = r.fazioni.find((f) => f.posti.length === 1 && f.posti[0] === stato.mioPosto);
-    if (!mia || !Number.isFinite(Number(mia.punti)) || p.aSquadre) return '';
+    if (stato.spettatore || !mia || !Number.isFinite(Number(mia.punti)) || p.aSquadre) return '';
     const opz = Object.keys(stato.opzioni || {}).sort().map((k) => `${k}=${stato.opzioni[k]}`).join('&');
     const chiave = `record:${p.gioco}:${p.n}:${r.etichetta}:${opz}`;
     const valore = Number(mia.punti);
@@ -828,6 +920,54 @@
     if (x.primo) return `<p class="record">📌 Primo risultato salvato: <b>${valore}</b> ${esc(r.etichetta)}. Prova a batterlo!</p>`;
     return `<p class="record">🏅 Il tuo record: <b>${x.migliore}</b> ${esc(r.etichetta)}</p>`;
   }
+
+  // LE MIE STATISTICHE: quante partite ho giocato e vinto in ogni gioco (salvate nel browser, una volta per partita)
+  function leggiStatistiche() { try { return JSON.parse(mem.get('statistiche', '{}')) || {}; } catch { return {}; } }
+  function contaStatistica(p, r) {
+    // conta solo le partite viste mentre erano in corso (non quelle già finite ritrovate ricaricando la pagina)
+    if (ui._stat || !ui._inCorso || stato.spettatore || stato.mioPosto == null || stato.mioPosto < 0) return;
+    ui._stat = true;
+    const st = leggiStatistiche();
+    const x = st[p.gioco] || { giocate: 0, vinte: 0, pari: 0 };
+    x.giocate++;
+    if (r.pareggio) x.pari++; else if (r.vincitori.includes(stato.mioPosto)) x.vinte++;
+    x.ultima = Date.now();
+    st[p.gioco] = x;
+    mem.set('statistiche', JSON.stringify(st));
+  }
+  function disegnaStatistiche() {
+    const st = leggiStatistiche();
+    const righe = Object.entries(st).sort((a, b) => b[1].giocate - a[1].giocate);
+    const tot = righe.reduce((a, [, x]) => ({ g: a.g + x.giocate, v: a.v + x.vinte }), { g: 0, v: 0 });
+    const nomeG = (id) => (giochi.find((g) => g.id === id) || { nome: id }).nome;
+    // i record personali sono salvati come record:gioco:giocatori:etichetta:opzioni
+    const record = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || !k.startsWith('if:record:')) continue;
+        const [, , id, n, et] = k.split(':');
+        (record[id] = record[id] || []).push(`${localStorage.getItem(k)} ${et}${Number(n) > 1 ? ` (${n} giocatori)` : ''}`);
+      }
+    } catch { /* niente localStorage */ }
+    $('#statistiche-testo').innerHTML = !righe.length
+      ? '<p class="piccolo">Non hai ancora finito nessuna partita da questo browser. Gioca e torna qui!</p>'
+      : `<p class="stat-totale"><b>${tot.g}</b> partite · <b>${tot.v}</b> vinte · <b>${Math.round((100 * tot.v) / tot.g)}%</b></p>
+        <div class="stat-tabella"><table><thead><tr><th>Gioco</th><th>Giocate</th><th>Vinte</th><th>%</th></tr></thead><tbody>
+        ${righe.map(([id, x]) => `<tr><td>${esc(nomeG(id))}${record[id] ? `<small class="stat-rec">🏅 ${record[id].slice(0, 3).map(esc).join(' · ')}</small>` : ''}</td><td>${x.giocate}</td><td>${x.vinte}</td><td>${Math.round((100 * x.vinte) / x.giocate)}%</td></tr>`).join('')}
+        </tbody></table></div>`;
+    $('#statistiche').hidden = false;
+    $('#chiudi-statistiche').focus();
+  }
+  $('#apri-statistiche').addEventListener('click', disegnaStatistiche);
+  $('#chiudi-statistiche').addEventListener('click', () => ($('#statistiche').hidden = true));
+  $('#statistiche').addEventListener('click', (e) => { if (e.target.id === 'statistiche') $('#statistiche').hidden = true; });
+  $('#statistiche-azzera').addEventListener('click', () => {
+    if (!confirm('Azzero statistiche e record personali di questo browser?')) return;
+    mem.del('statistiche');
+    try { Object.keys(localStorage).filter((k) => k.startsWith('if:record:')).forEach((k) => localStorage.removeItem(k)); } catch { /* niente */ }
+    disegnaStatistiche();
+  });
 
   // a fine partita: scegli subito un altro gioco per lo stesso tavolo (solo chi l'ha aperto)
   let dopo = { gioco: null, opzioni: {} };
@@ -872,7 +1012,7 @@
   // uscita
   $('#esci-gioco').addEventListener('click', () => {
     const p = stato.partita;
-    if (!p || p.finita) return esci();
+    if (!p || p.finita || stato.spettatore) return esci();
     const soloPc = stato.giocatori.every((g, i) => i === stato.mioPosto || (g && g.bot));
     $('#conferma-testo').textContent = soloPc
       ? 'La partita contro il computer verrà chiusa.'
@@ -902,7 +1042,7 @@
     lista.innerHTML = stato.chat.map((m) => (m.sistema
       ? `<li class="sistema">${esc(m.testo)}</li>`
       : m.ia ? rigaIA(`🤖 ${m.nome}`, m.a, m.a === mioNomeTavolo, m.testo)
-      : `<li><b>${esc(m.posto === stato.mioPosto ? 'Tu' : m.nome)}</b> ${esc(m.testo)}</li>`)).join('');
+      : `<li class="${m.posto === -2 ? 'spett' : ''}"><b>${esc(m.posto === stato.mioPosto && !stato.spettatore ? 'Tu' : m.nome)}</b> ${esc(m.testo)}</li>`)).join('');
     lista.scrollTop = lista.scrollHeight;
     const nuovi = stato.chat.filter((m) => m.id > ultimaChat);
     const primaVolta = ultimaChat === 0;
