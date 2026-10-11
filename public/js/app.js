@@ -360,7 +360,40 @@
   $('#entra').addEventListener('click', entra);
   $('#codice').addEventListener('keydown', (e) => e.key === 'Enter' && entra());
 
+  // =================== SFIDA DEL GIORNO ===================
+  const SFIDE = [['sudoku', '🔢', 'Sudoku'], ['wordle', '🟩', 'Wordle'], ['sblocca', '🧱', 'Sblocca'], ['bandiere', '🏳️', 'Bandiere']];
+  let sfidaDati = null;
+  function disegnaSfide() {
+    const fatte = (sfidaDati && sfidaDati.fatte) || [];
+    $('#sfida-elenco').innerHTML = SFIDE.map(([id, ic, nomeG]) => {
+      const x = sfidaDati && sfidaDati.giochi[id];
+      return `<button type="button" class="sfida-bt ${fatte.includes(id) ? 'fatta' : ''}" data-sfida="${id}">
+        <span class="sfida-ic">${ic}</span><span><b>${nomeG}</b><small>${esc(x ? x.titolo : '')}${fatte.includes(id) ? ' · ✓ fatta' : ''}</small></span></button>`;
+    }).join('');
+  }
+  socket.on('classificaSfida', (d) => {
+    sfidaDati = d; disegnaSfide();
+    if ($('#classifica-sfida').hidden) return;
+    const data = new Date(`${d.data}T12:00:00`).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
+    $('#classifica-sfida-testo').innerHTML = `<p class="piccolo">${esc(data)}</p>${SFIDE.map(([id, ic, nomeG]) => {
+      const x = d.giochi[id];
+      return `<h3>${ic} ${nomeG} <small>${esc(x.titolo)}</small></h3>${x.lista.length ? `<ol class="sfida-classifica">${x.lista.slice(0, 10).map((v) => `<li><span>${esc(v.nome)}</span><b>${esc(v.testo)}</b></li>`).join('')}</ol>` : '<p class="piccolo">Nessuno ancora: sii il primo!</p>'}`;
+    }).join('')}`;
+  });
+  disegnaSfide();
+  socket.on('connect', () => socket.emit('classificaSfida', mioId));
+  $('#sfida-elenco').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-sfida]'); if (!b) return;
+    const n = nome(); if (!n) return;
+    segnaRecente(b.dataset.sfida);
+    socket.emit('creaStanza', { nome: n, id: mioId, gioco: b.dataset.sfida, sfidaGiorno: true });
+  });
+  $('#apri-classifica-sfida').addEventListener('click', () => { $('#classifica-sfida').hidden = false; socket.emit('classificaSfida', mioId); $('#chiudi-classifica-sfida').focus(); });
+  $('#chiudi-classifica-sfida').addEventListener('click', () => ($('#classifica-sfida').hidden = true));
+  $('#classifica-sfida').addEventListener('click', (e) => { if (e.target.id === 'classifica-sfida') $('#classifica-sfida').hidden = true; });
+
   function tornaHome() {
+    socket.emit('classificaSfida', mioId);
     mem.del('tavolo');
     stato = null;
     firmaPartita = null;
@@ -596,6 +629,7 @@
     }).join('');
 
     const liberi = stato.giocatori.filter((g) => !g).length;
+    disegnaSalaExtra(m, liberi);
     $('#inizia').hidden = !stato.sonoHost;
     $('#inizia').disabled = liberi > 0;
     $('#nota-attesa').textContent = liberi
@@ -611,6 +645,65 @@
     if (b.dataset.cambia) socket.emit('cambiaPosto', { posto: Number(b.dataset.cambia) });
     if (b.dataset.prendi) socket.emit('prendiPosto', { posto: Number(b.dataset.prendi) });
   });
+
+  // =================== TORNEO E SERATA (dalla sala) ===================
+  let serataScelti = null;
+  function disegnaSalaExtra(m, liberi) {
+    const box = $('#sala-extra');
+    if (!stato.sonoHost || stato.spettatore) { box.hidden = true; return; }
+    const adatti = giochi.filter((g) => g.giocatori.includes(stato.numPosti) && !(g.soloPersone && stato.giocatori.some((x) => x && x.bot)));
+    if (!serataScelti) serataScelti = new Set([stato.gioco]);
+    const torneo = stato.numPosti === 2 ? `<div class="extra-riga"><b>🏆 Torneo a eliminazione</b>
+      <p class="piccolo">Partecipano chi è al tavolo e chi entra col codice (guarda finché non tocca a lui); i posti che mancano li prende il computer.</p>
+      <button type="button" class="bottone mini-bt" data-torneo="4">Torneo a 4</button><button type="button" class="bottone mini-bt" data-torneo="8">Torneo a 8</button></div>` : '';
+    const aperta = box.querySelector('details[open]') ? 'open' : '';
+    box.innerHTML = `${torneo}<details class="extra-riga" ${aperta}><summary><b>🎲 Serata a giochi misti</b> <small>(${serataScelti.size} scelti)</small></summary>
+      <p class="piccolo">Scegli da 2 a 8 giochi: si giocano uno dopo l'altro con questi giocatori. Ogni gioco vinto vale 3 punti.</p>
+      <div class="serata-scelta">${adatti.map((g) => `<label><input type="checkbox" data-serata="${g.id}" ${serataScelti.has(g.id) ? 'checked' : ''}> ${esc(g.nome)}</label>`).join('')}</div>
+      <button type="button" class="bottone mini-bt" data-serata-caso>🎲 4 a caso</button>
+      <button type="button" class="bottone mini-bt primario" data-serata-via ${serataScelti.size < 2 || serataScelti.size > 8 || liberi ? 'disabled' : ''}>Inizia la serata</button>
+      ${liberi ? '<small class="piccolo">Prima riempi tutti i posti.</small>' : ''}</details>`;
+    box.hidden = false;
+  }
+  $('#sala-extra').addEventListener('change', (e) => {
+    const c = e.target.closest('[data-serata]'); if (!c) return;
+    if (c.checked) serataScelti.add(c.dataset.serata); else serataScelti.delete(c.dataset.serata);
+    disegnaAttesa();
+  });
+  $('#sala-extra').addEventListener('click', (e) => {
+    const t = e.target.closest('[data-torneo]');
+    if (t) return socket.emit('iniziaTorneo', { dim: Number(t.dataset.torneo) });
+    if (e.target.closest('[data-serata-caso]')) {
+      const adatti = [...$$('#sala-extra [data-serata]')].map((x) => x.dataset.serata);
+      for (let i = adatti.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [adatti[i], adatti[j]] = [adatti[j], adatti[i]]; }
+      serataScelti = new Set(adatti.slice(0, 4));
+      return disegnaAttesa();
+    }
+    if (e.target.closest('[data-serata-via]')) socket.emit('iniziaSerata', { giochi: [...serataScelti] });
+  });
+  // il tabellone del torneo e la classifica della serata (a fine partita)
+  function riquadroTorneo() {
+    const t = stato.torneo;
+    if (!t) return '';
+    const nome = (k) => (k === null || k === undefined ? '…' : t.nomi[k] === null ? '—' : esc(t.nomi[k]));
+    const turni = t.turni.map((tu) => `<div class="tt-turno"><h4>${esc(tu.nome)}</h4>${tu.incontri.map((x) => `<div class="tt-inc ${x.v === null ? 'aperto' : ''}">
+      <span class="${x.v === x.a ? 'vince' : x.v !== null ? 'perde' : ''}">${nome(x.a)}</span><span class="${x.v === x.b ? 'vince' : x.v !== null ? 'perde' : ''}">${nome(x.b)}</span></div>`).join('')}</div>`).join('');
+    const stato2 = t.finito ? `<p class="tt-campione">🥇 ${nome(t.campione)} vince il torneo!</p>` : t.resta !== null ? `<p class="piccolo" data-conto="${Date.now() + t.resta}">Il prossimo incontro parte da solo tra <b>${Math.ceil(t.resta / 1000)}</b> s</p>` : '';
+    return `<div class="torneo-tab"><h3>🏆 Torneo a ${t.dim}</h3><div class="tt-turni">${turni}</div>${stato2}</div>`;
+  }
+  function riquadroSerata() {
+    const se = stato.serata;
+    if (!se) return '';
+    const ord = se.punti.map((x, i) => [i, x]).sort((a, b) => b[1] - a[1]);
+    const nomeG = (id) => esc((giochi.find((g) => g.id === id) || { nome: id }).nome);
+    const prossimo = !se.finita && se.resta !== null ? `<p class="piccolo" data-conto="${Date.now() + se.resta}">Prossimo gioco: <b>${nomeG(se.giochi[se.k])}</b> tra <b>${Math.ceil(se.resta / 1000)}</b> s</p>` : '';
+    return `<div class="torneo-tab"><h3>🎲 Serata ${se.finita ? '· classifica finale' : `· ${se.k} di ${se.giochi.length} giochi`}</h3>
+      <ol class="serata-punti">${ord.map(([i, x]) => `<li><span>${esc(nomeDi(i))}</span><b>${x}</b></li>`).join('')}</ol>
+      <p class="piccolo">${se.giochi.map((id, k) => `${k < se.storia.length ? '✓' : k === se.k && !se.finita ? '▶' : '·'} ${nomeG(id)}`).join(' &nbsp; ')}</p>${prossimo}</div>`;
+  }
+  setInterval(() => {
+    for (const el of $$('[data-conto]')) { const b = el.querySelector('b:last-of-type'); if (b) b.textContent = Math.max(0, Math.ceil((Number(el.dataset.conto) - Date.now()) / 1000)); }
+  }, 500);
 
   // =================== SPETTATORI ===================
   // chi entra in un tavolo pieno guarda con gli occhi di un giocatore (lo sceglie qui); non può muovere
@@ -738,7 +831,9 @@
     const T = Tavoli[p.gioco];
     if (T.reset) T.reset(ctx);
     const m = meta(stato.gioco);
-    $('#barra-titolo').textContent = m ? m.nome : '';
+    const torneo = stato.torneo && !stato.torneo.finito ? ` · 🏆 ${stato.torneo.turni[stato.torneo.r].nome}` : '';
+    const serata = stato.serata && !stato.serata.finita ? ` · 🎲 ${Math.min(stato.serata.k + 1, stato.serata.giochi.length)}/${stato.serata.giochi.length}` : '';
+    $('#barra-titolo').textContent = (m ? m.nome : '') + (stato.sfida ? (stato.sfida.prova ? ' · 🗓️ prova' : ' · 🗓️ Sfida del giorno') : '') + torneo + serata;
     const st = $('#stato-turno');
     st.textContent = statoTurno(p, T);
     const mioTurno = p.turno === stato.mioPosto && !p.inAttesa && !p.finita && !stato.spettatore;
@@ -893,9 +988,9 @@
       <ul class="fine-punti">${ordinate.map((f) => `<li class="${r.vincitori.includes(f.posti[0]) && !r.pareggio ? 'vince' : ''}">
         <span>${esc(nomi(f.posti))}</span><span class="p">${f.punti} <small>${r.etichetta}</small></span></li>`).join('')}</ul>
       ${rec}
-      <p class="piccolo">Partite vinte a questo tavolo</p>
-      <div class="vittorie">${vittorie}</div>
-      ${stato.spettatore ? '<p class="piccolo">👀 Stai guardando: la rivincita la avvia chi ha aperto il tavolo.</p><button class="bottone leggero" data-fine="esci">Smetti di guardare</button>' : stato.sonoHost
+      ${riquadroTorneo()}${riquadroSerata()}
+      ${stato.torneo || stato.serata ? '' : `<p class="piccolo">Partite vinte a questo tavolo</p><div class="vittorie">${vittorie}</div>`}
+      ${(stato.torneo && !stato.torneo.finito) || (stato.serata && !stato.serata.finita) ? `${stato.sonoHost ? '<button class="bottone leggero" data-fine="sala">Interrompi e torna alla lobby</button>' : ''}` : stato.spettatore ? '<p class="piccolo">👀 Stai guardando: la rivincita la avvia chi ha aperto il tavolo.</p><button class="bottone leggero" data-fine="esci">Smetti di guardare</button>' : stato.sonoHost
         ? `<button class="bottone primario" data-fine="rivincita">Rivincita</button>${sceltaAltroGioco()}<button class="bottone" data-fine="sala">🏠 Torna alla lobby</button>`
         : '<p class="piccolo">La rivincita la avvia chi ha aperto il tavolo.</p><button class="bottone primario" data-fine="sala">🏠 Torna alla lobby</button>'}
       ${stato.spettatore ? '' : '<button class="bottone leggero" data-fine="esci">Torna all\'ingresso</button>'}`;

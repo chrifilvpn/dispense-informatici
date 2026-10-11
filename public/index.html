@@ -40,6 +40,12 @@
         <button type="button" class="bottone mini-bt" id="apri-statistiche">📊 Le mie statistiche</button>
       </div>
 
+      <section class="blocco sfida-giorno" id="sfida-giorno">
+        <div class="sfida-testa"><h2>🗓️ Sfida del giorno</h2><button type="button" class="bottone mini-bt" id="apri-classifica-sfida">🏆 Classifica di oggi</button></div>
+        <p class="piccolo">Oggi la stessa partita per tutti: per la classifica conta il primo tentativo.</p>
+        <div id="sfida-elenco" class="sfida-elenco"></div>
+      </section>
+
       <section class="blocco">
         <h2>A cosa giochiamo?</h2>
         <div class="filtri" role="search">
@@ -130,6 +136,7 @@
       <ul id="lista-posti" class="lista-posti"></ul>
       <p id="nota-attesa" class="piccolo"></p>
       <button id="inizia" class="bottone primario" hidden>Inizia la partita</button>
+      <div id="sala-extra" class="sala-extra" hidden></div>
       <form id="form-chat-sala" class="riga chat-sala">
         <input id="testo-chat-sala" maxlength="160" placeholder="Scrivi a chi è al tavolo" autocomplete="off" aria-label="Messaggio">
         <button class="bottone">Invia</button>
@@ -199,6 +206,15 @@
       <h2 id="regole-titolo"></h2>
       <ol id="regole-testo" class="regole-testo"></ol>
       <button id="chiudi-regole" class="bottone primario">Ho capito</button>
+    </div>
+  </div>
+
+  <!-- classifica della sfida del giorno -->
+  <div id="classifica-sfida" class="velo" hidden>
+    <div class="scheda scheda-statistiche">
+      <h2>🏆 Sfida del giorno</h2>
+      <div id="classifica-sfida-testo"></div>
+      <button type="button" class="bottone primario" id="chiudi-classifica-sfida">Chiudi</button>
     </div>
   </div>
 

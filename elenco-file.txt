@@ -187,8 +187,11 @@ public/js/tavoli.js
 public/nuovi.css
 public/style.css
 server.js
+sfida.js
 sicurezza.js
 test/browser.js
 test/nuovi.js
+test/serate.js
 test/simula.js
+tornei.js
 verifica.js

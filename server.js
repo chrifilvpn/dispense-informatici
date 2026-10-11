@@ -18,6 +18,7 @@ const { censura } = require('./censura'); // viagano/viaganò in chat diventa **
 const NOMI_BOT = ['Ada', 'Alan', 'Grace', 'Linus', 'Tim', 'Margaret', 'Dennis', 'Barbara'];
 
 const sicurezza = require('./sicurezza');
+const sfida = require('./sfida'); // la sfida del giorno (stessa partita per tutti, classifica del giorno)
 const { FantasIA, domandaDa, NOME: NOME_IA } = require('./fantasia'); // la mini IA della chat (Gemini)
 const { eComandoAdmin } = require('./admin'); // comando segreto dell'amministratore (vedi admin.js) // difese: intestazioni, limiti, pulizia dei dati (vedi sicurezza.js)
 // limiti per indirizzo larghi: a scuola tutta la classe esce su internet con lo stesso indirizzo
@@ -107,6 +108,8 @@ function invia(s) {
       ricaricaConsigliata: !!(s.partita && s.partita.ficheDi && !g.bot && s.partita.ficheDi(posto) <= 0 && !(s.partita.ficheInGioco && s.partita.ficheInGioco(posto) > 0)),
       votoFine: s.votoFine ? { tipo: s.votoFine.tipo, da: s.votoFine.da, si: s.votoFine.si, no: s.votoFine.no, servono: s.votoFine.servono, votanti: s.votoFine.votanti, resta: Math.max(0, s.votoFine.scade - Date.now()) } : null,
       esecuzione: inEsecuzione(s) ? s.esecuzioneFino - Date.now() : 0,
+      sfida: s.sfida && s.sfida.gioco === s.gioco ? { data: s.sfida.data, prova: !!s.sfida.prova } : null,
+      torneo: tornei.vistaTorneo(s), serata: tornei.vistaSerata(s),
       partita: s.partita ? s.partita.vista(posto) : null,
       chat: s.chat.filter((m) => !m.spett && (!m.per || m.per.includes(posto))).slice(-40), // m.per: messaggio visibile solo ad alcuni (es. i fantasmi di Chi è l'Alieno)
     });
@@ -131,6 +134,7 @@ function inviaSpettatori(s) {
       sonoHost: false,
       giocatori: s.posti.map((x, i) => (x ? { nome: x.nome, connesso: x.connesso, bot: x.bot || null, autoplay: !!x.autoplay, nascosto: !!x.nascosto, uscito: !!x.uscito, inSala: !!x.inSala, fiche: x.fiche, vittorie: s.vittorie[i] } : null)),
       spettatori: [...s.spettatori.values()].map((x) => x.nome),
+      torneo: tornei.vistaTorneo(s), serata: tornei.vistaSerata(s),
       inPausa: inPausa(s), ricaricaConsigliata: false, votoFine: null,
       esecuzione: inEsecuzione(s) ? s.esecuzioneFino - Date.now() : 0,
       partita: s.partita ? s.partita.vista(posto) : null,
@@ -174,6 +178,13 @@ function aggiorna(s) {
   if (g && g.finita && !g.registrata) {
     g.registrata = true;
     for (const v of g.risultato.vincitori) s.vittorie[v]++;
+    tornei.finePartita(s, g);
+    if (s.sfida && s.sfida.gioco === s.gioco) {
+      const r = sfida.registra(s, g);
+      if (r && r.prova) messaggioSistema(s, '🗓️ Partita di prova: per la classifica di oggi conta solo il primo tentativo');
+      else if (r && r.posizione >= 0) messaggioSistema(s, `🗓️ Sfida del giorno: ${r.testo} · sei ${r.posizione + 1}° in classifica!`);
+      else if (r) messaggioSistema(s, '🗓️ Sfida del giorno: risultato fuori dalla classifica dei primi 20');
+    }
   }
   invia(s);
   pianifica(s);
@@ -387,6 +398,7 @@ function votazione(s, i, si, tipo) {
       iniziaPartita(s);
     } else {
       s.partita = null;
+      tornei.annulla(s);
       ripristinaInSala(s);
       s.posti.forEach((x, k) => { if (x && ((x.bot && x.sostituto) || x.uscito)) s.posti[k] = null; });
     }
@@ -411,7 +423,12 @@ function ripristinaInSala(s) {
 function iniziaPartita(s) {
   ripristinaInSala(s);
   const mod = GIOCHI[s.gioco];
-  s.partita = mod.crea({ n: s.posti.length, primo: s.primo, opzioni: s.opzioni, fiche: s.posti.map((g) => (g ? g.fiche : FICHE_INIZIALI)), bot: s.posti.map((g) => (g && g.bot) || null) });
+  const dati = { n: s.posti.length, primo: s.primo, opzioni: s.opzioni, fiche: s.posti.map((g) => (g ? g.fiche : FICHE_INIZIALI)), bot: s.posti.map((g) => (g && g.bot) || null) };
+  // sfida del giorno: la stessa partita per tutti (seme = data + gioco); una rivincita è solo per allenarsi
+  if (s.sfida && s.sfida.gioco === s.gioco) {
+    if (s.sfida.registrata) s.sfida = { ...s.sfida, prova: true, registrata: false };
+    s.partita = sfida.creaConSeme(mod, dati, sfida.hash(`${s.sfida.data}:${s.gioco}`));
+  } else s.partita = mod.crea(dati);
   s.primo = (s.primo + 1) % s.posti.length;
   s.posti.forEach((g) => g && (g.autoplay = false));
 }
@@ -523,6 +540,9 @@ guardia.quandoBan = (ip, ban) => {
 const codiciSbagliati = new MappaLimitata(20000), comandiFinti = new MappaLimitata(20000);
 // conta i tentativi di un indirizzo in una finestra di tempo; restituisce quanti ne ha fatti
 function conta(mappa, ip, finestraMs) { const ora = Date.now(); let c = mappa.get(ip); if (!c || ora - c.dal > finestraMs) c = { n: 0, dal: ora }; c.n++; mappa.set(ip, c); return c.n; }
+
+// torneo a eliminazione e serata a giochi misti (vedi tornei.js)
+const tornei = require('./tornei')({ io, GIOCHI, stanze, iniziaPartita, messaggioSistema, aggiorna, FICHE_INIZIALI, pulisciOpzioni, NOMI_BOT });
 
 io.on('connection', (socket) => {
   const ipSocket = socket.data.ip;
@@ -642,6 +662,7 @@ io.on('connection', (socket) => {
   function siediti(s, id, nome) {
     if (esiliato(id, ipSocket, presenza.disp)) { socket.emit('esiliato', { fino: esiliato(id, ipSocket, presenza.disp) }); socket.disconnect(true); return; }
     let i = s.posti.findIndex((g) => g && g.id === id);
+    if (i === -1 && tornei.inCorso(s) && s.torneo) return guarda(s, id, nome);
     if (i === -1) {
       if (s.partita) {
         // a partita iniziata si può prendere solo il posto di chi è uscito (ora giocato dal computer)
@@ -725,7 +746,16 @@ io.on('connection', (socket) => {
     io.to(s.codice).emit('reazione', { r, nome, posto: i, spettatore: i < 0 });
   });
 
-  socket.on('creaStanza', ({ nome, id, gioco, posti, opzioni, controComputer } = {}) => {
+  socket.on('classificaSfida', (id) => {
+    id = pulisciId(id);
+    socket.emit('classificaSfida', { ...sfida.classifiche(), fatte: Object.keys(sfida.SFIDE).filter((g) => id && sfida.giaFatta(sfida.oggi(), g, id)) });
+  });
+  socket.on('creaStanza', ({ nome, id, gioco, posti, opzioni, controComputer, sfidaGiorno } = {}) => {
+    // sfida del giorno: un posto, opzioni fisse
+    if (sfidaGiorno) {
+      if (!sfida.SFIDE[gioco]) return errore('Questo gioco non ha la sfida del giorno');
+      posti = 1; opzioni = sfida.SFIDE[gioco].opzioni; controComputer = 'medio';
+    }
     id = pulisciId(id);
     const mod = giocoDa(gioco);
     // limiti: niente migliaia di tavoli aperti da una persona sola
@@ -741,6 +771,7 @@ io.on('connection', (socket) => {
       posti: new Array(posti).fill(null), vittorie: new Array(posti).fill(0),
       partita: null, host: id, primo: 0, chat: [], nChat: 0, ip: ipSocket,
     };
+    if (sfidaGiorno) s.sfida = { gioco, data: sfida.oggi(), id, nome: pulisciNome(nome), prova: sfida.giaFatta(sfida.oggi(), gioco, id) };
     stanze.set(s.codice, s);
     siediti(s, id, pulisciNome(nome));
     if (controComputer) {
@@ -801,9 +832,29 @@ io.on('connection', (socket) => {
     aggiorna(s);
   });
 
+  socket.on('iniziaTorneo', ({ dim } = {}) => {
+    const s = stanza;
+    if (!s || (s.partita && !s.partita.finita) || !sonoHost()) return;
+    tornei.annulla(s);
+    s.partita = null;
+    ripristinaInSala(s);
+    const e = tornei.iniziaTorneo(s, dim);
+    if (e) { errore(e); aggiorna(s); }
+  });
+  socket.on('iniziaSerata', ({ giochi } = {}) => {
+    const s = stanza;
+    if (!s || (s.partita && !s.partita.finita) || !sonoHost()) return;
+    tornei.annulla(s);
+    ripristinaInSala(s);
+    s.posti.forEach((g, i) => { if (g && ((g.bot && g.sostituto) || g.uscito)) s.posti[i] = null; });
+    const e = tornei.iniziaSerata(s, giochi);
+    if (e) { errore(e); aggiorna(s); }
+  });
+
   socket.on('inizia', () => {
     const s = stanza;
     if (!s || s.partita || !sonoHost()) return;
+    tornei.annulla(s);
     if (s.posti.some((g) => !g)) return errore('Riempi tutti i posti, anche con il computer');
     iniziaPartita(s);
     messaggioSistema(s, `Si gioca a ${GIOCHI[s.gioco].meta.nome}`);
@@ -848,6 +899,8 @@ io.on('connection', (socket) => {
     const s = stanza;
     if (!s || !s.partita || !s.partita.finita) return;
     if (!sonoHost()) return errore('La rivincita la avvia chi ha aperto il tavolo');
+    if (tornei.inCorso(s)) return errore('Aspetta: il prossimo incontro parte da solo');
+    tornei.annulla(s);
     iniziaPartita(s);
     aggiorna(s);
   });
@@ -857,6 +910,8 @@ io.on('connection', (socket) => {
     const s = stanza;
     if (!s || !sonoHost()) return errore('Il gioco lo sceglie chi ha aperto il tavolo');
     if (s.partita && !s.partita.finita) return errore('Aspetta che la partita finisca');
+    if (tornei.inCorso(s)) return errore('Aspetta: il prossimo gioco parte da solo');
+    tornei.annulla(s);
     const mod = giocoDa(gioco);
     if (!mod) return errore('Gioco sconosciuto');
     if (!mod.meta.giocatori.includes(s.posti.length)) return errore(`${mod.meta.nome} si gioca in ${mod.meta.giocatori.join(', ')}`);
@@ -913,9 +968,12 @@ io.on('connection', (socket) => {
   socket.on('tornaInSala', () => {
     const s = stanza;
     // a partita finita chiunque può riportare il tavolo nella lobby; durante la partita solo chi l'ha aperto
-    if (!s || mioPosto() === -1 || (!sonoHost() && !(s.partita && s.partita.finita))) return;
+    if (!s || (mioPosto() === -1 && !sonoHost()) || (!sonoHost() && !(s.partita && s.partita.finita))) return;
+    if (tornei.inCorso(s) && !sonoHost()) return errore('Torneo e serata li può interrompere solo chi ha aperto il tavolo');
     if (s.partita && !s.partita.finita) messaggioSistema(s, 'La partita è stata interrotta');
+    if (tornei.inCorso(s)) messaggioSistema(s, s.torneo ? '🏆 Torneo interrotto' : '🎲 Serata interrotta');
     clearTimeout(s.timer);
+    tornei.annulla(s);
     s.partita = null;
     ripristinaInSala(s);
     s.posti.forEach((g, i) => { if (g && ((g.bot && g.sostituto) || g.uscito)) s.posti[i] = null; });

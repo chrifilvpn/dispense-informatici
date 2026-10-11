@@ -1192,3 +1192,41 @@ body.spettatore #tavolo canvas { pointer-events: none; }
 .volo-n { font-size: .75rem; padding: .05rem .4rem; border-radius: 6px; background: rgba(0, 0, 0, .55); color: #fff; white-space: nowrap; }
 @keyframes volo-su { 0% { transform: translateY(0) scale(.6); opacity: 0; } 12% { transform: translateY(-20px) scale(1.15); opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-46vh) scale(1); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .volo { animation-duration: 1.4s; } }
+
+/* sfida del giorno */
+.sfida-testa { display: flex; align-items: center; justify-content: space-between; gap: .5rem; flex-wrap: wrap; }
+.sfida-testa h2 { margin: 0; }
+.sfida-elenco { display: grid; grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr)); gap: .5rem; margin-top: .5rem; }
+.sfida-bt { display: flex; align-items: center; gap: .55rem; padding: .6rem .7rem; text-align: left; font: inherit; color: inherit; background: linear-gradient(135deg, rgba(209, 154, 42, .2), rgba(209, 154, 42, .05)); border: 1.5px solid rgba(209, 154, 42, .45); border-radius: 12px; cursor: pointer; }
+.sfida-bt:hover { border-color: var(--oro, #d19a2a); }
+.sfida-bt.fatta { opacity: .75; border-style: dashed; }
+.sfida-bt small { display: block; opacity: .75; font-size: .78rem; }
+.sfida-ic { font-size: 1.6rem; }
+.sfida-classifica { margin: .2rem 0 .8rem; padding-left: 1.6rem; }
+.sfida-classifica li { padding: .15rem 0; }
+.sfida-classifica li span { display: inline-block; min-width: 50%; }
+#classifica-sfida-testo h3 { margin: .7rem 0 .2rem; font-size: 1rem; }
+#classifica-sfida-testo h3 small { font-weight: normal; opacity: .7; }
+
+/* torneo e serata */
+.sala-extra { display: grid; gap: .6rem; margin: .8rem 0; text-align: left; }
+.extra-riga { padding: .6rem .75rem; border-radius: 12px; border: 1px solid rgba(247, 240, 222, .2); background: rgba(247, 240, 222, .05); }
+.extra-riga p { margin: .25rem 0 .45rem; }
+.extra-riga .bottone { margin: .15rem .3rem .15rem 0; }
+.extra-riga summary { cursor: pointer; }
+.serata-scelta { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: .2rem .6rem; max-height: 14rem; overflow: auto; margin: .3rem 0 .5rem; font-size: .88rem; }
+.serata-scelta label { display: flex; gap: .35rem; align-items: center; }
+.torneo-tab { margin: .6rem 0; padding: .55rem .65rem; border-radius: 12px; background: rgba(0, 0, 0, .06); border: 1px solid rgba(0, 0, 0, .12); text-align: left; }
+.torneo-tab h3 { margin: 0 0 .4rem; font-size: 1rem; }
+.tt-turni { display: flex; gap: .6rem; overflow-x: auto; padding-bottom: .2rem; }
+.tt-turno { flex: 1 0 7.5rem; display: flex; flex-direction: column; justify-content: space-around; gap: .35rem; }
+.tt-turno h4 { margin: 0; font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; opacity: .7; }
+.tt-inc { display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; border: 1px solid rgba(0, 0, 0, .15); font-size: .85rem; }
+.tt-inc span { padding: .2rem .4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tt-inc span + span { border-top: 1px solid rgba(0, 0, 0, .1); }
+.tt-inc .vince { font-weight: 700; background: rgba(46, 157, 87, .2); }
+.tt-inc .perde { opacity: .5; text-decoration: line-through; }
+.tt-inc.aperto { border-color: #d19a2a; box-shadow: 0 0 0 1px #d19a2a inset; }
+.tt-campione { font-size: 1.15rem; font-weight: 700; margin: .5rem 0 .2rem; }
+.serata-punti { margin: .2rem 0 .4rem; padding-left: 1.5rem; }
+.serata-punti li span { display: inline-block; min-width: 55%; }
