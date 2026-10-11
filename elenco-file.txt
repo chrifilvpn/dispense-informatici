@@ -102,12 +102,14 @@ giochi/uno.js
 giochi/wanted.js
 giochi/wordle.js
 giochi2/capitali.js
+giochi2/cucu.js
 giochi2/geo-dati.js
 giochi2/geo-quiz.js
 giochi2/monumenti-dati.js
 giochi2/monumenti.js
 giochi2/sagome-dati.js
 giochi2/sagome.js
+giochi2/tressette.js
 guardia.js
 package-lock.json
 package.json
@@ -189,6 +191,10 @@ public/js/giochi/tetris.js
 public/js/giochi/tigerball.js
 public/js/giochi/wanted.js
 public/js/giochi/wordle.js
+public/js/giochi2/cucu.css
+public/js/giochi2/cucu.js
+public/js/giochi2/tressette.css
+public/js/giochi2/tressette.js
 public/js/tavoli-tabellone.js
 public/js/tavoli.js
 public/nuovi.css
@@ -198,6 +204,8 @@ sfida.js
 sicurezza.js
 test/browser.js
 test/giochi2.js
+test/giochi2/cucu.js
+test/giochi2/tressette.js
 test/migliorie3.js
 test/nuovi.js
 test/serate.js
