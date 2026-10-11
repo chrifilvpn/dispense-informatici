@@ -438,11 +438,15 @@ nav a {
   }
   function allenamento(tipo) {
     const box = root.querySelector(`#st-v-${tipo}`), x = al[tipo];
-    const chiave = `${x.m}|${x.a}|${x.n}|${x.timer}|${x.domande ? 1 : 0}|${x.consegnata}`;
+    const chiave = `${x.m}|${x.a}|${x.n}|${x.timer}|${x.domande ? 1 : 0}|${x.consegnata}|${x.finta ? 1 : 0}`;
     if (x.chiave === chiave && box.innerHTML) return; // niente da rifare: le risposte date restano
     x.chiave = chiave;
     const titolo = tipo === 'esercitazioni' ? 'Esercitazioni' : 'Verifiche';
-    const testa = `${briciole([[titolo]])}<h1>${titolo}</h1>${selettori(tipo)}`;
+    // la verifica "in corso" della pagina finta: niente selettori, sembra un compito assegnato dal professore
+    const finta = tipo === 'verifiche' && x.finta && x.domande && !x.consegnata;
+    const testa = finta
+      ? `${briciole([[titolo]])}<h1>Verifica di ${materia(x.m).nome}</h1><p class="st-intro">${materia(x.m).prof} · ${x.n} domande · le risposte si salvano da sole; alla fine del tempo la verifica viene consegnata automaticamente.</p>`
+      : `${briciole([[titolo]])}<h1>${titolo}</h1>${selettori(tipo)}`;
     if (!x.m) { box.innerHTML = `${testa}<p class="st-intro">Scegli la materia:</p><div class="st-schede">${materie().map((m) => `<button type="button" class="st-scheda st-scegli" data-scegli-m="${m.id}"><h2>${m.nome}</h2><small>${m.argomenti.length} argomenti</small></button>`).join('')}</div>`; return; }
     if (tipo === 'esercitazioni') {
       x.domande = pesca(tipo);
@@ -462,7 +466,7 @@ nav a {
   function consegna() {
     const x = al.verifiche, box = root.querySelector('#st-v-verifiche');
     if (!x.domande || x.consegnata) return;
-    x.consegnata = true; x.chiave = `${x.m}|${x.a}|${x.n}|${x.timer}|1|true`; // la pagina resta com'è, si aggiunge il risultato
+    x.consegnata = true; x.chiave = `${x.m}|${x.a}|${x.n}|${x.timer}|1|true|${x.finta ? 1 : 0}`; // la pagina resta com'è, si aggiunge il risultato
     let giuste = 0; const errori = [];
     box.querySelectorAll('.st-domanda').forEach((div) => {
       const q = x.domande[Number(div.dataset.k)], ok = corretta(q, leggi(div, q));
@@ -504,7 +508,7 @@ nav a {
       if (b('[data-giro]')) { al.esercitazioni.chiave = null; allenamento('esercitazioni'); root.querySelector('#st-v-esercitazioni').scrollIntoView(); return; }
       if (b('[data-inizia]')) { const v = al.verifiche; v.domande = pesca('verifiche'); v.consegnata = false; v.fine = v.timer ? Date.now() + 20 * 60000 : null; return allenamento('verifiche'); }
       if (b('[data-consegna]')) return consegna();
-      if (b('[data-annulla]') || b('[data-nuova]')) { const v = al.verifiche; v.domande = null; v.consegnata = false; v.fine = null; return allenamento('verifiche'); }
+      if (b('[data-annulla]') || b('[data-nuova]')) { const v = al.verifiche; v.domande = null; v.consegnata = false; v.fine = null; v.finta = false; return allenamento('verifiche'); }
       if (b('.st-chiudi-notifica')) { root.querySelector('.st-notifica').hidden = true; return; }
       if (b('.st-campana')) { root.querySelector('.st-notifica').hidden = false; root.querySelector('.st-badge').hidden = true; return; }
     });
@@ -518,7 +522,7 @@ nav a {
       else if (k === 'a') x.a = s.value;
       else if (k === 'n') x.n = Number(s.value);
       else if (k === 'timer') x.timer = s.checked;
-      if (tipo === 'verifiche') { x.domande = null; x.consegnata = false; x.fine = null; }
+      if (tipo === 'verifiche') { x.domande = null; x.consegnata = false; x.fine = null; x.finta = false; }
       allenamento(tipo);
     });
     // ricerca: va al primo argomento il cui titolo contiene il testo
@@ -532,7 +536,7 @@ nav a {
     // il timer della verifica: allo scadere si consegna da sola
     setInterval(() => {
       const v = al.verifiche; if (!v.fine || v.consegnata || !root) return;
-      const t = root.querySelector('[data-timer]'); if (t) t.textContent = `⏱ ${fmtTempo(v.fine - Date.now())}`;
+      const t = root.querySelector('[data-timer]'); if (t) { t.textContent = `⏱ ${fmtTempo(v.fine - Date.now())}`; t.classList.toggle('st-timer-poco', v.fine - Date.now() < 5 * 60000); }
       if (Date.now() >= v.fine) consegna();
     }, 1000);
   }
@@ -540,7 +544,19 @@ nav a {
   function query() { return ''; }
 
   let notificata = false;
-  function mostrata() {
+  function mostrata(_el, opz = {}) {
+    // pagina finta "verifica in corso": si apre su una verifica già cominciata, con il tempo che scorre (la stessa
+    // a ogni apertura finché non scade o la si consegna)
+    if (opz.verifica && root) {
+      const v = al.verifiche;
+      if (!v.domande || v.consegnata || (v.fine && Date.now() >= v.fine)) {
+        v.m = v.m || 'sistemi'; v.a = 'tutti'; v.n = 20; v.timer = true; v.consegnata = false; v.chiave = null; v.finta = true;
+        v.domande = pesca('verifiche');
+        v.fine = Date.now() + (32 + Math.floor(Math.random() * 20)) * 60000; // sembra iniziata da un po'
+      }
+      st.m = v.m;
+      return vai('verifiche');
+    }
     // a ogni apertura si riapre l'ultimo capitolo visitato (mai un indice)
     if (st.capitolo && root) vai('argomento', st.capitolo.m, st.capitolo.a);
     if (notificata) return;

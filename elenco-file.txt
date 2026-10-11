@@ -134,9 +134,11 @@ giochi2/tressette.js
 guardia.js
 package-lock.json
 package.json
+public/boss-pagine.css
 public/boss.css
 public/index.html
 public/js/app.js
+public/js/boss-classe.js
 public/js/boss-contenuti/esercizi-informatica.js
 public/js/boss-contenuti/esercizi-inglese.js
 public/js/boss-contenuti/esercizi-sistemi.js
@@ -146,6 +148,7 @@ public/js/boss-contenuti/inglese.js
 public/js/boss-contenuti/sistemi.js
 public/js/boss-contenuti/tpsit.js
 public/js/boss-pagina.js
+public/js/boss-registro.js
 public/js/boss.js
 public/js/carte.js
 public/js/esecuzione.js

@@ -126,6 +126,10 @@
   $('#studio-secondi').value = cfgStudio.secondi;
   $('#studio-grigia').addEventListener('change', (e) => Boss.config({ grigia: e.target.checked }));
   $('#studio-secondi').addEventListener('change', (e) => { e.target.value = Boss.config({ secondi: e.target.value }).secondi; });
+  $('#studio-pagina').value = cfgStudio.pagina || 'dispense';
+  $('#studio-gesto').value = cfgStudio.gesto || 'entrambi';
+  $('#studio-pagina').addEventListener('change', (e) => Boss.config({ pagina: e.target.value }));
+  $('#studio-gesto').addEventListener('change', (e) => Boss.config({ gesto: e.target.value }));
 
   // =================== INGRESSO ===================
   const daUrl = new URLSearchParams(location.search).get('tavolo');
