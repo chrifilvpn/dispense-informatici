@@ -7,7 +7,7 @@ const { Arena } = require('../giochi/arena');
 
 const VISTA = 1000; // lo schermo (in unità del browser): il mouse dice la direzione rispetto al centro
 const PASSO = 10; // distanza tra i punti del corpo
-const L_INIZIO = 150, L_MIN_TURBO = 190, V = 185, V_TURBO = 360, COSTO_TURBO = 22, GIRO = 4.2;
+const L_INIZIO = 150, L_MIN_TURBO = 80, V = 185, V_TURBO = 360, COSTO_TURBO = 22, GIRO = 4.2;
 const RINASCITA = 3, CELLA = 90;
 const NOMI = ['Biscia', 'Vipera', 'Cobra', 'Boa', 'Pitone', 'Anaconda', 'Mamba', 'Saettone', 'Colubro', 'Aspide', 'Natrice', 'Crotalo', 'Taipan', 'Bongaro', 'Serpentello', 'Ramarro'];
 const COL_EXTRA = ['#f28c28', '#3cb4e6', '#a3d14b', '#d14bb4', '#e6d23c', '#4be6b4', '#b47cf0', '#f05a5a', '#5a8cf0', '#8cf05a', '#f0b45a', '#5af0f0', '#f05ab4', '#c8c8c8', '#9a6b3c', '#3c9a6b'];

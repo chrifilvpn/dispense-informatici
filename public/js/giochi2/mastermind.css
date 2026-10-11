@@ -1,62 +1,62 @@
 /* CODICE SEGRETO */
-.cs { display: flex; gap: 1rem; align-items: flex-start; justify-content: center; width: 100%; flex-wrap: wrap; padding: .2rem 0 .6rem; }
-.cs-centro { display: grid; justify-items: center; gap: .5rem; width: min(100%, 25rem); }
-.cs-info, .cs-legenda { margin: 0; color: var(--tenue); font-size: .88rem; text-align: center; }
-.cs-legenda i { display: inline-block; width: .7rem; height: .7rem; border-radius: 50%; vertical-align: -1px; }
-.cs-legenda i.nero, .cs-risp i.nero { background: radial-gradient(circle at 35% 30%, #666, #0d0d0d 70%); box-shadow: 0 0 0 1px rgba(255, 255, 255, .55); }
-.cs-legenda i.bianco, .cs-risp i.bianco { background: radial-gradient(circle at 35% 30%, #fff, #d9d5c8 70%); box-shadow: 0 0 0 1px rgba(0, 0, 0, .35); }
-.cs-esito { margin: 0; font: 400 1.15rem var(--serif); text-align: center; }
-.cs-esito small { display: block; font: .85rem var(--sans); color: var(--tenue); }
-.cs-esito.si { color: #8ff0a4; }
+.mmd { display: flex; gap: 1rem; align-items: flex-start; justify-content: center; width: 100%; flex-wrap: wrap; padding: .2rem 0 .6rem; }
+.mmd-centro { display: grid; justify-items: center; gap: .5rem; width: min(100%, 25rem); }
+.mmd-info, .mmd-legenda { margin: 0; color: var(--tenue); font-size: .88rem; text-align: center; }
+.mmd-legenda i { display: inline-block; width: .7rem; height: .7rem; border-radius: 50%; vertical-align: -1px; }
+.mmd-legenda i.nero, .mmd-risp i.nero { background: radial-gradient(circle at 35% 30%, #666, #0d0d0d 70%); box-shadow: 0 0 0 1px rgba(255, 255, 255, .55); }
+.mmd-legenda i.bianco, .mmd-risp i.bianco { background: radial-gradient(circle at 35% 30%, #fff, #d9d5c8 70%); box-shadow: 0 0 0 1px rgba(0, 0, 0, .35); }
+.mmd-esito { margin: 0; font: 400 1.15rem var(--serif); text-align: center; }
+.mmd-esito small { display: block; font: .85rem var(--sans); color: var(--tenue); }
+.mmd-esito.si { color: #8ff0a4; }
 /* la plancia di legno */
-.cs-plancia { --buco: clamp(1.15rem, min(7.4vw, calc((100vh - 25rem) / 10 - 7px)), 2.05rem); width: 100%; padding: .55rem .5rem; border-radius: 14px; background: linear-gradient(90deg, rgba(0, 0, 0, .1), transparent 20%, transparent 80%, rgba(0, 0, 0, .1)), repeating-linear-gradient(0deg, rgba(255, 255, 255, .03) 0 3px, transparent 3px 9px), linear-gradient(180deg, #8a5a30, #6a4222);
+.mmd-plancia { --buco: clamp(1.15rem, min(7.4vw, calc((100vh - 25rem) / 10 - 7px)), 2.05rem); width: 100%; padding: .55rem .5rem; border-radius: 14px; background: linear-gradient(90deg, rgba(0, 0, 0, .1), transparent 20%, transparent 80%, rgba(0, 0, 0, .1)), repeating-linear-gradient(0deg, rgba(255, 255, 255, .03) 0 3px, transparent 3px 9px), linear-gradient(180deg, #8a5a30, #6a4222);
   box-shadow: inset 0 0 0 3px #a87344, 0 10px 24px rgba(0, 0, 0, .45); }
-.cs-righe { display: grid; gap: 3px; }
-.cs-riga { display: grid; grid-template-columns: 1.4rem 1fr auto; align-items: center; gap: .45rem; padding: 2px 6px; border-radius: 9px; }
-.cs-riga.corrente { background: rgba(255, 230, 160, .18); box-shadow: inset 0 0 0 2px rgba(255, 220, 140, .55); }
-.cs-riga.scossa { animation: cs-scossa .4s ease-in-out; }
-@keyframes cs-scossa { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
-.cs-num { color: rgba(255, 236, 200, .55); font-size: .75rem; text-align: right; font-variant-numeric: tabular-nums; }
-.cs-buchi { display: flex; gap: clamp(4px, 1.6vw, 9px); justify-content: center; }
-.cs-buco { width: var(--buco); height: var(--buco); border-radius: 50%; background: radial-gradient(circle at 50% 60%, #2e1a0b, #4a2c14 70%); box-shadow: inset 0 2px 4px rgba(0, 0, 0, .6); border: 0; padding: 0; display: grid; place-items: center; }
-.cs-buco.attivo { box-shadow: inset 0 2px 4px rgba(0, 0, 0, .6), 0 0 0 2px rgba(255, 224, 150, .35); }
-button.cs-buco { cursor: pointer; background: none; box-shadow: none; }
-.cs-piolo { display: block; width: var(--buco); height: var(--buco); border-radius: 50%; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c) 45%, #fff), var(--c) 55%, color-mix(in srgb, var(--c) 70%, #000));
+.mmd-righe { display: grid; gap: 3px; }
+.mmd-riga { display: grid; grid-template-columns: 1.4rem 1fr auto; align-items: center; gap: .45rem; padding: 2px 6px; border-radius: 9px; }
+.mmd-riga.corrente { background: rgba(255, 230, 160, .18); box-shadow: inset 0 0 0 2px rgba(255, 220, 140, .55); }
+.mmd-riga.scossa { animation: mmd-scossa .4s ease-in-out; }
+@keyframes mmd-scossa { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+.mmd-num { color: rgba(255, 236, 200, .55); font-size: .75rem; text-align: right; font-variant-numeric: tabular-nums; }
+.mmd-buchi { display: flex; gap: clamp(4px, 1.6vw, 9px); justify-content: center; }
+.mmd-buco { width: var(--buco); height: var(--buco); border-radius: 50%; background: radial-gradient(circle at 50% 60%, #2e1a0b, #4a2c14 70%); box-shadow: inset 0 2px 4px rgba(0, 0, 0, .6); border: 0; padding: 0; display: grid; place-items: center; }
+.mmd-buco.attivo { box-shadow: inset 0 2px 4px rgba(0, 0, 0, .6), 0 0 0 2px rgba(255, 224, 150, .35); }
+button.mmd-buco { cursor: pointer; background: none; box-shadow: none; }
+.mmd-piolo { display: block; width: var(--buco); height: var(--buco); border-radius: 50%; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c) 45%, #fff), var(--c) 55%, color-mix(in srgb, var(--c) 70%, #000));
   box-shadow: 0 2px 3px rgba(0, 0, 0, .55); }
-.cs-piolo.messo { animation: cs-metti .18s ease-out; }
-@keyframes cs-metti { from { transform: scale(1.35); } }
-.cs-riga.nuova .cs-piolo { animation: none; }
+.mmd-piolo.messo { animation: mmd-metti .18s ease-out; }
+@keyframes mmd-metti { from { transform: scale(1.35); } }
+.mmd-riga.nuova .mmd-piolo { animation: none; }
 /* la risposta: piolini in due file */
-.cs-risp { display: grid; grid-template-columns: repeat(2, .62rem); gap: 3px; padding: 3px; border-radius: 6px; background: rgba(0, 0, 0, .18); }
-.cs-risp.n5 { grid-template-columns: repeat(3, .62rem); }
-.cs-risp i { width: .62rem; height: .62rem; border-radius: 50%; background: #3b2210; box-shadow: inset 0 1px 2px rgba(0, 0, 0, .6); }
-.cs-riga.nuova .cs-risp i.nero, .cs-riga.nuova .cs-risp i.bianco { animation: cs-pin .3s ease-out both; animation-delay: calc(var(--t, 0ms) + var(--k) * 110ms); }
-@keyframes cs-pin { from { transform: scale(0); } 70% { transform: scale(1.4); } to { transform: none; } }
-.cs-segreto { margin: 0 0 .5rem; padding: .35rem; border-radius: 10px; background: rgba(0, 0, 0, .3); display: grid; place-items: center; min-height: calc(var(--buco) + .7rem); }
-.cs-sportello { font-size: .85rem; color: #f3d7a8; letter-spacing: .06em; text-transform: uppercase; }
-.cs-segreto.aperto { animation: cs-svela .6s ease-out both; animation-delay: var(--t, 0ms); background: rgba(255, 220, 140, .2); }
-@keyframes cs-svela { from { transform: rotateX(90deg); } to { transform: none; } }
+.mmd-risp { display: grid; grid-template-columns: repeat(2, .62rem); gap: 3px; padding: 3px; border-radius: 6px; background: rgba(0, 0, 0, .18); }
+.mmd-risp.n5 { grid-template-columns: repeat(3, .62rem); }
+.mmd-risp i { width: .62rem; height: .62rem; border-radius: 50%; background: #3b2210; box-shadow: inset 0 1px 2px rgba(0, 0, 0, .6); }
+.mmd-riga.nuova .mmd-risp i.nero, .mmd-riga.nuova .mmd-risp i.bianco { animation: mmd-pin .3s ease-out both; animation-delay: calc(var(--t, 0ms) + var(--k) * 110ms); }
+@keyframes mmd-pin { from { transform: scale(0); } 70% { transform: scale(1.4); } to { transform: none; } }
+.mmd-segreto { margin: 0 0 .5rem; padding: .35rem; border-radius: 10px; background: rgba(0, 0, 0, .3); display: grid; place-items: center; min-height: calc(var(--buco) + .7rem); }
+.mmd-sportello { font-size: .85rem; color: #f3d7a8; letter-spacing: .06em; text-transform: uppercase; }
+.mmd-segreto.aperto { animation: mmd-svela .6s ease-out both; animation-delay: var(--t, 0ms); background: rgba(255, 220, 140, .2); }
+@keyframes mmd-svela { from { transform: rotateX(90deg); } to { transform: none; } }
 /* i colori da scegliere */
-.cs-comandi { display: grid; gap: .45rem; width: 100%; }
-.cs-tavolozza { display: grid; grid-template-columns: repeat(6, 1fr); gap: .4rem; }
-.cs-tavolozza.c8 { grid-template-columns: repeat(8, 1fr); }
-.cs-colore { aspect-ratio: 1; max-height: min(3.2rem, 12vw); border-radius: 50%; border: 0; padding: 0; cursor: pointer; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c) 45%, #fff), var(--c) 55%, color-mix(in srgb, var(--c) 70%, #000));
+.mmd-comandi { display: grid; gap: .45rem; width: 100%; }
+.mmd-tavolozza { display: grid; grid-template-columns: repeat(6, 1fr); gap: .4rem; }
+.mmd-tavolozza.c8 { grid-template-columns: repeat(8, 1fr); }
+.mmd-colore { aspect-ratio: 1; max-height: min(3.2rem, 12vw); border-radius: 50%; border: 0; padding: 0; cursor: pointer; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c) 45%, #fff), var(--c) 55%, color-mix(in srgb, var(--c) 70%, #000));
   box-shadow: 0 3px 5px rgba(0, 0, 0, .45); display: grid; place-items: center; justify-self: center; width: 100%; max-width: 3.2rem; }
-.cs-colore span { font-size: .7rem; font-weight: 700; color: rgba(0, 0, 0, .55); background: rgba(255, 255, 255, .55); border-radius: 50%; width: 1.1rem; height: 1.1rem; display: grid; place-items: center; }
-.cs-colore:hover:not(:disabled) { transform: translateY(-2px); }
-.cs-colore:disabled { opacity: .3; }
-.cs-tasti { display: grid; grid-template-columns: auto 1fr; gap: .45rem; }
-.cs-prova { font-size: 1.05rem; }
+.mmd-colore span { font-size: .7rem; font-weight: 700; color: rgba(0, 0, 0, .55); background: rgba(255, 255, 255, .55); border-radius: 50%; width: 1.1rem; height: 1.1rem; display: grid; place-items: center; }
+.mmd-colore:hover:not(:disabled) { transform: translateY(-2px); }
+.mmd-colore:disabled { opacity: .3; }
+.mmd-tasti { display: grid; grid-template-columns: auto 1fr; gap: .45rem; }
+.mmd-prova { font-size: 1.05rem; }
 /* gli altri giocatori della sfida */
-.cs-altri { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; max-width: 25rem; }
-.cs-altro { padding: .45rem .6rem; border-radius: 10px; background: rgba(0, 0, 0, .25); min-width: 8rem; display: grid; gap: 3px; }
-.cs-altro.vinto { background: rgba(46, 157, 87, .3); }
-.cs-altro p { margin: 0 0 .2rem; display: flex; justify-content: space-between; gap: .5rem; font-size: .85rem; }
-.cs-altro p b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 6.5rem; }
-.cs-altro small { color: var(--tenue); font-size: .75rem; }
-.cs-mini { display: flex; align-items: center; gap: 3px; justify-content: flex-end; }
-.cs-mini b { width: .6rem; height: .6rem; border-radius: 50%; background: var(--c); }
-.cs-mini .cs-risp { grid-template-columns: repeat(5, .45rem); gap: 2px; padding: 2px; }
-.cs-mini .cs-risp i { width: .45rem; height: .45rem; }
-@media (min-width: 900px) { .cs-altri { flex-direction: column; } }
-@media (prefers-reduced-motion: reduce) { .cs-riga.nuova .cs-risp i, .cs-segreto.aperto, .cs-piolo.messo { animation: none; } }
+.mmd-altri { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; max-width: 25rem; }
+.mmd-altro { padding: .45rem .6rem; border-radius: 10px; background: rgba(0, 0, 0, .25); min-width: 8rem; display: grid; gap: 3px; }
+.mmd-altro.vinto { background: rgba(46, 157, 87, .3); }
+.mmd-altro p { margin: 0 0 .2rem; display: flex; justify-content: space-between; gap: .5rem; font-size: .85rem; }
+.mmd-altro p b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 6.5rem; }
+.mmd-altro small { color: var(--tenue); font-size: .75rem; }
+.mmd-mini { display: flex; align-items: center; gap: 3px; justify-content: flex-end; }
+.mmd-mini b { width: .6rem; height: .6rem; border-radius: 50%; background: var(--c); }
+.mmd-mini .mmd-risp { grid-template-columns: repeat(5, .45rem); gap: 2px; padding: 2px; }
+.mmd-mini .mmd-risp i { width: .45rem; height: .45rem; }
+@media (min-width: 900px) { .mmd-altri { flex-direction: column; } }
+@media (prefers-reduced-motion: reduce) { .mmd-riga.nuova .mmd-risp i, .mmd-segreto.aperto, .mmd-piolo.messo { animation: none; } }

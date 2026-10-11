@@ -8,12 +8,12 @@
   ];
   let ctxC = null;
   const puoGiocare = (p) => p && p.gioco === 'mastermind' && !p.finita && !p.mioFatto;
-  const piolo = (k, extra = '', st = '') => `<span class="cs-piolo ${extra}" style="--c:${COLORI[k].c};${st}" aria-label="${COLORI[k].nome}"></span>`;
+  const piolo = (k, extra = '', st = '') => `<span class="mmd-piolo ${extra}" style="--c:${COLORI[k].c};${st}" aria-label="${COLORI[k].nome}"></span>`;
   // i piolini della risposta: prima i neri, poi i bianchi, poi i buchi vuoti
   function risposta(neri, bianchi, n, st = '') {
     const pin = [];
     for (let k = 0; k < n; k++) pin.push(`<i class="${k < neri ? 'nero' : k < neri + bianchi ? 'bianco' : ''}" style="--k:${k};${st}"></i>`);
-    return `<span class="cs-risp n${n}" aria-label="${neri} neri e ${bianchi} bianchi">${pin.join('')}</span>`;
+    return `<span class="mmd-risp n${n}" aria-label="${neri} neri e ${bianchi} bianchi">${pin.join('')}</span>`;
   }
 
   function scrivi(ctx, k) {
@@ -51,22 +51,22 @@
       const fatta = p.mie[r];
       const corrente = !fatta && r === p.mie.length && puoGiocare(p);
       const nuova = fatta && r === p.mie.length - 1;
-      const st = nuova ? ritardo(ui, `cs-r-${p.mie.length}-${p.inizio}`) : '';
+      const st = nuova ? ritardo(ui, `mmd-r-${p.mie.length}-${p.inizio}`) : '';
       let buchi = '';
       for (let i = 0; i < p.pioli; i++) {
         if (fatta) buchi += piolo(fatta.codice[i], '');
-        else if (corrente && codice[i] != null) buchi += `<button type="button" class="cs-buco pieno" data-az="togli" data-i="${i}" aria-label="Togli il piolo ${i + 1}">${piolo(codice[i], ui.messo && ui.messo.i === i && Date.now() - ui.messo.t < 250 ? 'messo' : '')}</button>`;
-        else buchi += `<span class="cs-buco ${corrente ? 'attivo' : ''}"></span>`;
+        else if (corrente && codice[i] != null) buchi += `<button type="button" class="mmd-buco pieno" data-az="togli" data-i="${i}" aria-label="Togli il piolo ${i + 1}">${piolo(codice[i], ui.messo && ui.messo.i === i && Date.now() - ui.messo.t < 250 ? 'messo' : '')}</button>`;
+        else buchi += `<span class="mmd-buco ${corrente ? 'attivo' : ''}"></span>`;
       }
       const scossa = corrente && ui.scossa && Date.now() - ui.scossa < 500 ? 'scossa' : '';
-      righe.push(`<div class="cs-riga ${fatta ? 'fatta' : ''} ${corrente ? 'corrente' : ''} ${nuova ? 'nuova' : ''} ${scossa}" style="--n:${p.pioli}">
-        <span class="cs-num">${r + 1}</span><span class="cs-buchi">${buchi}</span>${fatta ? risposta(fatta.neri, fatta.bianchi, p.pioli, st) : risposta(0, 0, p.pioli)}</div>`);
+      righe.push(`<div class="mmd-riga ${fatta ? 'fatta' : ''} ${corrente ? 'corrente' : ''} ${nuova ? 'nuova' : ''} ${scossa}" style="--n:${p.pioli}">
+        <span class="mmd-num">${r + 1}</span><span class="mmd-buchi">${buchi}</span>${fatta ? risposta(fatta.neri, fatta.bianchi, p.pioli, st) : risposta(0, 0, p.pioli)}</div>`);
     }
     // il codice segreto: coperto da uno sportello finché non si svela
     const segreto = p.segreto
-      ? `<div class="cs-segreto aperto" style="${ritardo(ui, 'cs-svela')}"><span class="cs-buchi">${p.segreto.map((k) => piolo(k)).join('')}</span></div>`
-      : `<div class="cs-segreto"><span class="cs-sportello">🔒 codice segreto</span></div>`;
-    return `<div class="cs-plancia" style="--n:${p.pioli}">${segreto}<div class="cs-righe">${righe.reverse().join('')}</div></div>`;
+      ? `<div class="mmd-segreto aperto" style="${ritardo(ui, 'mmd-svela')}"><span class="mmd-buchi">${p.segreto.map((k) => piolo(k)).join('')}</span></div>`
+      : `<div class="mmd-segreto"><span class="mmd-sportello">🔒 codice segreto</span></div>`;
+    return `<div class="mmd-plancia" style="--n:${p.pioli}">${segreto}<div class="mmd-righe">${righe.reverse().join('')}</div></div>`;
   }
 
   function tavolozza(ctx) {
@@ -74,19 +74,19 @@
     if (!puoGiocare(p)) return '';
     const usati = new Set((ui.codice || []).filter((x) => x != null));
     const pieno = (ui.codice || []).slice(0, p.pioli).filter((x) => x != null).length === p.pioli;
-    const colori = COLORI.slice(0, p.colori).map((x, k) => `<button type="button" class="cs-colore" data-az="colore" data-k="${k}" style="--c:${x.c}" aria-label="${x.nome}" ${(!p.ripetuti && usati.has(k)) || pieno ? 'disabled' : ''}><span>${k + 1}</span></button>`).join('');
-    return `<div class="cs-comandi"><div class="cs-tavolozza c${p.colori}">${colori}</div>
-      <div class="cs-tasti"><button type="button" class="bottone" data-az="canc" aria-label="Togli l'ultimo piolo">⌫</button><button type="button" class="bottone primario-bt cs-prova" data-az="prova" ${pieno ? '' : 'disabled'}>Prova ✓</button></div></div>`;
+    const colori = COLORI.slice(0, p.colori).map((x, k) => `<button type="button" class="mmd-colore" data-az="colore" data-k="${k}" style="--c:${x.c}" aria-label="${x.nome}" ${(!p.ripetuti && usati.has(k)) || pieno ? 'disabled' : ''}><span>${k + 1}</span></button>`).join('');
+    return `<div class="mmd-comandi"><div class="mmd-tavolozza c${p.colori}">${colori}</div>
+      <div class="mmd-tasti"><button type="button" class="bottone" data-az="canc" aria-label="Togli l'ultimo piolo">⌫</button><button type="button" class="bottone primario-bt mmd-prova" data-az="prova" ${pieno ? '' : 'disabled'}>Prova ✓</button></div></div>`;
   }
 
   function avversari(ctx) {
     const p = ctx.partita;
     if (p.n < 2) return '';
-    return `<aside class="cs-altri" aria-label="Gli altri giocatori">${p.altri.map((a, i) => {
+    return `<aside class="mmd-altri" aria-label="Gli altri giocatori">${p.altri.map((a, i) => {
       if (i === ctx.mio) return '';
       const stato = a.fatto ? (a.fatto.vinto ? `✅ in ${a.fatto.tentativi}` : a.fatto.ritirato ? 'ritirato' : '❌') : `${a.tentativi}/${p.tentativi}`;
-      const righe = a.righe.map((x) => `<div class="cs-mini">${x.codice ? x.codice.map((k) => `<b style="--c:${COLORI[k].c}"></b>`).join('') : ''}${risposta(x.neri, x.bianchi, p.pioli)}</div>`).join('');
-      return `<div class="cs-altro ${a.fatto && a.fatto.vinto ? 'vinto' : ''}"><p><b>${esc(ctx.nome(i))}</b><span>${stato}</span></p>${righe || '<small>nessun tentativo</small>'}</div>`;
+      const righe = a.righe.map((x) => `<div class="mmd-mini">${x.codice ? x.codice.map((k) => `<b style="--c:${COLORI[k].c}"></b>`).join('') : ''}${risposta(x.neri, x.bianchi, p.pioli)}</div>`).join('');
+      return `<div class="mmd-altro ${a.fatto && a.fatto.vinto ? 'vinto' : ''}"><p><b>${esc(ctx.nome(i))}</b><span>${stato}</span></p>${righe || '<small>nessun tentativo</small>'}</div>`;
     }).join('')}</aside>`;
   }
 
@@ -104,15 +104,15 @@
       let testa;
       if (p.mioFatto || p.finita) {
         const f = p.mioFatto;
-        testa = `<p class="cs-esito ${f && f.vinto ? 'si' : 'no'}">${f && f.vinto ? `Codice trovato in ${f.tentativi} ${f.tentativi === 1 ? 'tentativo' : 'tentativi'}! 🎉` : f && f.ritirato ? 'Ti sei ritirato' : 'Tentativi finiti: ecco il codice'}${!p.finita ? '<small>Aspetta che finiscano gli altri.</small>' : ''}</p>`;
-      } else testa = `<p class="cs-info">${p.pioli} pioli · ${p.colori} colori${p.ripetuti ? ' (anche ripetuti)' : ', tutti diversi'} · tentativo ${p.mie.length + 1} di ${p.tentativi}${p.n > 1 ? ' · stesso codice per tutti' : ''}</p>`;
-      const legenda = '<p class="cs-legenda"><i class="nero"></i> colore e posto giusti · <i class="bianco"></i> colore giusto, posto sbagliato</p>';
-      return `<div class="cs"><div class="cs-centro">${testa}${plancia(ctx)}${tavolozza(ctx)}${legenda}</div>${avversari(ctx)}</div>`;
+        testa = `<p class="mmd-esito ${f && f.vinto ? 'si' : 'no'}">${f && f.vinto ? `Codice trovato in ${f.tentativi} ${f.tentativi === 1 ? 'tentativo' : 'tentativi'}! 🎉` : f && f.ritirato ? 'Ti sei ritirato' : 'Tentativi finiti: ecco il codice'}${!p.finita ? '<small>Aspetta che finiscano gli altri.</small>' : ''}</p>`;
+      } else testa = `<p class="mmd-info">${p.pioli} pioli · ${p.colori} colori${p.ripetuti ? ' (anche ripetuti)' : ', tutti diversi'} · tentativo ${p.mie.length + 1} di ${p.tentativi}${p.n > 1 ? ' · stesso codice per tutti' : ''}</p>`;
+      const legenda = '<p class="mmd-legenda"><i class="nero"></i> colore e posto giusti · <i class="bianco"></i> colore giusto, posto sbagliato</p>';
+      return `<div class="mmd"><div class="mmd-centro">${testa}${plancia(ctx)}${tavolozza(ctx)}${legenda}</div>${avversari(ctx)}</div>`;
     },
     dopo(ctx) {
       const p = ctx.partita, ui = ctx.ui;
       const ultima = p.mie[p.mie.length - 1];
-      if (ultima && primaVolta(ui, `cs-s-${p.inizio}-${p.mie.length}`)) {
+      if (ultima && primaVolta(ui, `mmd-s-${p.inizio}-${p.mie.length}`)) {
         if (ultima.neri === p.pioli) suono([[523, 0.1], [659, 0.1], [784, 0.1], [1046, 0.3]], { volume: 0.08 });
         else suono(Array.from({ length: ultima.neri + ultima.bianchi }, (_, k) => [k < ultima.neri ? 880 : 660, 0.05]).concat([[200, 0.02]]), { tipo: 'sine', volume: 0.05 });
       }

@@ -24,11 +24,12 @@ window.Arena = (() => {
   function tavolo(cfg) {
     let ctxA = null, tela = null, ultimo = null, prima = null, arrivo = 0, passoMs = 33;
     let scorta = [], scarti = [], scarto = null, intervallo = 50; // aggiornamenti con l'ora del server, differenza tra gli orologi
-    let pred = null, lontano = 0, ultimoFotogramma = 0;
+    let pred = null, lontano = 0, ultimoFotogramma = 0, erroreVisto = false;
     const tasti = new Set();
     const inp = { x: 0, y: 0, a: false, t: 0, mx: null, my: null };
     let inviato = '', ultimoInvio = 0, attesaInvio = null;
     const joy = { id: null, x0: 0, y0: 0, x: 0, y: 0 };
+    let azioneId = null; // il dito che tiene premuto il pulsante dell'azione
     const attiva = () => ctxA && ctxA.stato && ctxA.partita && ctxA.partita.gioco === cfg.id && !ctxA.partita.finita;
 
     function aggiornaDaTasti() {
@@ -110,7 +111,7 @@ window.Arena = (() => {
     document.addEventListener('pointerdown', (e) => {
       if (!attiva()) return;
       const b = e.target.closest && e.target.closest('[data-ar="azione"]');
-      if (b) { e.preventDefault(); premi(); return; }
+      if (b) { e.preventDefault(); azioneId = e.pointerId; premi(); return; }
       const j = e.target.closest && e.target.closest('[data-ar="joy"]');
       if (j) {
         e.preventDefault();
@@ -136,7 +137,12 @@ window.Arena = (() => {
       if (attiva() && cfg.mouse === 'bersaglio' && e.pointerType === 'touch' && e.target === tela) { [inp.mx, inp.my] = coordMondo(e); invia(); }
     }, { passive: false });
     const lascia = (e) => {
-      if (joy.id !== e.pointerId) { if (e.target && e.target.closest && e.target.closest('[data-ar="azione"]')) { inp.a = false; invia(); } return; }
+      if (joy.id !== e.pointerId) {
+        // il dito che teneva il pulsante (anche se è scivolato fuori) o il mouse lasciato fuori dal campo: azione finita
+        if (inp.a && cfg.mouse !== 'traccia' && (e.pointerId === azioneId || e.pointerType === 'mouse' || (e.target && e.target.closest && e.target.closest('[data-ar="azione"]')))) { inp.a = false; invia(true); }
+        if (e.pointerId === azioneId) azioneId = null;
+        return;
+      }
       joy.id = null; inp.x = inp.y = 0; const pomo = joy.el && joy.el.querySelector('i'); if (pomo) pomo.style.transform = ''; invia(true);
     };
     document.addEventListener('pointerup', lascia);
@@ -180,10 +186,15 @@ window.Arena = (() => {
         }
       }
       if (window.__arenaTraccia) window.__arenaTraccia(dopo, primaD, u, pred); // solo per le prove automatiche
-      try { cfg.disegna(g, p, dopo, primaD, u, ctxA); } catch (err) { /* un fotogramma perso non ferma il gioco */ }
+      try { cfg.disegna(g, p, dopo, primaD, u, ctxA); } catch (err) { if (!erroreVisto) { erroreVisto = true; console.error(`[${cfg.id}] errore nel disegno`, err); } } // un fotogramma perso non ferma il gioco
       // scritte sopra: conto alla rovescia, pausa, fine round
       let scritta = '', sotto = '';
-      if (ultimo.pausa) scritta = '⏸ In pausa';
+      if (ultimo.pausa) {
+        scritta = '⏸ In pausa';
+        const gg = (ctxA.stato && ctxA.stato.giocatori) || [];
+        const via = gg.map((x, i) => (x && x.nascosto && i !== ctxA.mio ? ctxA.nome(i) : null)).filter(Boolean);
+        sotto = via.length ? `${via.join(', ')} ${via.length > 1 ? 'sono' : 'è'} sulle dispense: si riparte appena ${via.length > 1 ? 'tornano' : 'torna'} (al massimo 45 s)` : 'Si riparte tra un attimo';
+      }
       else if (ultimo.fase === 'via') { scritta = String(Math.max(1, Math.ceil(ultimo.via / 1000))); sotto = `Round ${ultimo.round} di ${p.nRound}${cfg.ruolo ? ` · ${cfg.ruolo(p, ultimo, ctxA)}` : ''}`; }
       else if (ultimo.fase === 'pausaRound') { scritta = 'Fine round'; sotto = cfg.fineRound ? cfg.fineRound(p, ultimo, ctxA) : ''; }
       if (scritta) {
@@ -223,7 +234,10 @@ window.Arena = (() => {
       reset(ctx) {
         ctxA = ctx;
         if (!tela) preparaTela();
-        if (!ultimo || ultimo.round !== ctx.partita.stato.round || ultimo.fase !== ctx.partita.stato.fase) { prima = null; ultimo = ctx.partita.stato; arrivo = performance.now(); inScorta(ultimo); }
+        // anche quando la partita va in pausa o riparte: durante la pausa il server non manda più i tick, quindi
+        // senza questo restava sullo schermo l'ultimo numero del conto alla rovescia (sembrava bloccata sull'1)
+        const st = ctx.partita.stato;
+        if (!ultimo || ultimo.round !== st.round || ultimo.fase !== st.fase || !!ultimo.pausa !== !!st.pausa) { prima = null; ultimo = ctx.partita.stato; arrivo = performance.now(); inScorta(ultimo); }
       },
       tick(ctx, d) {
         ctxA = ctx;

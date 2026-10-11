@@ -126,13 +126,13 @@
     e.preventDefault();
     if (b.dataset.cs === 'dito') { dito = { id: e.pointerId, x0: e.clientX }; try { b.setPointerCapture(e.pointerId); } catch { /* niente */ } return; }
     if (b.dataset.cs === 'ArrowDown' && modo === 'dito') attivaGasDito(false);
-    premuti.set(e.pointerId, b.dataset.cs); tasto(b.dataset.cs, true); b.classList.add('cs-giu');
+    premuti.set(e.pointerId, b.dataset.cs); tasto(b.dataset.cs, true); b.classList.add('cor-giu');
   }, { passive: false });
   document.addEventListener('pointermove', (e) => { if (dito && e.pointerId === dito.id) { e.preventDefault(); sterzaDito(e.clientX - dito.x0); } }, { passive: false });
   const lascia = (e) => {
     if (dito && e.pointerId === dito.id) { sterzaDito(0); dito = null; }
     const k = premuti.get(e.pointerId);
-    if (k) { premuti.delete(e.pointerId); tasto(k, false); document.querySelectorAll(`[data-cs="${k}"]`).forEach((x) => x.classList.remove('cs-giu')); if (k === 'ArrowDown' && modo === 'dito' && ctxC && corre(ctxC)) attivaGasDito(true); }
+    if (k) { premuti.delete(e.pointerId); tasto(k, false); document.querySelectorAll(`[data-cs="${k}"]`).forEach((x) => x.classList.remove('cor-giu')); if (k === 'ArrowDown' && modo === 'dito' && ctxC && corre(ctxC)) attivaGasDito(true); }
   };
   document.addEventListener('pointerup', lascia); document.addEventListener('pointercancel', lascia);
   const corre = (ctx) => ctx && ctx.partita && ctx.partita.gioco === 'corsa' && !ctx.partita.finita;
@@ -153,20 +153,20 @@
     hud: (ctx, s) => {
       const c = s.s.a[ctx.mio], ex = ctx.partita.extra; if (!c || !ex) return '';
       const pos = s.s.cl.indexOf(ctx.mio) + 1;
-      return `<span>🏁 giro ${Math.min(ex.giri, c.g + 1)}/${ex.giri}</span><span>🏅 ${pos}° di ${s.s.a.length}</span><span>⏱️ ${tempo(c.f !== null ? c.f : s.s.cr)}</span><span>${Math.round(c.v / 6)} km/h</span>${s.s.fine !== null ? `<span style="color:#ffb074">fine tra ${s.s.fine} s</span>` : ''}${touch() ? '' : `<button type="button" class="cs-bt cs-hud" data-az="cs-vista">🎥 ${vistaAdesso() === 'tutta' ? 'segui la macchina' : 'tutta la pista'}</button>`}`;
+      return `<span>🏁 giro ${Math.min(ex.giri, c.g + 1)}/${ex.giri}</span><span>🏅 ${pos}° di ${s.s.a.length}</span><span>⏱️ ${tempo(c.f !== null ? c.f : s.s.cr)}</span><span>${Math.round(c.v / 6)} km/h</span>${s.s.fine !== null ? `<span style="color:#ffb074">fine tra ${s.s.fine} s</span>` : ''}${touch() ? '' : `<button type="button" class="cor-bt cor-hud" data-az="cor-vista">🎥 ${vistaAdesso() === 'tutta' ? 'segui la macchina' : 'tutta la pista'}</button>`}`;
     },
     fineRound: (p, s, ctx) => { const pos = s.s.cl.indexOf(ctx.mio) + 1; return `Sei arrivato ${pos}°`; },
     sopra: (ctx) => {
       if (!corre(ctx)) return '';
-      const cam = `<button type="button" class="cs-bt cs-vista" data-az="cs-vista" aria-label="Cambia vista">🎥</button>`;
+      const cam = `<button type="button" class="cor-bt cor-vista" data-az="cor-vista" aria-label="Cambia vista">🎥</button>`;
       if (!touch()) return '';
-      const modoBt = `<button type="button" class="cs-bt cs-modo" data-az="cs-modo" aria-label="Cambia comandi">🕹️ ${modo === 'dito' ? 'dito' : 'pulsanti'}</button>`;
-      if (modo === 'dito') return `<div class="cs-strato">${cam}${modoBt}<div class="cs-dito" data-cs="dito"><span>⟵ trascina il dito per sterzare ⟶</span></div><div class="cs-destra"><button type="button" class="cs-bt cs-grande" data-cs="ArrowDown">🛑</button></div></div>`;
-      return `<div class="cs-strato">${cam}${modoBt}<div class="cs-sinistra"><button type="button" class="cs-bt cs-grande" data-cs="ArrowLeft">◀</button><button type="button" class="cs-bt cs-grande" data-cs="ArrowRight">▶</button></div><div class="cs-destra"><button type="button" class="cs-bt cs-grande" data-cs="ArrowDown">🛑</button><button type="button" class="cs-bt cs-grande cs-gas" data-cs="ArrowUp">⏫</button></div></div>`;
+      const modoBt = `<button type="button" class="cor-bt cor-modo" data-az="cor-modo" aria-label="Cambia comandi">🕹️ ${modo === 'dito' ? 'dito' : 'pulsanti'}</button>`;
+      if (modo === 'dito') return `<div class="cor-strato">${cam}${modoBt}<div class="cor-dito" data-cs="dito"><span>⟵ trascina il dito per sterzare ⟶</span></div><div class="cor-destra"><button type="button" class="cor-bt cor-grande" data-cs="ArrowDown">🛑</button></div></div>`;
+      return `<div class="cor-strato">${cam}${modoBt}<div class="cor-sinistra"><button type="button" class="cor-bt cor-grande" data-cs="ArrowLeft">◀</button><button type="button" class="cor-bt cor-grande" data-cs="ArrowRight">▶</button></div><div class="cor-destra"><button type="button" class="cor-bt cor-grande" data-cs="ArrowDown">🛑</button><button type="button" class="cor-bt cor-grande cor-gas" data-cs="ArrowUp">⏫</button></div></div>`;
     },
     clic(ctx, el) {
-      if (el.dataset.az === 'cs-vista') { vista = vistaAdesso() === 'tutta' ? 'segui' : 'tutta'; mem.set('corsaVista', vista); }
-      if (el.dataset.az === 'cs-modo') {
+      if (el.dataset.az === 'cor-vista') { vista = vistaAdesso() === 'tutta' ? 'segui' : 'tutta'; mem.set('corsaVista', vista); }
+      if (el.dataset.az === 'cor-modo') {
         modo = modo === 'dito' ? 'pulsanti' : 'dito'; mem.set('corsaComandi', modo);
         attivaGasDito(modo === 'dito');
         const so = document.querySelector('.ar-sopra'); if (so) so._html = null;

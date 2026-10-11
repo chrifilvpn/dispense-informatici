@@ -39,8 +39,11 @@ assert.ok(M.meta.regole.some((r) => /facile/.test(r) && /difficile/.test(r)));
   // turbo: più veloce, ma si perde lunghezza e si lascia cibo
   s.L = 500; const x0 = s.x; g.input(0, { a: true }); passa(g, 1);
   assert.ok(s.x - x0 > 300 && s.L < 500 - 15 && g.cibo.size > 0, 'il turbo accelera, consuma lunghezza e lascia la scia');
-  s.L = 160; const x1 = s.x; passa(g, 1); g.input(0, { a: false });
-  assert.ok(s.x - x1 < 200 && s.L === 160, 'troppo corti niente turbo');
+  // il turbo va subito, già con la lunghezza di partenza
+  s.L = L_INIZIO; const xa = s.x; passa(g, 0.5);
+  assert.ok(s.inTurbo && s.x - xa > 150 && s.L < L_INIZIO, 'il turbo funziona anche appena nati');
+  s.L = 70; const x1 = s.x; passa(g, 1); g.input(0, { a: false });
+  assert.ok(s.x - x1 < 200 && s.L === 70, 'troppo corti niente turbo');
   assert.ok(s.p.length <= Math.ceil(s.L / 10) + 2, 'il corpo è lungo quanto deve');
 }
 

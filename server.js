@@ -92,11 +92,21 @@ const creaBot = (s, livello) => ({ id: `bot-${Math.random().toString(36).slice(2
 // giochi senza computer (meta.soloPersone): chi manca salta il turno invece di essere sostituito
 const senzaBot = (s) => !!GIOCHI[s.gioco].meta.soloPersone;
 const umani = (s) => s.posti.filter((g) => g && (!g.bot || g.inSala));
-// Giochi di collaborazione (meta.pausaBoss): se qualcuno è sulla pagina delle dispense, la partita si ferma per tutti.
+// Giochi di collaborazione (meta.pausaBoss): se qualcuno è sulla pagina delle dispense, la partita si ferma per tutti
+// (non chi si è scollegato o è uscito dal tavolo mentre era sulle dispense: altrimenti si restava fermi per sempre).
 // Una partita può decidere da sé (es. Block Blast: in pausa da soli e in collaborazione, non nella sfida).
 const pausaBossDi = (s) => (s.partita && s.partita.pausaBoss !== undefined ? s.partita.pausaBoss : GIOCHI[s.gioco].meta.pausaBoss);
 const inEsecuzione = (s) => !!(s.esecuzioneFino && Date.now() < s.esecuzioneFino);
-const inPausa = (s) => !!(s.partita && !s.partita.finita && (inEsecuzione(s) || (pausaBossDi(s) && umani(s).some((g) => g.nascosto))));
+// Chi resta sulle dispense più di PAUSA_MAX_MS non ferma più gli altri giocatori presenti (se ci sono).
+const PAUSA_MAX_MS = 45000;
+const presente = (g) => g.connesso && !g.uscito;
+function fermaTutti(s) {
+  const nascosti = umani(s).filter((g) => g.nascosto && presente(g));
+  if (!nascosti.length) return false;
+  if (!umani(s).some((g) => !g.nascosto && presente(g))) return true; // tutti sulle dispense
+  return nascosti.some((g) => Date.now() - (g.nascostoDal || 0) < PAUSA_MAX_MS);
+}
+const inPausa = (s) => !!(s.partita && !s.partita.finita && (inEsecuzione(s) || (pausaBossDi(s) && fermaTutti(s))));
 
 function messaggioSistema(s, testo) {
   s.chat.push({ id: ++s.nChat, posto: -1, testo, ora: Date.now(), sistema: true });
@@ -1079,6 +1089,7 @@ io.on('connection', (socket) => {
     const g = s.posti[i];
     if (g.nascosto === !!attivo) return;
     g.nascosto = !!attivo;
+    if (attivo) { g.nascostoDal = Date.now(); setTimeout(() => { if (stanze.has(s.codice)) aggiorna(s); }, PAUSA_MAX_MS + 100); }
     aggiorna(s);
   });
 

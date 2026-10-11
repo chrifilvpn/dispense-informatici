@@ -1,14 +1,14 @@
 /* CORSA DI MACCHININE: comandi sopra il campo (telefono) e pulsante della vista */
-.cs-strato { position: absolute; inset: 0; pointer-events: none; touch-action: none; user-select: none; -webkit-user-select: none; }
-.cs-strato > * { pointer-events: auto; }
-.cs-bt { border: 0; border-radius: 14px; background: rgba(20, 26, 36, .55); color: #fff; font: 700 1rem system-ui, sans-serif; padding: .35rem .6rem; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
-.cs-vista { position: absolute; left: 50%; bottom: .5rem; transform: translateX(-50%); }
-.cs-modo { position: absolute; right: .5rem; top: .5rem; font-size: .85rem; }
-.cs-sinistra, .cs-destra { position: absolute; bottom: 3rem; display: flex; gap: .5rem; }
-.cs-sinistra { left: .5rem; }
-.cs-destra { right: .5rem; }
-.cs-grande { width: 4.2rem; height: 4.2rem; font-size: 1.7rem; border-radius: 50%; background: rgba(20, 26, 36, .5); border: 2px solid rgba(255, 255, 255, .45); }
-.cs-gas { background: rgba(46, 157, 87, .6); }
-.cs-giu { transform: scale(.92); background: rgba(255, 255, 255, .35); }
-.cs-dito { position: absolute; left: 0; right: 6rem; bottom: 2.6rem; height: 42%; display: flex; align-items: flex-end; justify-content: center; padding-bottom: .4rem; color: rgba(255, 255, 255, .7); font: 600 .8rem system-ui, sans-serif; background: linear-gradient(transparent, rgba(0, 0, 0, .18)); border-radius: 0 0 14px 14px; }
-.cs-hud { padding: .1rem .55rem; font-size: .85rem; background: rgba(255, 255, 255, .12); border-radius: 999px; cursor: pointer; }
+.cor-strato { position: absolute; inset: 0; pointer-events: none; touch-action: none; user-select: none; -webkit-user-select: none; }
+.cor-strato > * { pointer-events: auto; }
+.cor-bt { border: 0; border-radius: 14px; background: rgba(20, 26, 36, .55); color: #fff; font: 700 1rem system-ui, sans-serif; padding: .35rem .6rem; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.cor-vista { position: absolute; left: 50%; bottom: .5rem; transform: translateX(-50%); }
+.cor-modo { position: absolute; right: .5rem; top: .5rem; font-size: .85rem; }
+.cor-sinistra, .cor-destra { position: absolute; bottom: 3rem; display: flex; gap: .5rem; }
+.cor-sinistra { left: .5rem; }
+.cor-destra { right: .5rem; }
+.cor-grande { width: 4.2rem; height: 4.2rem; font-size: 1.7rem; border-radius: 50%; background: rgba(20, 26, 36, .5); border: 2px solid rgba(255, 255, 255, .45); }
+.cor-gas { background: rgba(46, 157, 87, .6); }
+.cor-giu { transform: scale(.92); background: rgba(255, 255, 255, .35); }
+.cor-dito { position: absolute; left: 0; right: 6rem; bottom: 2.6rem; height: 42%; display: flex; align-items: flex-end; justify-content: center; padding-bottom: .4rem; color: rgba(255, 255, 255, .7); font: 600 .8rem system-ui, sans-serif; background: linear-gradient(transparent, rgba(0, 0, 0, .18)); border-radius: 0 0 14px 14px; }
+.cor-hud { padding: .1rem .55rem; font-size: .85rem; background: rgba(255, 255, 255, .12); border-radius: 999px; cursor: pointer; }

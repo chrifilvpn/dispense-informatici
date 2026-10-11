@@ -69,7 +69,8 @@
       const io = s.s.io; if (!io) return '';
       const m = Math.floor(s.s.resta / 60), sec = String(s.s.resta % 60).padStart(2, '0');
       const pos = s.s.cl.findIndex((c) => c[0] === ctx.mio);
-      return `<span>🐍 ${io[0] ? io[3] : '—'}</span>${pos >= 0 ? `<span>🏅 ${pos + 1}°</span>` : ''}<span>💥 ${io[5]}</span><span>⏱️ ${m}:${sec}</span>`;
+      const mio = (s.s.s || []).find((x) => x.id === ctx.mio);
+      return `${mio && mio.t ? '<span>🚀 Turbo!</span>' : ''}<span>🐍 ${io[0] ? io[3] : '—'}</span>${pos >= 0 ? `<span>🏅 ${pos + 1}°</span>` : ''}<span>💥 ${io[5]}</span><span>⏱️ ${m}:${sec}</span>`;
     },
     fineRound: (p, s, ctx) => `La tua lunghezza: ${p.punti[ctx.mio]}`,
     dopoTick(ctx, d, prima) {

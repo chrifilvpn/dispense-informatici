@@ -266,6 +266,7 @@ test/giochi2/calcetto.js
 test/giochi2/codenames.js
 test/giochi2/connessioni.js
 test/giochi2/corsa.js
+test/giochi2/css-nomi.js
 test/giochi2/cucu.js
 test/giochi2/duemila.js
 test/giochi2/mastermind.js

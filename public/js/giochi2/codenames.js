@@ -42,33 +42,33 @@
   function testa(ctx) {
     const p = ctx.partita;
     const mia = squadra(ctx.mio);
-    const punti = [0, 1].map((s) => `<div class="nc-conta nc-${CLASSE[s]} ${p.sq === s && !p.finita ? 'di-turno' : ''}"><b>${p.restano[s]}</b><span>${NOMI[s]}${s === mia ? ' (voi)' : ''}<small>da trovare su ${p.totali[s]}</small></span></div>`).join('');
+    const punti = [0, 1].map((s) => `<div class="cdn-conta cdn-${CLASSE[s]} ${p.sq === s && !p.finita ? 'di-turno' : ''}"><b>${p.restano[s]}</b><span>${NOMI[s]}${s === mia ? ' (voi)' : ''}<small>da trovare su ${p.totali[s]}</small></span></div>`).join('');
     let banner;
     if (p.finita) {
       const motivo = p.motivo === 'assassino' ? `i ${NOMI[1 - p.vincitore]} hanno trovato l'assassino 💀` : p.motivo === 'regalo' ? `i ${NOMI[1 - p.vincitore]} hanno scoperto l'ultima parola avversaria` : 'tutte le parole trovate!';
-      banner = `<div class="nc-banner nc-${CLASSE[p.vincitore]} fine">🏆 Vincono i ${NOMI[p.vincitore]}! <small>${motivo}</small></div>`;
+      banner = `<div class="cdn-banner cdn-${CLASSE[p.vincitore]} fine">🏆 Vincono i ${NOMI[p.vincitore]}! <small>${motivo}</small></div>`;
     } else if (p.fase === 'indizio') {
       const cap = p.capitani[p.sq];
-      banner = `<div class="nc-banner nc-${CLASSE[p.sq]}">Tocca ai ${NOMI[p.sq]} · ${cap === ctx.mio ? '<b>tocca a te dare l\'indizio</b>' : `il capitano <b>${esc(ctx.nome(cap))}</b> pensa all'indizio<span class="nc-puntini"><i>.</i><i>.</i><i>.</i></span>`}${orologio(p)}</div>`;
+      banner = `<div class="cdn-banner cdn-${CLASSE[p.sq]}">Tocca ai ${NOMI[p.sq]} · ${cap === ctx.mio ? '<b>tocca a te dare l\'indizio</b>' : `il capitano <b>${esc(ctx.nome(cap))}</b> pensa all'indizio<span class="cdn-puntini"><i>.</i><i>.</i><i>.</i></span>`}${orologio(p)}</div>`;
     } else {
       const ind = p.indizio;
-      banner = `<div class="nc-banner nc-${CLASSE[p.sq]}">${NOMI[p.sq]}: <span class="nc-indizio">«${esc(ind.parola.toUpperCase())}» <b>${ind.numero}</b></span><small>${ind.fatti ? `${ind.fatti} ${ind.fatti === 1 ? 'scoperta' : 'scoperte'} · ` : ''}ancora ${Math.max(0, ind.resta)} ${ind.resta === 1 ? 'tentativo' : 'tentativi'}</small>${orologio(p)}</div>`;
+      banner = `<div class="cdn-banner cdn-${CLASSE[p.sq]}">${NOMI[p.sq]}: <span class="cdn-indizio">«${esc(ind.parola.toUpperCase())}» <b>${ind.numero}</b></span><small>${ind.fatti ? `${ind.fatti} ${ind.fatti === 1 ? 'scoperta' : 'scoperte'} · ` : ''}ancora ${Math.max(0, ind.resta)} ${ind.resta === 1 ? 'tentativo' : 'tentativi'}</small>${orologio(p)}</div>`;
     }
-    return `<div class="nc-testa"><div class="nc-punti">${punti}</div>${banner}${ruolo(ctx)}</div>`;
+    return `<div class="cdn-testa"><div class="cdn-punti">${punti}</div>${banner}${ruolo(ctx)}</div>`;
   }
 
   function orologio(p) {
     if (!p.tempoFine || p.finita || p.inAttesa) return '';
     const resta = Math.max(0, p.tempoFine - p.ora);
-    return `<span class="nc-tempo" data-fine="${Date.now() + resta}">⏱ <b>${Math.ceil(resta / 1000)}</b>s</span>`;
+    return `<span class="cdn-tempo" data-fine="${Date.now() + resta}">⏱ <b>${Math.ceil(resta / 1000)}</b>s</span>`;
   }
 
   function ruolo(ctx) {
     const p = ctx.partita;
     if (ctx.stato.spettatore || p.finita) return '';
     const s = squadra(ctx.mio);
-    if (sonoCapitano(ctx)) return `<p class="nc-ruolo"><i class="nc-pallino nc-${CLASSE[s]}"></i>Sei il <b>capitano dei ${NOMI[s]}</b>: vedi i colori segreti (💀 assassino)</p>`;
-    return `<p class="nc-ruolo"><i class="nc-pallino nc-${CLASSE[s]}"></i>Sei un <b>agente dei ${NOMI[s]}</b> · capitano: ${esc(nomeCorto(ctx, p.capitani[s]))}</p>`;
+    if (sonoCapitano(ctx)) return `<p class="cdn-ruolo"><i class="cdn-pallino cdn-${CLASSE[s]}"></i>Sei il <b>capitano dei ${NOMI[s]}</b>: vedi i colori segreti (💀 assassino)</p>`;
+    return `<p class="cdn-ruolo"><i class="cdn-pallino cdn-${CLASSE[s]}"></i>Sei un <b>agente dei ${NOMI[s]}</b> · capitano: ${esc(nomeCorto(ctx, p.capitani[s]))}</p>`;
   }
 
   function griglia(ctx) {
@@ -79,57 +79,57 @@
     const carte = p.parole.map((w, i) => {
       const sc = p.scoperte[i];
       const s = spezza(w);
-      const cls = ['nc-carta'];
+      const cls = ['cdn-carta'];
       let extra = '';
-      if (sc) { cls.push('scoperta', `nc-${CLASSE[sc.colore]}`); if (w === ultima) cls.push('appena'); }
-      else if (p.mappa) cls.push('segreta', `nc-s-${CLASSE[p.mappa[i]]}`);
+      if (sc) { cls.push('scoperta', `cdn-${CLASSE[sc.colore]}`); if (w === ultima) cls.push('appena'); }
+      else if (p.mappa) cls.push('segreta', `cdn-s-${CLASSE[p.mappa[i]]}`);
       if (!sc && p.voti) {
         const chi = p.voti.map((v, k) => (v === i ? k : -1)).filter((k) => k >= 0);
-        if (chi.length) { cls.push('votata'); extra += `<span class="nc-voti">${chi.map((k) => `<i class="${k === ctx.mio ? 'mio' : ''}" title="${esc(nomeCorto(ctx, k))}">${iniziali(ctx, k)}</i>`).join('')}</span>`; }
+        if (chi.length) { cls.push('votata'); extra += `<span class="cdn-voti">${chi.map((k) => `<i class="${k === ctx.mio ? 'mio' : ''}" title="${esc(nomeCorto(ctx, k))}">${iniziali(ctx, k)}</i>`).join('')}</span>`; }
       }
-      if (!sc && p.mappa && p.mappa[i] === 3) extra += '<span class="nc-teschio" aria-hidden="true">💀</span>';
-      if (sc && sc.colore === 3) extra += '<span class="nc-teschio grande" aria-hidden="true">💀</span>';
+      if (!sc && p.mappa && p.mappa[i] === 3) extra += '<span class="cdn-teschio" aria-hidden="true">💀</span>';
+      if (sc && sc.colore === 3) extra += '<span class="cdn-teschio grande" aria-hidden="true">💀</span>';
       const etichetta = `${w}${sc ? `, scoperta: ${['rossa', 'blu', 'neutrale', 'assassino'][sc.colore]}` : ''}`;
       if (cerca && !sc) {
         const mia = mioVoto === i;
-        return `<button type="button" class="${cls.join(' ')} ${mia ? 'mia' : ''}" data-az="carta" data-c="${i}" style="--l:${s.l}" aria-pressed="${mia}" aria-label="${esc(etichetta)}"><span class="nc-parola">${s.html}</span>${extra}${mia ? '<span class="nc-conferma" data-az="scopri" data-c="' + i + '">Scopri ✓</span>' : ''}</button>`;
+        return `<button type="button" class="${cls.join(' ')} ${mia ? 'mia' : ''}" data-az="carta" data-c="${i}" style="--l:${s.l}" aria-pressed="${mia}" aria-label="${esc(etichetta)}"><span class="cdn-parola">${s.html}</span>${extra}${mia ? '<span class="cdn-conferma" data-az="scopri" data-c="' + i + '">Scopri ✓</span>' : ''}</button>`;
       }
-      return `<div class="${cls.join(' ')}" style="--l:${s.l}" aria-label="${esc(etichetta)}"><span class="nc-parola">${s.html}</span>${extra}</div>`;
+      return `<div class="${cls.join(' ')}" style="--l:${s.l}" aria-label="${esc(etichetta)}"><span class="cdn-parola">${s.html}</span>${extra}</div>`;
     }).join('');
-    return `<div class="nc-griglia">${carte}</div>`;
+    return `<div class="cdn-griglia">${carte}</div>`;
   }
 
   function comandi(ctx) {
     const p = ctx.partita, ui = ctx.ui;
     if (possoIndizio(ctx)) {
       const n = ui.numero || 0;
-      return `<div class="nc-comandi nc-capo">
-        <label for="nc-indizio">Il tuo indizio: <b>una parola</b> e <b>quante parole</b> dei ${NOMI[p.sq]} c'entrano</label>
-        <div class="riga"><input id="nc-indizio" maxlength="20" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Una parola sola…" data-tieni="indizio" data-invio="indizio" value="${esc(ui.t_indizio || '')}"></div>
-        <div class="nc-numeri" role="group" aria-label="Numero">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((k) => `<button type="button" class="nc-num ${n === k ? 'scelto' : ''}" data-az="numero" data-n="${k}" aria-pressed="${n === k}">${k}</button>`).join('')}</div>
+      return `<div class="cdn-comandi cdn-capo">
+        <label for="cdn-indizio">Il tuo indizio: <b>una parola</b> e <b>quante parole</b> dei ${NOMI[p.sq]} c'entrano</label>
+        <div class="riga"><input id="cdn-indizio" maxlength="20" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Una parola sola…" data-tieni="indizio" data-invio="indizio" value="${esc(ui.t_indizio || '')}"></div>
+        <div class="cdn-numeri" role="group" aria-label="Numero">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((k) => `<button type="button" class="cdn-num ${n === k ? 'scelto' : ''}" data-az="numero" data-n="${k}" aria-pressed="${n === k}">${k}</button>`).join('')}</div>
         <button type="button" class="bottone primario-bt" data-az="indizio">Dai l'indizio${n ? ` (${n})` : ''}</button></div>`;
     }
     if (possoCercare(ctx)) {
       const v = p.voti ? p.voti[ctx.mio] : null;
       const ind = p.indizio;
-      return `<div class="nc-comandi">
-        <p class="nc-aiuto">${v != null ? `Hai proposto <b>${esc(p.parole[v].toUpperCase())}</b>: premi Scopri per girarla, o tocca un'altra parola.` : 'Tocca una parola per proporla alla squadra, poi premi Scopri.'}</p>
-        <div class="nc-bottoni">
+      return `<div class="cdn-comandi">
+        <p class="cdn-aiuto">${v != null ? `Hai proposto <b>${esc(p.parole[v].toUpperCase())}</b>: premi Scopri per girarla, o tocca un'altra parola.` : 'Tocca una parola per proporla alla squadra, poi premi Scopri.'}</p>
+        <div class="cdn-bottoni">
           <button type="button" class="bottone primario-bt" data-az="scopri" ${v != null ? `data-c="${v}"` : 'disabled'}>Scopri${v != null ? ` «${esc(p.parole[v].toUpperCase())}»` : ''}</button>
           <button type="button" class="bottone" data-az="passa" ${ind && ind.fatti ? '' : 'disabled'} title="Finisce il turno della squadra">Passa ✋</button>
         </div></div>`;
     }
     if (p.finita) return '';
-    if (sonoCapitano(ctx) && p.fase === 'ricerca' && squadra(ctx.mio) === p.sq) return '<p class="nc-aiuto">I tuoi agenti stanno cercando: niente suggerimenti in chat! 🤐</p>';
+    if (sonoCapitano(ctx) && p.fase === 'ricerca' && squadra(ctx.mio) === p.sq) return '<p class="cdn-aiuto">I tuoi agenti stanno cercando: niente suggerimenti in chat! 🤐</p>';
     return '';
   }
 
   function registro(ctx) {
     const p = ctx.partita;
-    if (!p.registro.length) return `<aside class="nc-registro"><h3>Indizi</h3><p class="nc-vuoto">Ancora nessun indizio. Inizia${p.iniziale === 0 ? 'no i Rossi' : 'no i Blu'} (9 parole contro 8).</p></aside>`;
-    const righe = [...p.registro].reverse().map((r) => `<li class="nc-bordo-${CLASSE[r.squadra]}"><p><b>«${esc(r.parola.toUpperCase())}» ${r.numero}</b><small>${esc(nomeCorto(ctx, r.capitano))}</small></p>
-      <div>${r.esiti.map((e) => `<span class="nc-chip nc-${CLASSE[e.colore]}">${esc(e.parola)}</span>`).join('') || '<span class="nc-vuoto">…</span>'}</div></li>`).join('');
-    return `<aside class="nc-registro"><h3>Indizi</h3><ol>${righe}</ol></aside>`;
+    if (!p.registro.length) return `<aside class="cdn-registro"><h3>Indizi</h3><p class="cdn-vuoto">Ancora nessun indizio. Inizia${p.iniziale === 0 ? 'no i Rossi' : 'no i Blu'} (9 parole contro 8).</p></aside>`;
+    const righe = [...p.registro].reverse().map((r) => `<li class="cdn-bordo-${CLASSE[r.squadra]}"><p><b>«${esc(r.parola.toUpperCase())}» ${r.numero}</b><small>${esc(nomeCorto(ctx, r.capitano))}</small></p>
+      <div>${r.esiti.map((e) => `<span class="cdn-chip cdn-${CLASSE[e.colore]}">${esc(e.parola)}</span>`).join('') || '<span class="cdn-vuoto">…</span>'}</div></li>`).join('');
+    return `<aside class="cdn-registro"><h3>Indizi</h3><ol>${righe}</ol></aside>`;
   }
 
   const tavolo = {
@@ -137,8 +137,8 @@
     reset(ctx) { ctxN = ctx; window.NuoviTesto && window.NuoviTesto(ctx); },
     panno(ctx) {
       const p = ctx.partita;
-      return `<div class="nc nc-turno-${CLASSE[p.sq]} ${p.mappa && !p.finita ? 'da-capitano' : ''}">
-        <div class="nc-centro">${testa(ctx)}${griglia(ctx)}${comandi(ctx)}</div>${registro(ctx)}</div>`;
+      return `<div class="cdn cdn-turno-${CLASSE[p.sq]} ${p.mappa && !p.finita ? 'da-capitano' : ''}">
+        <div class="cdn-centro">${testa(ctx)}${griglia(ctx)}${comandi(ctx)}</div>${registro(ctx)}</div>`;
     },
     dopo(ctx) {
       const p = ctx.partita, ui = ctx.ui;
@@ -151,7 +151,7 @@
       // conto alla rovescia (opzione tempo)
       clearInterval(ui._ncT);
       ui._ncT = setInterval(() => {
-        const el = document.querySelector('.nc-tempo'); if (!el) return clearInterval(ui._ncT);
+        const el = document.querySelector('.cdn-tempo'); if (!el) return clearInterval(ui._ncT);
         const resta = Math.max(0, Number(el.dataset.fine) - Date.now());
         el.querySelector('b').textContent = Math.ceil(resta / 1000); el.classList.toggle('poco', resta < 15000);
       }, 250);
@@ -179,14 +179,14 @@
     },
     punteggio(ctx) {
       const p = ctx.partita;
-      return `<span class="nc-p-rosso">Rossi <b>${p.restano[0]}</b></span><span class="nc-p-blu">Blu <b>${p.restano[1]}</b></span>`;
+      return `<span class="cdn-p-rosso">Rossi <b>${p.restano[0]}</b></span><span class="cdn-p-blu">Blu <b>${p.restano[1]}</b></span>`;
     },
     infoPosto(ctx, posto) {
       const p = ctx.partita;
       const s = squadra(posto);
       const cap = p.capitani.includes(posto);
       const voto = p.voti && p.voti[posto] != null ? ` · 👉 ${esc(p.parole[p.voti[posto]])}` : '';
-      return `<span class="nc-info nc-${CLASSE[s]}"><i class="nc-pallino nc-${CLASSE[s]}"></i>${cap ? 'capitano' : 'agente'} ${NOMI[s].toLowerCase()}${voto}</span>`;
+      return `<span class="cdn-info cdn-${CLASSE[s]}"><i class="cdn-pallino cdn-${CLASSE[s]}"></i>${cap ? 'capitano' : 'agente'} ${NOMI[s].toLowerCase()}${voto}</span>`;
     },
     clic(ctx, el) {
       const ui = ctx.ui, az = el.dataset.az;

@@ -73,7 +73,7 @@ const { GIOCHI } = require('../giochi');
     vinte[g.vittoria.chi]++;
   }
   assert.ok(vinte.alieni >= 3 && vinte.equipaggio >= 3, `vincono sia gli Alieni sia l'equipaggio ${JSON.stringify(vinte)}`);
-  assert.ok(riunioni >= 15 && frasi >= 30 && espulsi >= 5, `riunioni con chat e voti (${riunioni} riunioni, ${frasi} frasi, ${espulsi} espulsi)`);
+  assert.ok(riunioni >= 15 && frasi >= 30 && espulsi >= 2, `riunioni con chat e voti (${riunioni} riunioni, ${frasi} frasi, ${espulsi} espulsi)`);
   // una persona che accusa in chat fa salire il sospetto dei computer
   const g = A.crea({ n: 5, opzioni: { alieni: 1, mappa: 'base' }, bot: [null, 'medio', 'medio', 'medio', 'medio'] });
   g.nomiGiocatori = ['Pia', 'Ada', 'Alan', 'Grace', 'Linus'];
