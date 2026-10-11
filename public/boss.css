@@ -217,3 +217,22 @@ html.avvio-studio body > *:not(#studio):not(#studio-carica) { visibility: hidden
 #studio .st-opz input { all: revert; width: auto; margin: 0; flex: none; accent-color: #1a5fb4; }
 #studio .st-spunta input { all: revert; width: auto; margin: 0; }
 #studio .st-lezioni + .st-etichetta { margin-top: 16px; }
+
+/* ===== Materie di indirizzo (Sistemi, TPSIT, Informatica, Inglese): database di esempio e documenti ===== */
+.st-griglia-db { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 4px 18px; margin: 8px 0 12px; }
+.st-griglia-db .st-tabella { margin: 0 0 12px; }
+.st-griglia-db .st-tabella table { font-size: 13px; }
+.st-griglia-db .st-tabella th, .st-griglia-db .st-tabella td { padding: 5px 9px; min-width: 0; }
+#studio .st-etichetta-db { margin: 0 0 4px; font-family: Consolas, monospace; font-weight: 600; color: #1a5fb4; }
+.st-documento { margin: 10px 0 20px; padding: 22px 26px; background: #fff; border: 1px solid #d5dce5; border-radius: 4px; box-shadow: 0 4px 14px rgba(15, 30, 55, .10); font-family: Georgia, 'Times New Roman', serif; font-size: 15px; line-height: 1.55; color: #1f2d3d; overflow-wrap: anywhere; }
+#studio .st-documento h3 { margin: 0 0 2px; font-size: 22px; font-family: inherit; }
+#studio .st-documento h4 { margin: 16px 0 4px; padding-bottom: 2px; border-bottom: 1px solid #dde3ea; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: #1a5fb4; font-family: 'Segoe UI', Roboto, Arial, sans-serif; }
+#studio .st-documento p { margin: 0 0 10px; }
+#studio .st-documento .st-doc-sotto { font-size: 13px; color: #5b6b7f; }
+#studio .st-articolo code { overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .st-documento { padding: 16px 14px; font-size: 14px; }
+  /* sul telefono gli schemi larghi restano leggibili: si scorrono di lato dentro la figura */
+  .st-schema:has(> svg.st-svg-largo) { overflow-x: auto; }
+  .st-schema svg.st-svg-largo { min-width: 580px; max-height: none; }
+}
