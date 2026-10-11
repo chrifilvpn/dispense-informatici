@@ -102,6 +102,8 @@ giochi/uno.js
 giochi/wanted.js
 giochi/wordle.js
 giochi2/biglie.js
+giochi2/burraco-regole.js
+giochi2/burraco.js
 giochi2/calamaro.js
 giochi2/capitali.js
 giochi2/cucu.js
@@ -118,6 +120,7 @@ giochi2/otello.js
 giochi2/patata.js
 giochi2/sagome-dati.js
 giochi2/sagome.js
+giochi2/settemezzo.js
 giochi2/tressette.js
 guardia.js
 package-lock.json
@@ -202,6 +205,8 @@ public/js/giochi/wanted.js
 public/js/giochi/wordle.js
 public/js/giochi2/biglie.css
 public/js/giochi2/biglie.js
+public/js/giochi2/burraco.css
+public/js/giochi2/burraco.js
 public/js/giochi2/calamaro.js
 public/js/giochi2/cucu.css
 public/js/giochi2/cucu.js
@@ -216,6 +221,8 @@ public/js/giochi2/nonogram.js
 public/js/giochi2/otello.css
 public/js/giochi2/otello.js
 public/js/giochi2/patata.js
+public/js/giochi2/settemezzo.css
+public/js/giochi2/settemezzo.js
 public/js/giochi2/tressette.css
 public/js/giochi2/tressette.js
 public/js/tavoli-tabellone.js
@@ -228,6 +235,7 @@ sicurezza.js
 test/browser.js
 test/giochi2.js
 test/giochi2/biglie.js
+test/giochi2/burraco.js
 test/giochi2/calamaro.js
 test/giochi2/cucu.js
 test/giochi2/duemila.js
@@ -236,6 +244,7 @@ test/giochi2/memory.js
 test/giochi2/nonogram.js
 test/giochi2/otello.js
 test/giochi2/patata.js
+test/giochi2/settemezzo.js
 test/giochi2/tressette.js
 test/migliorie3.js
 test/nuovi.js
