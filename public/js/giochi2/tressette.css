@@ -1,0 +1,41 @@
+/* TRESSETTE */
+.panno-tressette .ts-lato {
+  position: absolute; left: .2rem; top: 50%; transform: translateY(-50%); z-index: 2;
+  width: calc(var(--carta-l) * 1.45); display: grid; justify-items: center; gap: .45rem;
+}
+.panno-tressette .ts-lato .mazzo-grande { width: calc(var(--carta-l) * .9); }
+.panno-tressette .ts-lato .mazzo-grande .carta { --w: calc(var(--carta-l) * .9); }
+.ts-finito { font-size: .72rem; color: var(--tenue); text-align: center; line-height: 1.2; padding: .4rem; border: 1.5px dashed rgba(247, 240, 222, .25); border-radius: 8px; }
+.ts-pescate { display: grid; justify-items: center; gap: .15rem; margin-top: .2rem; animation: ts-entra .35s ease-out; }
+.ts-pescate > small { margin-bottom: 1.1rem;  font-size: .68rem; color: var(--tenue); text-transform: uppercase; letter-spacing: .05em; }
+.ts-pescate > div { display: flex; gap: .25rem; }
+.ts-pescata { display: grid; justify-items: center; gap: .1rem; }
+.ts-pescata .carta { --w: clamp(30px, 6.5vw, 44px); }
+.ts-pescata span { font-size: .62rem; color: var(--tenue); max-width: 3.4rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.panno-tressette .croce.ts-piena { inset: 0; }
+.panno-tressette .giocata.ts-sta .carta { box-shadow: 0 0 0 2px rgba(209, 154, 42, .65), 0 6px 16px rgba(0, 0, 0, .4); }
+.panno-tressette .giocata.ts-vince .carta { box-shadow: 0 0 0 3px var(--oro), 0 0 22px rgba(209, 154, 42, .65); animation: ts-vince .5s ease-out; }
+.ts-apre { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); margin: 0; font-size: .85rem; color: var(--tenue); text-align: center; white-space: nowrap; opacity: .85; }
+.ts-accusi {
+  position: absolute; right: .3rem; top: .3rem; z-index: 3; max-width: min(46%, 15rem);
+  display: grid; gap: .15rem; padding: .3rem .55rem; border-radius: 9px;
+  background: rgba(0, 0, 0, .28); font-size: .72rem; line-height: 1.25; color: var(--testo);
+}
+.ts-accusi span { color: var(--oro); font-weight: 700; }
+.ts-ultima {
+  position: absolute; inset: 0; z-index: 20; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .5rem;
+  background: rgba(10, 30, 22, .95); border-radius: 12px; animation: ts-entra .2s ease-out;
+}
+.ts-ultima p { margin: 0; font-size: .95rem; }
+.ts-ultima > div { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; }
+.ts-ultima small { color: var(--tenue); font-size: .72rem; }
+.ts-u { display: grid; justify-items: center; gap: .2rem; font-size: .72rem; color: var(--tenue); }
+.ts-u .carta { --w: clamp(46px, 11vw, 70px); }
+.ts-u .carta.ts-presa { box-shadow: 0 0 0 3px var(--oro), 0 4px 12px rgba(0, 0, 0, .4); }
+.mano .carta.ts-no { filter: brightness(.55) saturate(.45) !important; transform: translateY(5px); }
+svg.ts-seme { display: inline-block; width: 14px; height: 14px; vertical-align: -2px; color: var(--avorio); }
+.c-valore small, .conti small { font-size: .8em; }
+@keyframes ts-entra { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes ts-vince { 0% { filter: brightness(1.4); } 100% { filter: none; } }
+@media (prefers-reduced-motion: reduce) { .ts-pescate, .ts-ultima, .panno-tressette .giocata.ts-vince .carta { animation: none; } }
