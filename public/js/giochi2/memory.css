@@ -1,0 +1,36 @@
+/* MEMORY */
+.mm { display: grid; justify-items: center; gap: .55rem; width: 100%; padding: .2rem 0 .6rem; }
+.mm-barra { display: flex; flex-wrap: wrap; gap: .4rem .9rem; justify-content: center; font-size: .95rem; color: var(--tenue); }
+.mm-barra b { color: var(--testo); font-variant-numeric: tabular-nums; }
+.mm-serie { color: #ffd166; font-weight: 700; animation: lb-entra .4s ease-out both; }
+/* la misura delle carte: tutto il tavolo deve stare nello schermo, in larghezza e (sul computer) in altezza */
+.mm-tavolo { --gap: clamp(5px, 1.2vw, 10px); --w: min(calc((min(96vw, 46rem) - (var(--col) - 1) * var(--gap)) / var(--col)), calc((100vh - 15rem) / var(--rig) / 1.3), 7rem);
+  display: grid; grid-template-columns: repeat(var(--col), var(--w)); gap: var(--gap); justify-content: center; perspective: 900px; }
+@media (max-width: 640px) { .mm-tavolo { --w: min(calc((96vw - (var(--col) - 1) * var(--gap)) / var(--col)), calc((100vh - 18rem) / var(--rig) / 1.3 - var(--gap)), 6rem); } }
+.mm-carta { position: relative; width: var(--w); height: calc(var(--w) * 1.3); padding: 0; border: 0; background: none; font: inherit; color: inherit; }
+button.mm-carta { cursor: pointer; }
+.mm-interno { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .35s ease; animation-duration: .4s; animation-timing-function: ease-in-out; animation-fill-mode: both; }
+.mm-carta.su .mm-interno { transform: rotateY(180deg); }
+@keyframes mm-apri { from { transform: rotateY(0); } to { transform: rotateY(180deg); } }
+@keyframes mm-chiudi { from { transform: rotateY(180deg); } to { transform: rotateY(0); } }
+.mm-dorso, .mm-fronte { position: absolute; inset: 0; border-radius: clamp(6px, 1.4vw, 12px); backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 3px 8px rgba(0, 0, 0, .35); }
+.mm-dorso { background: repeating-linear-gradient(45deg, rgba(255, 255, 255, .09) 0 6px, transparent 6px 12px), linear-gradient(135deg, #7a2430, #b3261e 55%, #7a2430);
+  border: 3px solid #f7f0de; }
+.mm-dorso::after { content: '?'; position: absolute; inset: 0; display: grid; place-items: center; font: 400 calc(var(--w) * .42) var(--serif); color: rgba(247, 240, 222, .5); }
+button.mm-carta:hover .mm-dorso, button.mm-carta:focus-visible .mm-dorso { filter: brightness(1.15); transform: translateY(-2px); }
+.mm-carta.premuta .mm-dorso { filter: brightness(1.3); }
+.mm-fronte { transform: rotateY(180deg); background: var(--carta); color: var(--inchiostro); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 3px solid #fff; overflow: hidden; }
+.mm-emoji { font-size: calc(var(--w) * .58); line-height: 1; }
+.mm-bandiera { width: 80%; height: auto; border-radius: 2px; box-shadow: 0 1px 2px rgba(0, 0, 0, .3); }
+.mm-fronte small { font-size: clamp(7px, calc(var(--w) * .13), .78rem); line-height: 1.05; text-align: center; color: #4a463c; padding: 0 1px; letter-spacing: -.02em; max-width: 100%; overflow-wrap: anywhere; }
+.mm-carta.presa .mm-fronte { border-color: var(--chi, #2f855a); opacity: .82; }
+.mm-carta.presa .mm-fronte::after { content: ''; position: absolute; inset: 0; background: color-mix(in srgb, var(--chi, #2f855a) 14%, transparent); }
+.mm-carta.trovata { animation: mm-trovata .6s ease-out both; z-index: 1; }
+@keyframes mm-trovata { 40% { transform: scale(1.12); } 100% { transform: none; } }
+.mm-carta.trovata .mm-fronte { box-shadow: 0 0 0 3px #ffd166, 0 0 18px rgba(255, 209, 102, .8); opacity: 1; }
+.mm-carta.sbagliata .mm-fronte { box-shadow: 0 0 0 3px #ff6b5e, 0 3px 8px rgba(0, 0, 0, .35); }
+.mm-carta.sbagliata { animation: mm-no .45s .35s ease-in-out both; }
+@keyframes mm-no { 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
+.mm-msg { font-size: 1.05rem; min-height: 1.5em; }
+.mm-record { max-width: 24rem; }
+@media (prefers-reduced-motion: reduce) { .mm-interno { animation: none !important; transition: none; } .mm-carta.trovata, .mm-carta.sbagliata { animation: none; } }
