@@ -1,0 +1,66 @@
+/* ======================= BURRACO ======================= */
+.panno-burraco { align-items: start !important; place-items: start center !important; }
+.bu { width: 100%; max-width: 1100px; display: grid; gap: .7rem; padding: .2rem .1rem .6rem; --bu-mini: clamp(30px, 8.2vw, 54px); }
+.bu .carta.mini { --w: var(--bu-mini); }
+
+/* tallone, scarti, pozzetti */
+.bu-banco { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: .6rem; align-items: center; }
+.bu-tallone { position: relative; display: grid; justify-items: center; gap: .1rem; padding: 4px; border-radius: 10px; }
+.bu-tallone .carta { --w: clamp(44px, 11vw, 64px); }
+.bu-conta { position: absolute; top: 4px; left: 4px; width: clamp(44px, 11vw, 64px); aspect-ratio: 5 / 7; display: grid; place-items: center;
+  font: 700 clamp(.95rem, 3.6vw, 1.3rem)/1 var(--sans); color: var(--avorio); text-shadow: 0 1px 3px rgba(0, 0, 0, .7); pointer-events: none; }
+.bu-tallone small, .bu-scarti small, .bu-pozzetti small { font-size: .72rem; color: var(--tenue); }
+.bu-scarti { min-width: 0; display: grid; gap: .2rem; padding: 4px 6px; border-radius: 10px; background: rgba(0, 0, 0, .12); }
+.bu-scarti-fila { display: flex; flex-wrap: wrap; row-gap: 3px; padding-left: calc(var(--bu-mini) * .62); }
+.bu-scarti-fila .carta { margin-left: calc(var(--bu-mini) * -.62); }
+.bu-scarti-fila .carta.bu-cima { box-shadow: 0 0 0 2px var(--avorio), 0 3px 9px rgba(0, 0, 0, .35); z-index: 1; }
+.bu-pozzetti { display: grid; justify-items: center; gap: .15rem; }
+.bu-pozz-carte { display: flex; gap: 3px; min-height: calc(var(--bu-mini) * 1.4); align-items: center; }
+.bu-pozz-carte .carta { --w: calc(var(--bu-mini) * .85); transform: rotate(90deg); margin: 0 calc(var(--bu-mini) * .12); }
+.bu-pozz-chi { display: flex; gap: .2rem; flex-wrap: wrap; justify-content: center; }
+.bu-niente { font-size: .75rem; color: var(--tenue); }
+.bu-tag { display: inline-block; font-size: .68rem; padding: .05rem .4rem; border-radius: 999px; background: rgba(247, 240, 222, .12); color: var(--tenue); white-space: nowrap; }
+.bu-tag.ok { background: rgba(127, 209, 168, .22); color: #bff0d6; }
+
+/* combinazioni */
+.bu-zone { display: grid; gap: .6rem; }
+@media (min-width: 900px) { .bu-zone { grid-template-columns: 1fr 1fr; align-items: start; } }
+.bu-zona { padding: .45rem .5rem .55rem; border-radius: 12px; background: rgba(0, 0, 0, .14); border: 1px solid rgba(247, 240, 222, .08); min-width: 0; }
+.bu-zona.mia { background: rgba(209, 154, 42, .09); border-color: rgba(209, 154, 42, .3); }
+.bu-zona h3 { margin: 0 0 .35rem; display: flex; flex-wrap: wrap; gap: .25rem .6rem; align-items: center; font: 600 .82rem/1.2 var(--sans); color: var(--avorio); }
+.bu-zona-punti { font-weight: 400; color: var(--tenue); }
+.bu-combs { display: flex; flex-wrap: wrap; gap: .45rem .55rem; }
+.bu-vuoto { margin: .2rem 0; font-size: .8rem; color: var(--tenue); font-style: italic; }
+.bu-comb { display: grid; gap: 2px; padding: 4px 5px 3px; border-radius: 9px; background: rgba(0, 0, 0, .16); transition: transform .15s; }
+.bu-comb.selezionabile { background: rgba(209, 154, 42, .2); animation: bu-pulsa 1.3s ease-in-out infinite; }
+.bu-comb.selezionabile:hover { transform: translateY(-2px); }
+.bu-comb-carte { display: flex; padding-left: calc(var(--bu-mini) * .58); }
+.bu-comb-carte .carta { margin-left: calc(var(--bu-mini) * -.58); }
+.bu-comb-info { display: flex; justify-content: space-between; align-items: center; gap: .3rem; font-size: .66rem; color: var(--tenue); min-height: 1rem; }
+.bu-badge { font-size: .62rem; font-weight: 700; padding: 0 .35rem; border-radius: 999px; background: rgba(247, 240, 222, .15); color: var(--avorio); white-space: nowrap; }
+.bu-badge.pulito { background: var(--oro); color: #1f1d1a; }
+.bu-badge.sporco { background: #8e6ccf; color: #fff; }
+.bu-badge.quasi { background: rgba(127, 209, 168, .25); color: #bff0d6; }
+.bu-burraco.pulito { box-shadow: 0 0 0 2px rgba(209, 154, 42, .8); }
+.bu-burraco.sporco { box-shadow: 0 0 0 2px rgba(142, 108, 207, .8); }
+.carta.bu-matta { filter: drop-shadow(0 0 3px rgba(142, 108, 207, .95)); }
+.carta.bu-pinella::after { content: '★'; position: absolute; top: 3%; right: 6%; font-size: calc(var(--w) * .17); line-height: 1; color: #6b2fa0; }
+.bu-nuova { animation: bu-entra .45s cubic-bezier(.2, .8, .3, 1.2); }
+.bu-cresce { animation: bu-cresce .4s ease-out; }
+@keyframes bu-entra { from { opacity: 0; transform: scale(.6) translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes bu-cresce { 40% { transform: scale(1.06); } }
+@keyframes bu-pulsa { 50% { box-shadow: 0 0 0 3px rgba(209, 154, 42, 1), 0 0 14px rgba(209, 154, 42, .6) !important; } }
+
+/* la mano: carte sovrapposte, su più righe se sono tante */
+.mano .bu-mano { --w: clamp(50px, 13.4vw, 76px); display: flex; flex-wrap: wrap; justify-content: center; row-gap: 6px;
+  width: 100%; padding: 0 .3rem 0 calc(.3rem + var(--w) * .5); }
+.mano .bu-mano .carta { --w: inherit; width: var(--w); margin-left: calc(var(--w) * -.5); }
+.mano .bu-mano.tante { row-gap: 2px; }
+.mano .bu-mano .carta.alzata { transform: translateY(-12px) !important; }
+@media (min-width: 900px) { .mano .bu-mano .carta { margin-left: calc(var(--w) * -.42); } .mano .bu-mano { padding-left: calc(.3rem + var(--w) * .42); } }
+.bu-no { color: #f0b3a8; }
+
+@media (max-width: 620px) {
+  .bu-banco { gap: .4rem; }
+  .bu-zona h3 { font-size: .78rem; }
+}

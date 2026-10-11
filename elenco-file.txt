@@ -101,6 +101,9 @@ giochi/tris.js
 giochi/uno.js
 giochi/wanted.js
 giochi/wordle.js
+giochi2/burraco-regole.js
+giochi2/burraco.js
+giochi2/settemezzo.js
 guardia.js
 package-lock.json
 package.json
@@ -182,6 +185,10 @@ public/js/giochi/tetris.js
 public/js/giochi/tigerball.js
 public/js/giochi/wanted.js
 public/js/giochi/wordle.js
+public/js/giochi2/burraco.css
+public/js/giochi2/burraco.js
+public/js/giochi2/settemezzo.css
+public/js/giochi2/settemezzo.js
 public/js/tavoli-tabellone.js
 public/js/tavoli.js
 public/nuovi.css
@@ -191,6 +198,8 @@ sfida.js
 sicurezza.js
 test/browser.js
 test/giochi2.js
+test/giochi2/burraco.js
+test/giochi2/settemezzo.js
 test/nuovi.js
 test/serate.js
 test/simula.js

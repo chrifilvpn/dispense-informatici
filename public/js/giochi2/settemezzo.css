@@ -1,0 +1,39 @@
+/* ======================= SETTE E MEZZO ======================= */
+.sm { --wc: clamp(56px, 6vw, 76px); }
+.sm .bj-giocatori { gap: .6rem; }
+.sm-posto { min-width: 8.5rem; }
+.sm-fuori { margin: 0; font-size: .78rem; color: var(--tenue); text-align: center; }
+.sm-mano.sm-sballata .cs-carte { opacity: .55; filter: grayscale(.5); }
+.sm-banco .cs-carte { --wc: clamp(60px, 7vw, 84px); }
+
+/* carte napoletane */
+.carta.sm-carta { overflow: hidden; background: linear-gradient(#fffaf0, #f6eedb); }
+.sm-carta.sm-d { color: #9a6c0c; } .sm-carta.sm-c { color: #b3261e; } .sm-carta.sm-s { color: #2b5a9e; } .sm-carta.sm-b { color: #2f7a35; }
+.sm-indice { position: absolute; top: 3%; left: 6%; display: grid; justify-items: center; line-height: .9; z-index: 2; }
+.sm-indice b { font: 700 calc(var(--w) * .22) / 1 var(--serif); }
+.carta .sm-indice .sm-seme { width: calc(var(--w) * .16); height: calc(var(--w) * .16); margin-top: 1px; }
+.sm-seme { display: block; }
+.sm-pip { position: absolute; inset: 8% 10% 6% 22%; }
+.sm-pip span { position: absolute; width: calc(var(--w) * .34); height: calc(var(--w) * .34); transform: translate(-50%, -50%); }
+.sm-pip span .sm-seme { width: 100%; height: 100%; }
+.sm-pip.asso { inset: 14% 10% 10% 16%; }
+.sm-pip.asso span { width: calc(var(--w) * .62); height: calc(var(--w) * .62); }
+.sm-figura { position: absolute; inset: 15% 9% 6% 22%; border-radius: calc(var(--w) * .06); border: 1.5px solid currentColor;
+  background: color-mix(in srgb, currentColor 9%, #fffaf0); display: grid; place-items: center; overflow: hidden; }
+.carta .sm-fig-disegno { width: 92%; height: 92%; }
+.carta .sm-fig-seme { position: absolute; right: 6%; bottom: 5%; width: calc(var(--w) * .2); height: calc(var(--w) * .2); }
+.carta.sm-matta { box-shadow: 0 0 0 2px #e3b437, 0 3px 12px rgba(227, 180, 55, .55); }
+.sm-matta-tag { position: absolute; left: 50%; bottom: 2%; transform: translateX(-50%); z-index: 3; padding: 0 .3em; border-radius: 999px;
+  font: 700 calc(var(--w) * .12) / 1.35 var(--sans); background: #6b2fa0; color: #fff; letter-spacing: .02em; }
+
+/* consiglio */
+.sm-consiglio { font-size: .88rem; color: var(--avorio); }
+.sm-barra { display: inline-block; vertical-align: middle; width: 5rem; height: .5rem; border-radius: 999px; background: rgba(127, 209, 168, .35); overflow: hidden; margin: 0 .2rem; }
+.sm-barra i { display: block; height: 100%; background: #f0907f; }
+
+@media (max-width: 620px) {
+  .sm { --wc: 54px; }
+  .sm .bj-banco { padding: .4rem 1rem .7rem; }
+  .sm .bj-regola { font-size: .74rem; text-align: center; }
+  .sm-posto { min-width: 0; padding: .4rem .5rem; }
+}
