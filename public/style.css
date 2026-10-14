@@ -763,6 +763,46 @@ button.rps-carta:hover { transform: translateY(-6px) rotate(-3deg); border-color
 .cs-scarpa { margin: 0; font-size: .8rem; color: var(--tenue); }
 .cs-nome { margin: 0 0 .4rem; text-align: center; } .cs-nome small { color: var(--tenue); }
 
+/* ======================= TAVOLO DEL CASINÒ (blackjack, sette e mezzo, baccarat) =======================
+   Il tavolo a mezzaluna con il bordo di legno: il banco in alto al centro, io proprio davanti a lui e gli altri
+   ai lati, sempre più in alto verso le estremità (--arco), come le sedie lungo il bordo curvo. */
+.cs-tavolo { width: min(76rem, 100%); display: grid; justify-items: center; gap: 1.2rem; padding: 0 1.4rem 1.6rem;
+  border: 12px solid #6e4524; border-top: 0; border-radius: 0 0 50% 50% / 0 0 44% 44%;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, .08), rgba(0, 0, 0, .1) 75%);
+  box-shadow: inset 0 -10px 24px rgba(0, 0, 0, .28), 0 10px 26px rgba(0, 0, 0, .3); }
+.cs-posti { display: grid; grid-template-columns: 1fr auto 1fr; gap: .8rem; width: 100%; align-items: start; padding-top: 4.5rem; }
+.cs-lato { display: flex; gap: .7rem; align-items: flex-start; min-width: 0; }
+.cs-lato.sx { justify-content: flex-end; } .cs-lato.dx { justify-content: flex-start; }
+.cs-sedia { min-width: 0; transform: translateY(calc(var(--arco, 0) * -1rem)) rotate(var(--giro, 0deg)); }
+.cs-sedia .bj-posto { min-width: 8.5rem; background: rgba(0, 0, 0, .12); }
+.cs-mia .bj-posto { min-width: 12rem; min-height: 8rem; background: rgba(0, 0, 0, .24); box-shadow: 0 0 0 2px rgba(247, 240, 222, .28); }
+/* ai lati posti più piccoli, con le carte sovrapposte come sul panno vero: così stanno tutti senza accavallarsi */
+.cs-lato { --wc: 46px; }
+.cs-lato .bj-posto, .cs-lato .sm-posto { width: 9.4rem; min-width: 0; padding: .45rem .45rem .5rem; }
+.cs-lato .cs-nome { font-size: .84rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cs-lato .cs-carte { gap: 0; }
+.cs-lato .cs-carta + .cs-carta { margin-left: calc(var(--wc) * -.45); }
+.cs-lato .bj-mani { gap: .3rem; }
+.cs-lato .cs-badge { font-size: .66rem; }
+.cs-mia .bj-posto.di-turno { box-shadow: 0 0 0 2px var(--oro); }
+.bc-croupier { margin: .6rem 0 -.6rem; }
+/* baccarat: fino a 8 posti, piccoli (niente carte): la curva è più dolce e la mia sedia non ha bisogno di spazio per le carte */
+.bc .cs-posti { padding-top: 3.2rem; gap: .5rem; }
+.bc .cs-lato { gap: .4rem; }
+.bc .cs-sedia { transform: translateY(calc(var(--arco, 0) * -.32rem)) rotate(calc(var(--giro, 0deg) * .6)); }
+.bc .cs-lato .bj-posto { width: 7.8rem; }
+.bc .cs-mia .bj-posto { min-height: 0; min-width: 10rem; }
+.bc-sue { display: flex; flex-wrap: wrap; gap: .3rem; justify-content: center; font-size: .78rem; min-height: 1.3rem; }
+.bc-su { padding: .05rem .4rem; border-radius: 6px; background: rgba(0, 0, 0, .22); font-weight: 600; }
+.bc-su-punto { color: #9cc6ff; } .bc-su-banco { color: #ffaaa0; } .bc-su-pareggio { color: #7fd1a8; }
+@media (max-width: 760px) {
+  .cs-tavolo { border-width: 6px; padding: 0 .4rem 1rem; border-radius: 0 0 28px 28px; }
+  .cs-posti { grid-template-columns: 1fr; padding-top: 0; }
+  .cs-centro-posto { order: -1; justify-self: center; }
+  .cs-lato, .cs-lato.sx, .cs-lato.dx { justify-content: center; flex-wrap: wrap; }
+  .cs-sedia { transform: none; }
+}
+
 /* ======================= BLACKJACK ======================= */
 .bj { --wc: clamp(52px, 5.4vw, 70px); }
 .bj-banco { display: grid; justify-items: center; padding: .6rem 2rem 1rem; border-radius: 0 0 50% 50% / 0 0 30% 30%; background: rgba(0, 0, 0, .14); }

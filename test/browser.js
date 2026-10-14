@@ -38,6 +38,7 @@ async function gioca(browser, id, nomeDisp) {
     await p.evaluate(() => { Boss.config({ grigia: false }); Boss.disattiva(); });
     await p.fill('#nome-ingresso', `T${Math.random().toString(36).slice(2, 8)}`);
     await p.click('#form-nome button');
+    await p.waitForSelector(`[data-gioco="${id}"]`, { state: 'attached', timeout: 8000 }); // l'elenco arriva dopo il nome (con tante prove insieme può tardare)
     await p.evaluate((g) => document.querySelector(`[data-gioco="${g}"]`).click(), id);
     await p.waitForTimeout(150);
     // giochi solo tra persone: si prova da soli (se si può)

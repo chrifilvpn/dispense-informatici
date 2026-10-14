@@ -1376,7 +1376,10 @@ function giocaTutta(M, n, livelli, opzioni = {}) {
   assert.ok(g.fase === 'pausa' && g.g[1].tempo > 30000, 'chi non finisce prende più di 30 secondi');
   // pausa per le dispense: il tempo non scorre
   const h = M.crea({ n: 1, opzioni: {}, bot: [null] });
+  // (orologio fermo: tra le due chiamate a Date.now() poteva passare un millesimo e il conto veniva 5001)
+  const adesso = Date.now, fermo = adesso(); Date.now = () => fermo;
   const inizio = h.inizio; h.impostaPausa(true); h.pausaDal -= 5000; h.impostaPausa(false);
+  Date.now = adesso;
   assert.strictEqual(h.inizio, inizio + 5000, 'la pausa sposta gli orologi');
   // partita tra computer: il difficile è più veloce
   // (20 partite sommate: in una sola a volte il medio è più veloce del difficile per caso)

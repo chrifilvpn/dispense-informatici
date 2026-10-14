@@ -1005,6 +1005,20 @@
     </div></div>`;
   }
 
+  // I POSTI INTORNO AL TAVOLO DEL CASINÒ: il banco sta in alto al centro e io proprio davanti a lui; gli altri metà a
+  // sinistra e metà a destra, sempre più in alto verso i lati, come lungo il bordo curvo di un tavolo vero.
+  // Le sedie ai lati sono anche un po' girate verso il banco (--giro). posto(k) disegna un posto; restituisce la fila
+  // dei posti da mettere sotto il banco.
+  function postiAlTavolo(n, io, posto) {
+    const altri = Array.from({ length: n }, (_, k) => k).filter((k) => k !== io);
+    const sx = altri.slice(0, Math.floor(altri.length / 2)).reverse(), dx = altri.slice(sx.length); // sx: dal più vicino a me
+    const arco = (d) => (d * d * 0.55 + d * 0.9).toFixed(2); // quanto sale il posto (in rem) a d posti da me
+    const lato = (l, cls) => { const s = l.map((k, j) => `<div class="cs-sedia" style="--arco:${arco(j + 1)};--giro:${(cls === 'sx' ? 1 : -1) * (j + 1) * 4}deg">${posto(k)}</div>`); return `<div class="cs-lato ${cls}">${(cls === 'sx' ? s.reverse() : s).join('')}</div>`; };
+    const mio = io >= 0 && io < n ? `<div class="cs-sedia cs-mia">${posto(io)}</div>` : '';
+    return `<div class="cs-posti">${lato(sx, 'sx')}<div class="cs-centro-posto">${mio}</div>${lato(dx, 'dx')}</div>`;
+  }
+  window.TavoloCasino = { postiAlTavolo };
+
   const blackjack = {
     libero: true,
     reset(ctx) { segnaRicevuto(ctx); if (ctx.ui.bjConsiglio === undefined) { try { ctx.ui.bjConsiglio = localStorage.getItem('if:bjConsiglio') === '1'; } catch { ctx.ui.bjConsiglio = false; } } },
@@ -1013,15 +1027,14 @@
       const banco = `<div class="bj-banco"><p class="cs-etichetta">Banco${p.banco.carte.length ? ` · <b>${p.banco.totale}</b>${p.banco.coperta ? ' + ?' : ''}` : ''}</p>
         <div class="cs-carte">${p.banco.carte.map((c) => carta(ctx, c)).join('')}</div>
         <p class="bj-regola">Il banco sta su 17 · Blackjack paga 3 a 2</p></div>`;
-      const posti = Array.from({ length: p.n }, (_, k) => k);
-      const giocatori = posti.map((k) => {
+      const giocatori = postiAlTavolo(p.n, io, (k) => {
         const mani = p.mani[k];
         const turno = p.turno === k;
         const netto = p.esiti && p.esiti[k] && mani.length ? `<span class="cs-netto ${p.esiti[k].netto > 0 ? 'su' : p.esiti[k].netto < 0 ? 'giu' : ''}">${p.esiti[k].netto > 0 ? '+' : ''}${fmtFiche(p.esiti[k].netto)}</span>` : '';
         return `<div class="bj-posto ${k === io ? 'mio' : ''} ${turno ? 'di-turno' : ''}">
           <p class="cs-nome">${esc(k === io ? 'Tu' : ctx.nome(k))} <small>${fmtFiche(p.fiche[k])} fiche</small> ${netto} ${p.fase === 'puntate' ? statoPuntata(ctx, k) : ''}</p>
           <div class="bj-mani">${mani.map((m, j) => manoBJ(ctx, m, turno && j === p.manoAttiva && p.fase === 'turni')).join('')}</div></div>`;
-      }).join('');
+      });
       let comandi = '';
       const az = p.azioni || {};
       if (az.carta) {
@@ -1039,7 +1052,7 @@
         <button type="button" class="bottone" data-az="passa">Passo questa mano</button></div>`);
       const scarpa = `<p class="cs-scarpa">Scarpa: ${p.carteScarpa} carte${p.mescolata ? ' · <b>rimescolata</b>' : ''}</p>`;
       const tab = `<p class="cs-tab-apri"><button type="button" class="bottone mini-bt" data-az="tabellaBJ">📋 Tabella della strategia</button></p>`;
-      return `<div class="cs bj">${banco}<div class="bj-giocatori">${giocatori}</div>${comandi}${punta}${tab}${scarpa}${ui.tabBJ ? tabellaBJ(p, io) : ''}</div>`;
+      return `<div class="cs bj"><div class="cs-tavolo">${banco}${giocatori}</div>${comandi}${punta}${tab}${scarpa}${ui.tabBJ ? tabellaBJ(p, io) : ''}</div>`;
     },
     stato(ctx) {
       const p = ctx.partita;
@@ -1094,13 +1107,16 @@
         <div class="bj-comandi"><button type="button" class="bottone primario-bt" data-az="puntaBc" ${tot ? '' : 'disabled'}>Conferma puntata</button>
         <button type="button" class="bottone" data-az="passa">Passo questa mano</button></div>` : '';
       const pannello = pannelloPuntate(ctx, scelta);
-      const giocatori = Array.from({ length: p.n }, (_, k) => k).map((k) => {
-        const e = p.esiti && p.esiti[k];
-        return `<span class="bc-g ${k === io ? 'mio' : ''}">${esc(k === io ? 'Tu' : ctx.nome(k))} <small>${fmtFiche(p.fiche[k])}</small>${e && e.puntato ? `<span class="cs-netto ${e.netto > 0 ? 'su' : e.netto < 0 ? 'giu' : ''}">${e.netto > 0 ? '+' : ''}${fmtFiche(e.netto)}</span>` : ''}</span>`;
-      }).join('');
+      // ognuno al suo posto intorno al tavolo (io davanti al croupier), con quanto ha puntato e su cosa
+      const giocatori = postiAlTavolo(p.n, io, (k) => {
+        const e = p.esiti && p.esiti[k], q = p.puntate[k] || {};
+        const su = Object.keys(ZONE).filter((z) => q[z]).map((z) => `<span class="bc-su bc-su-${z}">${ZONE[z][0]} ${fmtFiche(q[z])}</span>`).join('');
+        const stato = su || (p.fase === 'puntate' ? statoPuntata(ctx, k) : '');
+        return `<div class="bj-posto bc-posto ${k === io ? 'mio' : ''}"><p class="cs-nome">${esc(k === io ? 'Tu' : ctx.nome(k))} <small>${fmtFiche(p.fiche[k])} fiche</small>${e && e.puntato ? ` <span class="cs-netto ${e.netto > 0 ? 'su' : e.netto < 0 ? 'giu' : ''}">${e.netto > 0 ? '+' : ''}${fmtFiche(e.netto)}</span>` : ''}</p><div class="bc-sue">${stato}</div></div>`;
+      });
       const strada = `<div class="bc-strada" title="Ultime mani">${p.storia.map((x) => `<i class="${x}">${x === 'punto' ? 'P' : x === 'banco' ? 'B' : 'T'}</i>`).join('')}</div>`;
-      return `<div class="cs bc"><div class="bc-carte">${lato('punto')}${lato('banco')}</div>${esito}
-        <div class="bc-tavolo">${zone}</div>${pannello}<div class="bc-giocatori">${giocatori}</div>${strada}
+      return `<div class="cs bc"><div class="cs-tavolo"><p class="cs-etichetta bc-croupier">Croupier</p><div class="bc-carte">${lato('punto')}${lato('banco')}</div>${esito}
+        <div class="bc-tavolo">${zone}</div>${giocatori}</div>${pannello}${strada}
         <p class="cs-tab-apri"><button type="button" class="bottone mini-bt" data-az="tabellaBC">📋 Regole della terza carta e probabilità</button></p>
         <p class="cs-scarpa">8 mazzi · ${p.carteScarpa} carte${p.mescolata ? ' · <b>rimescolate</b>' : ''}</p>${ui.tabBC ? tabellaBC() : ''}</div>`;
     },

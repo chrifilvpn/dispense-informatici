@@ -141,8 +141,7 @@
           <p class="cs-nome">${esc(k === io ? 'Tu' : ctx.nome(k))} <small>${fmtFiche(p.fiche[k])} fiche</small> ${netto} ${p.fase === 'puntate' ? statoPuntata(ctx, k) : ''}</p>
           ${m ? `<div class="bj-mani">${manoSM(ctx, m, k, turno && p.fase === 'turni')}</div>` : p.fase !== 'puntate' ? '<p class="sm-fuori">non gioca questa mano</p>' : ''}</div>`;
       };
-      const mio = io >= 0 && io < p.n ? posto(io) : '';
-      const altri = Array.from({ length: p.n }, (_, k) => k).filter((k) => k !== io).map(posto).join('');
+      const giocatori = window.TavoloCasino.postiAlTavolo(p.n, io, posto); // io davanti al banco, gli altri ai lati
       let comandi = '';
       const az = p.azioni || {};
       if (az.carta) {
@@ -158,8 +157,8 @@
       const punta = pannelloPuntate(ctx, `${selettore(ctx, 'sm', p.fiche[io])}
         <div class="bj-comandi"><button type="button" class="bottone primario-bt" data-az="punta" ${(ui.sm || 0) > 0 ? '' : 'disabled'}>Punta ${fmtFiche(Math.min(ui.sm || 0, p.fiche[io]))}</button>
         <button type="button" class="bottone" data-az="passa">Passo questa mano</button></div>`);
-      // sotto il banco il mio posto e i comandi, poi gli altri giocatori
-      return `<div class="cs bj sm">${banco}<div class="bj-giocatori">${mio}</div>${comandi}${punta}${altri ? `<div class="bj-giocatori">${altri}</div>` : ''}<p class="cs-scarpa">Mazzo: ${p.carteMazzo} carte (si mescola a ogni mano)</p></div>`;
+      // il tavolo: il banco in alto, davanti a lui io e ai lati gli altri; sotto i comandi
+      return `<div class="cs bj sm"><div class="cs-tavolo">${banco}${giocatori}</div>${comandi}${punta}<p class="cs-scarpa">Mazzo: ${p.carteMazzo} carte (si mescola a ogni mano)</p></div>`;
     },
     dopo(ctx) {
       const p = ctx.partita;
