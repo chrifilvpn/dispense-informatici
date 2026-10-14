@@ -24,6 +24,9 @@ window.Arena = (() => {
   function tavolo(cfg) {
     let ctxA = null, tela = null, ultimo = null, prima = null, arrivo = 0, passoMs = 33;
     let scorta = [], scarti = [], scarto = null, intervallo = 50; // aggiornamenti con l'ora del server, differenza tra gli orologi
+    // quanto in ritardo arrivano gli aggiornamenti rispetto al più veloce (la rete non è regolare): si disegna un po' nel
+    // passato, quanto basta perché l'aggiornamento successivo sia quasi sempre già arrivato (niente fermo-e-salto)
+    let ritardi = [], attesa = 110;
     let pred = null, lontano = 0, ultimoFotogramma = 0, erroreVisto = false;
     const tasti = new Set();
     const inp = { x: 0, y: 0, a: false, t: 0, mx: null, my: null };
@@ -208,8 +211,12 @@ window.Arena = (() => {
     // i due aggiornamenti tra cui disegnare adesso (un attimo nel passato) e a che punto siamo tra i due
     function coppia() {
       if (scarto === null || scorta.length < 2 || window.__arenaVecchio) return [ultimo, prima, Math.min(1, (performance.now() - arrivo) / passoMs)];
-      const ritardo = Math.max(60, Math.min(260, intervallo * 1.6 + 30));
-      const rt = Date.now() - scarto - ritardo;
+      // l'attesa giusta: un intervallo tra due aggiornamenti più il ritardo che la rete supera solo 1 volta su 20;
+      // sale subito quando la rete peggiora e scende piano quando migliora (così il movimento non accelera di colpo)
+      const ord = ritardi.slice().sort((a, b) => a - b), p95 = ord.length ? ord[Math.floor(ord.length * 0.95)] : 30;
+      const voluta = Math.max(60, Math.min(400, intervallo + p95 + 15));
+      attesa = voluta > attesa ? attesa + Math.min(voluta - attesa, 4) : attesa - Math.min(attesa - voluta, 0.3);
+      const rt = Date.now() - scarto - attesa;
       let i = scorta.length - 1; while (i > 0 && scorta[i].ts > rt) i--;
       if (i === scorta.length - 1) return [scorta[i].d, scorta[i - 1].d, 1];
       const a = scorta[i], b = scorta[i + 1];
@@ -217,13 +224,14 @@ window.Arena = (() => {
       return [b.d, a.d, Math.max(0, Math.min(1, (rt - a.ts) / Math.max(1, b.ts - a.ts)))];
     }
     function inScorta(d) {
-      if (!d || !d.ts) { scorta = []; scarto = null; return; }
+      if (!d || !d.ts) { scorta = []; scarto = null; ritardi = []; return; }
       const ultimoS = scorta[scorta.length - 1];
       if (ultimoS && (ultimoS.d.round !== d.round || ultimoS.d.fase !== d.fase)) scorta = []; // round o fase nuova: si riparte
       if (ultimoS && d.ts <= ultimoS.ts) return;
       // l'orologio del server rispetto al nostro: la differenza più piccola vista di recente (quella senza ritardi)
       scarti.push(Date.now() - d.ts); if (scarti.length > 40) scarti.shift();
       scarto = Math.min(...scarti);
+      ritardi.push(Date.now() - d.ts - scarto); if (ritardi.length > 80) ritardi.shift();
       if (ultimoS) intervallo = intervallo * 0.9 + Math.min(300, d.ts - ultimoS.ts) * 0.1;
       scorta.push({ ts: d.ts, d }); if (scorta.length > 14) scorta.shift();
     }

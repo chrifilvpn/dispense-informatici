@@ -19,7 +19,7 @@ const angolo = (a) => { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.P
 
 class Serpentoni extends Arena {
   constructor(o) {
-    super(o, { id: 'slither', round: 1, tickMs: 50 });
+    super(o, { id: 'slither', round: 1, tickMs: 40 });
     this.nRound = 1;
     this.W = VISTA; this.H = VISTA;
     const op = o.opzioni || {};

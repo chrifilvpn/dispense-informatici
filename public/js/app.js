@@ -871,7 +871,10 @@
     $('#mio-nome').innerHTML = `${targhetta(stato.mioPosto, p)}<div class="info-posto">${T.infoPosto ? T.infoPosto(ctx, stato.mioPosto) : ''}</div><div class="bolla-posto" data-bolla="${stato.mioPosto}"></div>`;
 
     $('#panno').className = `panno panno-${p.gioco}`;
-    $('#panno').innerHTML = T.panno(ctx);
+    // giochi in tempo reale: se il pannello non è cambiato non si ricostruisce (rifarlo a ogni aggiornamento staccava
+    // il campo di gioco per un attimo e si sentiva uno scatto)
+    const htmlPanno = T.panno(ctx), primo = $('#panno').firstElementChild;
+    if (!(T.tick && primo && primo._html === htmlPanno)) { $('#panno').innerHTML = htmlPanno; if ($('#panno').firstElementChild) $('#panno').firstElementChild._html = htmlPanno; }
     if (T.dopo) T.dopo(ctx); // es. rimettere il cursore nella casella dove si stava scrivendo
     $('#mano').className = `mano ${mioTurno ? 'attiva' : ''} ${T.manoLarga ? 'larga' : ''}`;
     $('#mano').innerHTML = T.mano ? T.mano(ctx) : '';

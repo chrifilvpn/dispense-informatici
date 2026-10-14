@@ -28,7 +28,9 @@ const MAX_TAVOLI = 1000, MAX_TAVOLI_PER_IP = Number(process.env.MAX_TAVOLI_PER_I
 const app = express();
 const server = http.createServer(app);
 // maxHttpBufferSize: nessun messaggio dal browser può superare 100 kB (di norma sono poche centinaia di byte)
-const io = new Server(server, { maxHttpBufferSize: 1e5, pingTimeout: 20000 });
+// perMessageDeflate: i messaggi grandi (da 1 KB in su, es. i tick di Serpentoni) viaggiano compressi, circa un terzo:
+// sulle reti lente (wifi della scuola, telefono) arrivano più regolari e il gioco scatta meno
+const io = new Server(server, { maxHttpBufferSize: 1e5, pingTimeout: 20000, perMessageDeflate: { threshold: 1024 } });
 // contro le connessioni lente e le troppe connessioni contemporanee
 server.headersTimeout = 15000; server.requestTimeout = 30000; server.keepAliveTimeout = 5000;
 server.maxConnections = Number(process.env.MAX_CONNESSIONI) || 3000;
